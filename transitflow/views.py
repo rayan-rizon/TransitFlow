@@ -82,17 +82,28 @@ def local_view(times: np.ndarray, flux: np.ndarray, period: float, t0: float,
     return _fill_nans(binned, fill=np.nanmedian(flux))
 
 
-def normalize_view(view: np.ndarray, eps: float = 1e-8) -> np.ndarray:
+def normalize_view(view: np.ndarray, eps: float = 1e-8,
+                   clip: float = 30.0) -> np.ndarray:
     """Robustly standardize a view: subtract median, scale by 1.4826*MAD.
 
     Out-of-transit flux maps to ~0 and a transit produces a negative excursion,
     in a scale-free representation that is stable across very different noise
     levels.
+
+    Robustness: for a near-constant view (MAD ~ 0 -- e.g. a sparsely-populated
+    folded window for a non-planet) dividing by ``eps`` would explode the output
+    to huge values (overflowing float16 storage to +/-inf and feeding NaNs to the
+    network).  We fall back to the std, then to 1.0, and clip the result to
+    ``+/-clip`` -- standard outlier suppression for these views, and float16-safe.
     """
     med = np.median(view)
     mad = np.median(np.abs(view - med))
-    scale = 1.4826 * mad + eps
-    return (view - med) / scale
+    scale = 1.4826 * mad
+    if scale < eps:                      # near-constant view
+        scale = float(view.std())
+        if scale < eps:
+            scale = 1.0
+    return np.clip((view - med) / scale, -clip, clip)
 
 
 def make_views(
