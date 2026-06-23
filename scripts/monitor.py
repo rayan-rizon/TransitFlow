@@ -81,6 +81,26 @@ def render(run_dir) -> str:
                f"posterior {loss.get('posterior',float('nan')):.4f}  "
                f"detection {loss.get('detection',float('nan')):.4f}   "
                f"lr {st.get('lr',0):.2e}")
+
+    # --- health verdict (catches a wasteful / dead run) ---
+    import math
+    import time as _t
+    verdict, flags = "HEALTHY", []
+    age = _t.time() - st.get("updated_unix", 0)
+    total = loss.get("total")
+    wait = st.get("data_wait_frac", 0.0)
+    if st.get("status") in ("done", "interrupted", "error"):
+        verdict = st["status"].upper()
+    elif age > 180:
+        verdict = "STALLED"; flags.append(f"no update for {int(age)}s")
+    elif total is None or not math.isfinite(total):
+        verdict = "DIVERGED"; flags.append("non-finite loss")
+    else:
+        flags = list(st.get("health", {}).get("warnings", []))
+        if wait and wait > 0.35:
+            flags.append(f"GPU-starved {wait*100:.0f}%")
+        verdict = "WARN" if flags else "HEALTHY"
+    out.append(f" HEALTH   : {verdict}" + (f"  ({'; '.join(flags)})" if flags else ""))
     best = st.get("best", {})
     if best and best.get("step", -1) >= 0:
         out.append(f" best val : AUC {best.get('roc_auc',float('nan')):.4f} "

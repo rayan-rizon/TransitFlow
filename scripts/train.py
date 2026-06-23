@@ -36,6 +36,12 @@ def main() -> None:
     ap.add_argument("--num-workers", type=int, default=None,
                     help="data-prefetch worker processes (use 2-6 on a GPU box)")
     ap.add_argument("--noise-lib", default=None, help="path to a real-noise .npz")
+    ap.add_argument("--data-dir", default=None,
+                    help="train from a pre-generated disk dataset (recommended on GPU)")
+    ap.add_argument("--expect-device", default=None,
+                    help="abort/ warn if not on this device, e.g. cuda")
+    ap.add_argument("--no-preflight", action="store_true",
+                    help="skip the pre-run health/cost check")
     args = ap.parse_args()
 
     overrides = {"train": {}, "model": {}}
@@ -51,6 +57,11 @@ def main() -> None:
         overrides["train"]["num_workers"] = args.num_workers
     if args.noise_lib:
         overrides["train"]["noise_lib_path"] = args.noise_lib
+    if args.data_dir:
+        overrides["train"]["data_source"] = "disk"
+        overrides["train"]["data_dir"] = args.data_dir
+    if args.expect_device:
+        overrides["train"]["expect_device"] = args.expect_device
     if args.resume is not None:
         overrides["train"]["resume"] = (args.run_dir if args.resume == "__auto__"
                                         else args.resume)
@@ -60,6 +71,15 @@ def main() -> None:
         os.makedirs(cfg["train"].run_dir, exist_ok=True)
     elif cfg["train"].ckpt_path:
         os.makedirs(os.path.dirname(cfg["train"].ckpt_path) or ".", exist_ok=True)
+
+    # preflight gate: don't spend GPU hours on a broken/wasteful config
+    if not args.no_preflight and not cfg["train"].resume:
+        from transitflow.train import preflight
+        r = preflight(cfg["model"], cfg["simulator"], cfg["train"], verbose=True)
+        if not r["ok"]:
+            print("preflight FAILED — aborting before spending compute. "
+                  "Re-run with --no-preflight to override.")
+            raise SystemExit(1)
 
     result = train(cfg["model"], cfg["simulator"], cfg["train"], verbose=True)
     print("training complete. best val AUC:",

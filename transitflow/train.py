@@ -63,10 +63,18 @@ class TrainConfig:
     keep_last: int = 3                       # rotate step_*.pt checkpoints
     resume: Optional[str] = None            # checkpoint path or run_dir to resume
     tensorboard: bool = True
+    # --- data source ---
+    data_source: str = "simulate"            # "simulate" (on the fly) | "disk"
+    data_dir: Optional[str] = None           # required when data_source == "disk"
     # --- data prefetch (keeps a GPU fed by the CPU simulator) ---
     num_workers: int = 0                     # >0 spawns prefetch worker processes
     prefetch: int = 8
     noise_lib_path: Optional[str] = None
+    # --- GPU performance ---
+    tf32: bool = True                        # allow TF32 matmul/conv on Ampere+
+    # --- health / anti-waste ---
+    expect_device: Optional[str] = None      # warn loudly if the run isn't here (e.g. "cuda")
+    nan_patience: int = 20                   # stop after this many non-finite losses
     # --- legacy single-file checkpoint (used when run_dir is None) ---
     ckpt_path: Optional[str] = None
 
@@ -188,6 +196,21 @@ def train(
     set_seed(train_cfg.seed)
     device = get_device(train_cfg.device)
 
+    # GPU performance knobs (no-ops off CUDA)
+    if device.type == "cuda":
+        torch.backends.cudnn.benchmark = True   # fixed-size views -> autotune convs
+        if train_cfg.tf32:
+            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cudnn.allow_tf32 = True
+            torch.set_float32_matmul_precision("high")
+
+    # anti-waste: a long run that silently fell back to CPU burns money for nothing
+    if train_cfg.expect_device and device.type != train_cfg.expect_device:
+        msg = (f"WARNING: expected device '{train_cfg.expect_device}' but running "
+               f"on '{device.type}'. A long run here may waste money — check the "
+               f"CUDA install (torch.cuda.is_available()).")
+        print("!" * 70 + f"\n{msg}\n" + "!" * 70)
+
     run_dir = train_cfg.run_dir
     ckpt_dir = log_path = status_path = None
     writer = None
@@ -205,7 +228,13 @@ def train(
                 writer = None
 
     # data iterators
-    if train_cfg.num_workers > 0:
+    if train_cfg.data_source == "disk":
+        from .data import DiskIterator
+        if not train_cfg.data_dir:
+            raise ValueError("data_source='disk' requires data_dir")
+        train_iter = DiskIterator(train_cfg.data_dir, train_cfg.batch_size, device,
+                                  shuffle=True, seed=train_cfg.seed)
+    elif train_cfg.num_workers > 0:
         train_iter = PrefetchSimulator(
             sim_cfg, train_cfg.batch_size, device, train_cfg.num_workers,
             train_cfg.prefetch, train_cfg.seed, train_cfg.noise_lib_path)
@@ -244,33 +273,57 @@ def train(
     t_start = time.time()
     last_log_t = t_start
     last_log_step = start_step
+    data_wait = 0.0          # seconds spent waiting on the data pipeline since last log
+    nan_count = 0
     status = "running"
     model.train()
     try:
         for step in range(start_step, train_cfg.n_steps):
             for g in opt.param_groups:
                 g["lr"] = _lr_at(step, train_cfg)
+            _t = time.time()
             batch = next(train_iter)
+            data_wait += time.time() - _t
             opt.zero_grad(set_to_none=True)
             use_amp = train_cfg.amp and device.type == "cuda"
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16,
                                 enabled=use_amp):
                 out = compute_losses(model, batch, train_cfg.lambda_det)
+
+            # NaN/inf guard: never burn GPU hours optimizing a diverged loss
+            if not torch.isfinite(out["total"]):
+                nan_count += 1
+                if verbose:
+                    print(f"  non-finite loss at step {step} "
+                          f"({nan_count}/{train_cfg.nan_patience})")
+                if nan_count >= train_cfg.nan_patience:
+                    status = "error"
+                    if verbose:
+                        print("ABORT: too many non-finite losses — stopping to "
+                              "avoid wasting compute. Check lr / data / model.")
+                    break
+                continue
+            nan_count = 0
+
             out["total"].backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), train_cfg.grad_clip)
             opt.step()
 
             if step % train_cfg.log_every == 0:
                 now = time.time()
-                sps = (step - last_log_step) / max(now - last_log_t, 1e-6)
+                interval = max(now - last_log_t, 1e-6)
+                sps = (step - last_log_step) / interval
+                data_frac = data_wait / interval if step > last_log_step else 0.0
                 last_log_t, last_log_step = now, step
+                data_wait = 0.0
                 eta = (train_cfg.n_steps - step) / max(sps, 1e-6)
                 total = float(out["total"].detach())
                 rec = {"step": step, "total": total,
                        "posterior": float(out["posterior"]),
                        "detection": float(out["detection"]),
                        "lr": opt.param_groups[0]["lr"], "steps_per_s": sps,
-                       "lc_per_s": sps * train_cfg.batch_size}
+                       "lc_per_s": sps * train_cfg.batch_size,
+                       "data_wait_frac": round(data_frac, 3)}
                 history["step"].append(step)
                 history["total"].append(total)
                 history["posterior"].append(rec["posterior"])
@@ -282,14 +335,19 @@ def train(
                     writer.add_scalar("loss/total", total, step)
                     writer.add_scalar("loss/posterior", rec["posterior"], step)
                     writer.add_scalar("loss/detection", rec["detection"], step)
+                    writer.add_scalar("perf/data_wait_frac", data_frac, step)
+                health = _health(device, train_cfg, total, data_frac)
                 if status_path:
                     _write_status(status_path, run_dir, model.head_type, str(device),
                                   count_parameters(model), step, train_cfg.n_steps,
-                                  rec, best, t_start, eta, sps, status)
+                                  rec, best, t_start, eta, sps, status, health)
                 if verbose:
+                    warn = "" if not health["warnings"] else \
+                        "  [" + ",".join(health["warnings"]) + "]"
                     print(f"step {step:6d}/{train_cfg.n_steps} | total {total:.4f} "
                           f"| post {rec['posterior']:.4f} | det {rec['detection']:.4f} "
-                          f"| {sps*train_cfg.batch_size:.0f} lc/s | eta {_human_time(eta)}")
+                          f"| {sps*train_cfg.batch_size:.0f} lc/s "
+                          f"| wait {data_frac*100:.0f}% | eta {_human_time(eta)}{warn}")
 
             if train_cfg.eval_every and (step + 1) % train_cfg.eval_every == 0:
                 val = evaluate(model, val_iter, train_cfg, train_cfg.eval_batches)
@@ -355,8 +413,25 @@ def history_tail(history: dict) -> dict:
     }
 
 
+def _health(device, train_cfg: TrainConfig, total_loss: float,
+            data_frac: float) -> dict:
+    """Derive run-health warnings so a wasteful run is caught early."""
+    import math
+    warnings = []
+    if train_cfg.expect_device and device.type != train_cfg.expect_device:
+        warnings.append("DEVICE-MISMATCH")
+    elif device.type == "cpu" and train_cfg.n_steps > 2000:
+        warnings.append("CPU-LONG-RUN")
+    if data_frac > 0.35:
+        warnings.append("GPU-STARVED")
+    if not math.isfinite(total_loss):
+        warnings.append("NON-FINITE-LOSS")
+    return {"healthy": len(warnings) == 0, "device": device.type,
+            "data_wait_frac": round(data_frac, 3), "warnings": warnings}
+
+
 def _write_status(path, run_dir, head, device, params, step, total_steps, rec,
-                  best, t_start, eta, sps, status) -> None:
+                  best, t_start, eta, sps, status, health=None) -> None:
     obj = {
         "run_dir": run_dir, "head": head, "device": device, "params": params,
         "status": status, "step": step, "total_steps": total_steps,
@@ -364,10 +439,12 @@ def _write_status(path, run_dir, head, device, params, step, total_steps, rec,
         "elapsed_s": round(time.time() - t_start, 1),
         "eta_s": round(eta, 1), "eta": _human_time(eta),
         "throughput_lc_per_s": round(rec.get("lc_per_s", 0.0), 1),
+        "data_wait_frac": rec.get("data_wait_frac", 0.0),
         "loss": {"total": rec.get("total"), "posterior": rec.get("posterior"),
                  "detection": rec.get("detection")},
         "lr": rec.get("lr"),
         "best": best,
+        "health": health or {"healthy": True, "device": device, "warnings": []},
         "updated_unix": time.time(),
     }
     _write_json_atomic(path, obj)
@@ -397,6 +474,125 @@ def _resolve_resume(cfg: TrainConfig) -> str | None:
     if os.path.isdir(cfg.resume):
         return os.path.join(cfg.resume, "checkpoints", "latest.pt")
     return cfg.resume
+
+
+def preflight(model_cfg: ModelConfig | None = None,
+              sim_cfg: SimConfig | None = None,
+              train_cfg: TrainConfig | None = None,
+              n_probe: int = 40, price_per_hr: float = 0.40,
+              verbose: bool = True) -> dict:
+    """Short pre-run check so a misconfigured run never wastes GPU hours.
+
+    Runs ~``n_probe`` training steps and verifies: the intended device is in use,
+    losses are finite and trending down, the data pipeline isn't starving the
+    GPU, and a checkpoint round-trips.  Reports projected throughput, ETA, and
+    rough cost for the full ``n_steps``.  Returns a dict with ``verdict`` in
+    {``PASS``, ``WARN``, ``FAIL``} and ``ok`` (False only on FAIL).
+    """
+    model_cfg = model_cfg or ModelConfig()
+    sim_cfg = sim_cfg or SimConfig()
+    train_cfg = train_cfg or TrainConfig()
+    device = get_device(train_cfg.device)
+    issues, warns = [], []
+
+    # data source (mirror train())
+    if train_cfg.data_source == "disk":
+        from .data import DiskIterator
+        try:
+            it = DiskIterator(train_cfg.data_dir, train_cfg.batch_size, device, seed=1)
+        except Exception as ex:
+            return _preflight_report({"verdict": "FAIL", "ok": False,
+                                      "issues": [f"disk data load failed: {ex}"]},
+                                     verbose)
+    elif train_cfg.num_workers > 0:
+        it = PrefetchSimulator(sim_cfg, train_cfg.batch_size, device,
+                               train_cfg.num_workers, train_cfg.prefetch, 1,
+                               train_cfg.noise_lib_path)
+    else:
+        it = SimulatorIterator(TransitSimulator(sim_cfg), train_cfg.batch_size,
+                               device, 1)
+
+    model = TransitFlow(model_cfg).to(device)
+    opt = torch.optim.AdamW(model.parameters(), lr=train_cfg.lr)
+    model.train()
+    losses, data_t, comp_t = [], 0.0, 0.0
+    t0 = time.time()
+    try:
+        for i in range(n_probe):
+            _t = time.time(); batch = next(it); data_t += time.time() - _t
+            _t = time.time()
+            opt.zero_grad(set_to_none=True)
+            out = compute_losses(model, batch, train_cfg.lambda_det)
+            out["total"].backward(); opt.step()
+            if device.type in ("cuda", "mps"):
+                getattr(torch, device.type).synchronize()
+            comp_t += time.time() - _t
+            losses.append(float(out["total"].detach()))
+    finally:
+        it.close()
+    wall = time.time() - t0
+    sps = n_probe / max(wall, 1e-6)
+    data_frac = data_t / max(data_t + comp_t, 1e-6)
+    finite = all(np.isfinite(losses))
+    trending = (np.mean(losses[-10:]) <= np.mean(losses[:10]) * 1.05) if len(losses) >= 20 else True
+
+    # checkpoint round-trip
+    ckpt_ok = True
+    try:
+        import tempfile
+        p = os.path.join(tempfile.gettempdir(), "tf_preflight_ckpt.pt")
+        save_checkpoint(model, model_cfg, sim_cfg, p, opt, 0, {}, {})
+        load_checkpoint(p, device); os.remove(p)
+    except Exception as ex:
+        ckpt_ok = False; issues.append(f"checkpoint failed: {ex}")
+
+    if not finite:
+        issues.append("non-finite losses in probe")
+    if train_cfg.expect_device and device.type != train_cfg.expect_device:
+        issues.append(f"device is '{device.type}', expected '{train_cfg.expect_device}'")
+    elif device.type == "cpu" and train_cfg.n_steps > 2000:
+        warns.append("running a long job on CPU (no GPU detected)")
+    if data_frac > 0.35:
+        warns.append(f"GPU-starved: {data_frac*100:.0f}% of step time waits on data "
+                     f"— pre-generate to disk (scripts/generate_data.py) or raise "
+                     f"--num-workers / lower sim n_raw")
+    if not trending:
+        warns.append("loss not decreasing over the probe (check lr)")
+
+    full_s = train_cfg.n_steps / max(sps, 1e-6)
+    report = {
+        "device": device.type, "params": count_parameters(model),
+        "lc_per_s": round(sps * train_cfg.batch_size, 1),
+        "data_wait_frac": round(data_frac, 3),
+        "finite_losses": finite, "loss_trending_down": bool(trending),
+        "checkpoint_ok": ckpt_ok,
+        "projected_full_run_h": round(full_s / 3600, 2),
+        "projected_cost_usd": round(full_s / 3600 * price_per_hr, 2),
+        "issues": issues, "warnings": warns,
+        "verdict": "FAIL" if issues else ("WARN" if warns else "PASS"),
+    }
+    report["ok"] = report["verdict"] != "FAIL"
+    return _preflight_report(report, verbose)
+
+
+def _preflight_report(r: dict, verbose: bool) -> dict:
+    if not verbose:
+        return r
+    print("=" * 64)
+    print(" PREFLIGHT")
+    print("=" * 64)
+    for k in ("device", "params", "lc_per_s", "data_wait_frac", "finite_losses",
+              "loss_trending_down", "checkpoint_ok", "projected_full_run_h",
+              "projected_cost_usd"):
+        if k in r:
+            print(f"  {k:22s}: {r[k]}")
+    for w in r.get("warnings", []):
+        print(f"  WARN: {w}")
+    for i in r.get("issues", []):
+        print(f"  FAIL: {i}")
+    print(f"  VERDICT: {r.get('verdict','?')}")
+    print("=" * 64)
+    return r
 
 
 def _snapshot_config(run_dir, model_cfg, sim_cfg, train_cfg) -> None:

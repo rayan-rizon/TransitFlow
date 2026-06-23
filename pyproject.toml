@@ -26,11 +26,12 @@ dependencies = [
 physics = ["batman-package>=2.4", "torchdiffeq>=0.2.3", "zuko>=1.0", "celerite2>=0.2"]
 baselines = ["astropy>=5.3", "corner>=2.2", "emcee>=3.1", "arviz>=0.16"]
 data = ["lightkurve>=2.4"]
+monitoring = ["tensorboard>=2.10"]
 dev = ["pytest>=7.4"]
 all = [
     "batman-package>=2.4", "torchdiffeq>=0.2.3", "zuko>=1.0", "celerite2>=0.2",
     "astropy>=5.3", "corner>=2.2", "emcee>=3.1", "arviz>=0.16",
-    "lightkurve>=2.4", "pytest>=7.4",
+    "lightkurve>=2.4", "tensorboard>=2.10", "pytest>=7.4",
 ]
 
 [tool.setuptools.packages.find]

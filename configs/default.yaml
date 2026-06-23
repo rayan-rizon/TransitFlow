@@ -64,7 +64,16 @@ train:
   keep_last: 3
   resume: null              # set to the run_dir (or a .pt) to resume
   tensorboard: true
-  num_workers: 4            # data-prefetch processes (raise to ~CPU_cores-2 on Vast.ai)
+  tf32: true                # TF32 matmul/conv on Ampere+ (free speedup on a 4090)
+  expect_device: cuda       # preflight warns/aborts if the run isn't on CUDA
+  nan_patience: 20          # abort after this many non-finite losses (anti-waste)
+  # --- data source ---
+  # RECOMMENDED on a rented GPU: pre-generate once and train from disk so the GPU
+  # stays saturated (the CPU simulator can't feed a 4090 on the fly). See
+  # scripts/generate_data.py.  Leave data_dir null to simulate on the fly.
+  data_source: simulate     # "simulate" | "disk"
+  data_dir: null            # e.g. data/tess_1M  (sets data_source to disk via --data-dir)
+  num_workers: 4            # on-the-fly prefetch processes (raise to ~CPU_cores-2)
   prefetch: 8
   noise_lib_path: null      # path to a real-noise .npz to enable the real regime
 

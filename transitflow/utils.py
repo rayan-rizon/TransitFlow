@@ -54,16 +54,27 @@ def merge_into_dataclass(dc, overrides: dict):
 
 
 def batch_to_torch(batch: dict, device: torch.device) -> dict:
-    """Move the simulator's numpy batch onto a device as tensors."""
+    """Move the simulator's numpy batch onto a device as tensors.
+
+    On CUDA the host tensors are pinned and copied non-blocking, so the H2D
+    transfer overlaps with compute instead of stalling the step.
+    """
+    if isinstance(device, str):
+        device = torch.device(device)
+    cuda = device.type == "cuda"
     out = {}
     for k, v in batch.items():
         if isinstance(v, np.ndarray):
             if v.dtype == np.bool_:
-                out[k] = torch.from_numpy(v).to(device)
+                t = torch.from_numpy(v)
             elif np.issubdtype(v.dtype, np.integer):
-                out[k] = torch.from_numpy(v).long().to(device)
+                t = torch.from_numpy(v).long()
             else:
-                out[k] = torch.from_numpy(v.astype(np.float32)).to(device)
+                t = torch.from_numpy(np.ascontiguousarray(v, dtype=np.float32))
+            if cuda:
+                out[k] = t.pin_memory().to(device, non_blocking=True)
+            else:
+                out[k] = t.to(device)
         else:
             out[k] = v
     return out

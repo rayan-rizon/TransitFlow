@@ -1,0 +1,75 @@
+# Mac-local "proper" research run (M1 Pro, 8 cores, MPS).
+# Full-resolution dual views and the real science model architecture, with the
+# raw cadence trimmed (n_raw 12000) so 6 CPU sim workers can keep the MPS GPU
+# fed.  On-the-fly simulation = infinite fresh data (no overfitting).
+
+simulator:
+  n_global: 2001
+  n_local: 201
+  n_durations: 4.0
+  baseline_days: 27.0
+  n_raw: 12000              # dense TESS-like cadence, ~2x faster to simulate than 18000
+  planet_fraction: 0.5
+  hard_negative_fraction: 0.5
+  frac_real: 0.0            # no real-noise library locally -> GP + white
+  frac_gp: 0.45
+  frac_white: 0.55
+  sigma_white_log10_low: -3.7
+  sigma_white_log10_high: -2.3
+  gp_amp_log10_low: -3.5
+  gp_amp_log10_high: -2.0
+  gp_tau_frac_low: 0.02
+  gp_tau_frac_high: 0.30
+  gp_kernel: matern32
+  eb_depth_low: 0.01
+  eb_depth_high: 0.10
+  engine: native
+  n_radial: 200
+  regime: tess
+
+model:                     # the real science architecture (~3.7M params)
+  param_dim: 7
+  embed_dim: 256
+  head: fmpe
+  use_noise_feature: true
+  global_channels: [32, 64, 128, 128, 256, 256]
+  local_channels: [32, 64, 128, 128]
+  global_dim: 256
+  local_dim: 128
+  blocks_per_stage: 2
+  det_hidden: 128
+  det_dropout: 0.1
+  fm_hidden: 256
+  fm_blocks: 4
+  fm_time_dim: 64
+
+train:
+  n_steps: 20000           # sized after preflight calibration
+  batch_size: 256
+  lr: 3.0e-4
+  weight_decay: 1.0e-5
+  lambda_det: 1.0
+  grad_clip: 5.0
+  warmup_steps: 400
+  eval_every: 1000
+  eval_batches: 6
+  log_every: 50
+  device: auto             # -> MPS on this Mac
+  seed: 0
+  amp: false               # bf16 autocast is CUDA-only; no-op on MPS
+  run_dir: runs/local_fmpe
+  ckpt_every: 1000
+  keep_last: 3
+  resume: null
+  tensorboard: true
+  tf32: true
+  expect_device: null      # don't abort on MPS
+  nan_patience: 20
+  data_source: simulate
+  num_workers: 6           # 6 sim workers feed the MPS trainer
+  prefetch: 12
+
+inference:
+  ode_steps: 50
+  ode_method: rk4
+  n_posterior: 2000

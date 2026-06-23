@@ -143,25 +143,43 @@ as an approximate simulator-misspecification flag.
 ## Running on Vast.ai (or any remote GPU)
 
 The default config (`configs/default.yaml`) is built for an unattended GPU run:
-it writes everything to a **run directory** and checkpoints periodically so a
-preempted instance resumes cleanly, and the CPU simulator is overlapped with GPU
-compute by prefetch worker processes.
+it writes everything to a **run directory**, checkpoints periodically so a
+preempted instance resumes cleanly, and gates the launch behind a **preflight**
+that refuses to spend GPU hours on a broken or wasteful config.
+
+**Cost note (important):** the forward simulator is CPU-bound (~190 light
+curves/s/core at the science config), while a 4090 consumes ~10k/s. Feeding the
+GPU with on-the-fly simulation leaves it **~90% idle** — you'd pay for a mostly-idle
+4090. The cost-efficient path is to **pre-generate the dataset once** (on a cheap
+CPU box or locally — it's free) and **train from disk** so the GPU runs flat-out.
 
 ```bash
-# 1. provision a 4090 (PyTorch/CUDA image), then on the box:
-git clone <repo> && cd TransitFlow
-python -m pip install -e ".[all]"
-python -m pytest -q                       # 54 tests — confirm the box is healthy
+# 0. provision; on the box:
+git clone <repo> && cd TransitFlow && python -m pip install -e ".[all]"
+python -m pytest -q                         # 61 tests — confirm the box is healthy
 
-# 2. launch in a detached session (survives SSH disconnects)
+# 1. PRE-GENERATE once (cheap CPU / local). Reused by FMPE + NPE runs.
+python scripts/generate_data.py --config configs/default.yaml \
+    --n 1000000 --workers 8 --out data/tess_1M          # ~4.4 GB, fp16 views
+
+# 2. PREFLIGHT — prints throughput, GPU-starvation %, ETA, $ cost, PASS/WARN/FAIL
+python scripts/preflight.py --config configs/default.yaml \
+    --expect cuda --data-dir data/tess_1M
+
+# 3. TRAIN from disk in a detached session (survives SSH disconnects)
 tmux new -s tf
-python scripts/train.py --config configs/default.yaml \
-    --run-dir runs/fmpe --num-workers 8          # raise workers toward CPU_cores-2
-#   Ctrl-b d  to detach.  (or: nohup python scripts/train.py … &>runs/fmpe/stdout.log &)
+python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe \
+    --data-dir data/tess_1M --expect-device cuda
+#   Ctrl-b d to detach.  (preflight runs automatically and ABORTS on FAIL.)
 
-# 3. NPE ablation (Variant B), separate run dir
-python scripts/train.py --config configs/default.yaml --head npe --run-dir runs/npe
+# 3b. NPE ablation (Variant B) — same data, separate run dir
+python scripts/train.py --config configs/default.yaml --head npe \
+    --run-dir runs/npe --data-dir data/tess_1M --expect-device cuda
 ```
+
+> No pre-generation? Drop `--data-dir` to simulate on the fly with
+> `--num-workers 8` (prefetch processes). Fine for small/MPS runs; on a rented
+> 4090 the preflight will flag `GPU-STARVED` so you know you're overpaying.
 
 **Monitor it** — three independent ways, all over SSH:
 
@@ -174,8 +192,15 @@ cat runs/fmpe/status.json                                # one-shot: step/ETA/AU
 #   laptop:  ssh -L 6006:localhost:6006 root@<host> -p <port>   then open localhost:6006
 ```
 
-`status.json` holds live `step`, `progress`, `throughput_lc_per_s`, `eta`, current
-losses, and `best` validation AUC — poll it from anywhere. Checkpoints land in
+The monitor prints a **HEALTH** verdict so a wasteful or dead run is obvious at a
+glance: `HEALTHY`, `WARN (GPU-starved 40%)`, `STALLED` (status.json not updating —
+the process likely hung), `DIVERGED` (non-finite loss), or `CPU-LONG-RUN`
+(silently fell off the GPU). Training also self-aborts after `nan_patience`
+non-finite losses rather than burning hours on a diverged run.
+
+`status.json` holds live `step`, `progress`, `throughput_lc_per_s`, `data_wait_frac`,
+`eta`, current losses, `best` validation AUC, and a `health` block — poll it from
+anywhere. Checkpoints land in
 `runs/fmpe/checkpoints/`: `latest.pt` (resume), `best.pt` (highest val AUC), and
 rotating `step_*.pt`. Each is written atomically, so a killed instance never
 leaves a corrupt file.

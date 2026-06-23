@@ -18,7 +18,8 @@ from .priors import PARAM_NAMES, ParamSpec, TransitPrior
 from .simulator import SimConfig, TransitSimulator
 from .models.transitflow import ModelConfig, TransitFlow
 from .inference import TransitFlowInference
-from .train import TrainConfig, train, load_checkpoint, save_checkpoint
+from .train import TrainConfig, train, preflight, load_checkpoint, save_checkpoint
+from .data import generate_to_disk, DiskDataset, DiskIterator
 
 __all__ = [
     "__version__",
@@ -32,6 +33,10 @@ __all__ = [
     "TransitFlowInference",
     "TrainConfig",
     "train",
+    "preflight",
     "load_checkpoint",
     "save_checkpoint",
+    "generate_to_disk",
+    "DiskDataset",
+    "DiskIterator",
 ]
