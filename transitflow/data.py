@@ -100,28 +100,47 @@ def generate_to_disk(sim_cfg: SimConfig, n_total: int, out_dir: str,
 class DiskDataset:
     """Loads sharded light-curve data; serves shuffled batches as torch tensors.
 
-    Shards are memory-mapped (so startup is instant and RAM stays bounded); a
-    reshuffled index over all rows yields infinite random mini-batches.
+    Default ``in_ram=True`` concatenates every shard into contiguous arrays held
+    in RAM, so random cross-shard mini-batches are instant ``O(batch)`` fancy
+    indexes.  This is essential for GPU training: ``.npz`` members cannot be true
+    memory-maps (npz is a zip archive), so the old per-shard ``mmap`` access read
+    whole 40 MB arrays per touched shard -> GBs/batch -> a 98%-starved GPU.  At
+    ~4.4 KB/light-curve (float16 views) a 1M set is ~4.4 GB in RAM.
+
+    For datasets larger than RAM, pass ``in_ram=False`` to fall back to lazy
+    per-shard loading (slower; reads one shard fully per access).
     """
 
-    def __init__(self, data_dir: str, mmap: bool = True):
+    def __init__(self, data_dir: str, in_ram: bool = True, mmap: bool = False):
         self.paths = sorted(glob.glob(os.path.join(data_dir, "shard_*.npz")))
         if not self.paths:
             raise FileNotFoundError(f"no shards found in {data_dir}")
-        self._arrs = []
-        sizes = []
-        for p in self.paths:
-            a = np.load(p, mmap_mode="r" if mmap else None)
-            self._arrs.append(a)
-            sizes.append(len(a["d"]))
-        self.sizes = np.array(sizes)
-        self.offsets = np.concatenate([[0], np.cumsum(self.sizes)])
-        self.n = int(self.offsets[-1])
+        self.in_ram = in_ram
+        if in_ram:
+            buf = {k: [] for k in _SHARD_KEYS}
+            for p in self.paths:
+                with np.load(p) as a:
+                    for k in _SHARD_KEYS:
+                        buf[k].append(np.asarray(a[k]))
+            self._data = {k: np.concatenate(v) for k, v in buf.items()}
+            self.n = int(len(self._data["d"]))
+        else:
+            self._arrs = []
+            sizes = []
+            for p in self.paths:
+                a = np.load(p, mmap_mode="r" if mmap else None)
+                self._arrs.append(a)
+                sizes.append(len(a["d"]))
+            self.sizes = np.array(sizes)
+            self.offsets = np.concatenate([[0], np.cumsum(self.sizes)])
+            self.n = int(self.offsets[-1])
 
     def __len__(self):
         return self.n
 
     def _gather(self, flat_idx: np.ndarray) -> dict:
+        if self.in_ram:
+            return {k: self._data[k][flat_idx] for k in _SHARD_KEYS}
         shard_id = np.searchsorted(self.offsets, flat_idx, side="right") - 1
         local_idx = flat_idx - self.offsets[shard_id]
         out = {k: [] for k in _SHARD_KEYS}
@@ -137,8 +156,8 @@ class DiskIterator:
     """Infinite shuffled iterator over a :class:`DiskDataset` for training."""
 
     def __init__(self, data_dir: str, batch_size: int, device, shuffle: bool = True,
-                 seed: int = 0, mmap: bool = True):
-        self.ds = DiskDataset(data_dir, mmap=mmap)
+                 seed: int = 0, in_ram: bool = True):
+        self.ds = DiskDataset(data_dir, in_ram=in_ram)
         self.batch_size = batch_size
         self.device = device
         self.shuffle = shuffle
