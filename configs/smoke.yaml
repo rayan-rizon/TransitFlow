@@ -1,0 +1,67 @@
+# Fast, CPU/MPS-friendly configuration for end-to-end sanity checks and CI.
+# Smaller views, fewer raw cadences, a compact model, and a short training run.
+# Not for science -- it exercises the entire pipeline quickly.
+
+simulator:
+  n_global: 1001
+  n_local: 201
+  n_durations: 4.0
+  baseline_days: 27.0
+  n_raw: 9000
+  planet_fraction: 0.5
+  hard_negative_fraction: 0.5
+  frac_real: 0.0
+  frac_gp: 0.30
+  frac_white: 0.70
+  sigma_white_log10_low: -3.7
+  sigma_white_log10_high: -2.6
+  gp_amp_log10_low: -3.5
+  gp_amp_log10_high: -2.3
+  gp_tau_frac_low: 0.05
+  gp_tau_frac_high: 0.30
+  gp_kernel: matern32
+  eb_depth_low: 0.01
+  eb_depth_high: 0.08
+  engine: native
+  n_radial: 120
+  regime: tess
+
+model:
+  param_dim: 7
+  embed_dim: 128
+  head: fmpe
+  use_noise_feature: true
+  global_channels: [32, 64, 96, 128, 128]
+  local_channels: [32, 64, 96]
+  global_dim: 128
+  local_dim: 64
+  blocks_per_stage: 1
+  det_hidden: 128
+  det_dropout: 0.1
+  fm_hidden: 192
+  fm_blocks: 3
+  fm_time_dim: 64
+  npe_hidden: 128
+  npe_transforms: 5
+  npe_backend: auto
+
+train:
+  n_steps: 1500
+  batch_size: 128
+  lr: 4.0e-4
+  weight_decay: 1.0e-5
+  lambda_det: 1.0
+  grad_clip: 5.0
+  warmup_steps: 100
+  eval_every: 500
+  eval_batches: 4
+  log_every: 100
+  device: auto
+  seed: 0
+  amp: false
+  ckpt_path: checkpoints/transitflow_smoke.pt
+
+inference:
+  ode_steps: 40
+  ode_method: rk4
+  n_posterior: 1000

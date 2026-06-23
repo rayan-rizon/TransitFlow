@@ -1,0 +1,74 @@
+# TransitFlow default configuration (single TESS-sector regime, Variant A / FMPE).
+# Full-scale run targets a single RTX 4090; see configs/smoke.yaml for a fast,
+# CPU-friendly sanity configuration.
+
+simulator:
+  n_global: 2001
+  n_local: 201
+  n_durations: 4.0
+  baseline_days: 27.0
+  n_raw: 18000
+  planet_fraction: 0.5
+  hard_negative_fraction: 0.5
+  frac_real: 0.70          # used only if a NoiseLibrary has been built
+  frac_gp: 0.20
+  frac_white: 0.10
+  sigma_white_log10_low: -3.7
+  sigma_white_log10_high: -2.3
+  gp_amp_log10_low: -3.5
+  gp_amp_log10_high: -2.0
+  gp_tau_frac_low: 0.02
+  gp_tau_frac_high: 0.30
+  gp_kernel: matern32
+  eb_depth_low: 0.01
+  eb_depth_high: 0.10
+  engine: native
+  n_radial: 200
+  regime: tess
+
+model:
+  param_dim: 7
+  embed_dim: 256
+  head: fmpe               # fmpe | npe  (npe = Variant B ablation)
+  use_noise_feature: true
+  global_channels: [32, 64, 128, 128, 256, 256]
+  local_channels: [32, 64, 128, 128]
+  global_dim: 256
+  local_dim: 128
+  blocks_per_stage: 2
+  det_hidden: 128
+  det_dropout: 0.1
+  fm_hidden: 256
+  fm_blocks: 4
+  fm_time_dim: 64
+  npe_hidden: 128
+  npe_transforms: 6
+  npe_backend: auto
+
+train:
+  n_steps: 60000
+  batch_size: 256
+  lr: 3.0e-4
+  weight_decay: 1.0e-5
+  lambda_det: 1.0
+  grad_clip: 5.0
+  warmup_steps: 500
+  eval_every: 2000
+  eval_batches: 8
+  log_every: 100
+  device: auto
+  seed: 0
+  amp: true                 # bf16 autocast on CUDA
+  run_dir: runs/fmpe        # checkpoints/, training_log.jsonl, status.json land here
+  ckpt_every: 2000          # periodic latest.pt + rotating step_*.pt
+  keep_last: 3
+  resume: null              # set to the run_dir (or a .pt) to resume
+  tensorboard: true
+  num_workers: 4            # data-prefetch processes (raise to ~CPU_cores-2 on Vast.ai)
+  prefetch: 8
+  noise_lib_path: null      # path to a real-noise .npz to enable the real regime
+
+inference:
+  ode_steps: 50
+  ode_method: rk4
+  n_posterior: 2000

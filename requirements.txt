@@ -1,0 +1,26 @@
+# Core (required) -----------------------------------------------------------
+numpy>=1.24
+scipy>=1.10
+torch>=2.1
+scikit-learn>=1.3
+pyyaml>=6.0
+tqdm>=4.65
+matplotlib>=3.7
+
+# Physics / SBI accelerators (recommended; pure-python fallbacks exist) ------
+batman-package>=2.4      # reference transit model (native fallback otherwise)
+torchdiffeq>=0.2.3       # adaptive ODE sampling (RK4 fallback otherwise)
+zuko>=1.0                # NPE neural spline flow (RealNVP fallback otherwise)
+celerite2>=0.2           # GP noise reference (FFT synthesis used by default)
+
+# Baselines & diagnostics (optional) ----------------------------------------
+astropy>=5.3             # BoxLeastSquares detection baseline
+corner>=2.2              # posterior corner plots
+emcee>=3.1               # MCMC baseline (native ensemble sampler otherwise)
+arviz>=0.16              # posterior diagnostics
+
+# Real-data ingestion (optional; network required at runtime) ----------------
+lightkurve>=2.4          # download real Kepler/TESS out-of-transit segments
+
+# Testing --------------------------------------------------------------------
+pytest>=7.4
