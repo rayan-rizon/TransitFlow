@@ -37,7 +37,9 @@ def detection_eval(inference, simulator, n: int, rng) -> dict:
     got = 0
     while got < n:
         batch = simulator.simulate_batch(256, rng)
-        p = inference.detect(batch["global"], batch["local"], batch["sigma_feat"])
+        pg = batch.get("periodogram")
+        p = inference.detect(batch["global"], batch["local"], batch["sigma_feat"],
+                             periodogram=pg)
         labels.append(batch["d"])
         scores.append(p)
         periods.append(batch["theta_phys"][:, 0])
@@ -86,9 +88,10 @@ def main() -> None:
         mask = batch["valid"]
         if not mask.any():
             continue
+        pg = batch["periodogram"][mask] if "periodogram" in batch else None
         s = inference.posterior_samples(batch["global"][mask], batch["local"][mask],
                                         batch["sigma_feat"][mask],
-                                        n_samples=args.n_posterior)
+                                        n_samples=args.n_posterior, periodogram=pg)
         cov_samples.append(s)
         cov_true.append(batch["theta_phys"][mask])
         got += int(mask.sum())

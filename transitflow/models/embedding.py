@@ -78,14 +78,21 @@ class DualBranchEmbedding(nn.Module):
         local_dim: int = 128,
         blocks_per_stage: int = 1,
         use_noise_feature: bool = True,
+        use_periodogram: bool = False,
+        pg_channels: tuple[int, ...] = (32, 64, 128, 128),
+        pg_dim: int = 128,
     ) -> None:
         super().__init__()
         self.use_noise_feature = use_noise_feature
+        self.use_periodogram = use_periodogram
         self.global_branch = CNNBranch(list(global_channels), global_dim,
                                        blocks_per_stage)
         self.local_branch = CNNBranch(list(local_channels), local_dim,
                                       blocks_per_stage)
         fuse_in = global_dim + local_dim + (1 if use_noise_feature else 0)
+        if use_periodogram:
+            self.pg_branch = CNNBranch(list(pg_channels), pg_dim, blocks_per_stage)
+            fuse_in += pg_dim
         self.fuse = nn.Sequential(
             nn.Linear(fuse_in, embed_dim),
             nn.LayerNorm(embed_dim),
@@ -95,10 +102,15 @@ class DualBranchEmbedding(nn.Module):
         self.embed_dim = embed_dim
 
     def forward(self, global_view: torch.Tensor, local_view: torch.Tensor,
-                noise_feature: torch.Tensor | None = None) -> torch.Tensor:
+                noise_feature: torch.Tensor | None = None,
+                periodogram: torch.Tensor | None = None) -> torch.Tensor:
         g = self.global_branch(global_view)
         l = self.local_branch(local_view)
         feats = [g, l]
+        if self.use_periodogram:
+            if periodogram is None:
+                raise ValueError("model expects a periodogram input")
+            feats.append(self.pg_branch(periodogram))
         if self.use_noise_feature:
             if noise_feature is None:
                 noise_feature = torch.zeros(global_view.shape[0], device=g.device,

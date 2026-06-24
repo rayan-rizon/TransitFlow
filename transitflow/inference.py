@@ -39,7 +39,8 @@ class TransitFlowInference:
         return torch.as_tensor(np.asarray(a, dtype=np.float32), device=self.device)
 
     @torch.no_grad()
-    def embed(self, global_view, local_view, sigma_feat=None) -> torch.Tensor:
+    def embed(self, global_view, local_view, sigma_feat=None,
+              periodogram=None) -> torch.Tensor:
         g = self._to_t(global_view)
         l = self._to_t(local_view)
         if g.ndim == 1:
@@ -48,18 +49,27 @@ class TransitFlowInference:
         if self.model.cfg.use_noise_feature:
             nf = self._to_t(sigma_feat) if sigma_feat is not None else \
                 torch.zeros(g.shape[0], device=self.device)
-        return self.model.embed(g, l, nf)
+        pg = None
+        if self.model.cfg.use_periodogram:
+            if periodogram is None:
+                raise ValueError("model expects a periodogram input")
+            pg = self._to_t(periodogram)
+            if pg.ndim == 1:
+                pg = pg[None]
+        return self.model.embed(g, l, nf, pg)
 
     @torch.no_grad()
-    def detect(self, global_view, local_view, sigma_feat=None) -> np.ndarray:
-        e = self.embed(global_view, local_view, sigma_feat)
+    def detect(self, global_view, local_view, sigma_feat=None,
+               periodogram=None) -> np.ndarray:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram)
         return torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
 
     @torch.no_grad()
     def posterior_samples(self, global_view, local_view, sigma_feat=None,
-                          n_samples: int = 2000, return_std: bool = False):
+                          n_samples: int = 2000, return_std: bool = False,
+                          periodogram=None):
         """Return physical posterior samples ``(B, n_samples, 7)``."""
-        e = self.embed(global_view, local_view, sigma_feat)
+        e = self.embed(global_view, local_view, sigma_feat, periodogram)
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,
                              n_steps=self.ode_steps, method=self.ode_method)
@@ -74,8 +84,8 @@ class TransitFlowInference:
 
     @torch.no_grad()
     def detect_and_characterize(self, global_view, local_view, sigma_feat=None,
-                                n_samples: int = 2000) -> dict:
-        e = self.embed(global_view, local_view, sigma_feat)
+                                n_samples: int = 2000, periodogram=None) -> dict:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram)
         p_det = torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,

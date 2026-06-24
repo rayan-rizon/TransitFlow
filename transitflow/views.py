@@ -106,6 +106,45 @@ def normalize_view(view: np.ndarray, eps: float = 1e-8,
     return np.clip((view - med) / scale, -clip, clip)
 
 
+def box_periodogram(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
+                    n_phase: int = 64) -> np.ndarray:
+    """Vectorized box (BLS-lite) periodogram over a trial-period grid.
+
+    For each trial period the light curve is phase-folded, binned to ``n_phase``
+    phase bins, and the power is the depth (in robust units) of the deepest bin.
+    A real transit produces a sharp peak at the true period (and its harmonics),
+    supplying the *sub-bin transit-timing* / period information that the binned
+    global view destroys.  Returned length is ``len(periods)``.
+    """
+    f = np.asarray(flux, dtype=np.float64)
+    f = f - np.median(f)
+    sigma = 1.4826 * np.median(np.abs(f)) + 1e-6                # robust noise
+    P = len(periods)
+    n = len(times)
+    phase = (times[None, :] / periods[:, None]) % 1.0           # (P, n)
+    bidx = np.clip((phase * n_phase).astype(np.int64), 0, n_phase - 1)
+    flat = (np.arange(P)[:, None] * n_phase + bidx).ravel()
+    w = np.broadcast_to(f, (P, n)).ravel()
+    sums = np.bincount(flat, weights=w, minlength=P * n_phase).reshape(P, n_phase)
+    cnts = np.bincount(flat, minlength=P * n_phase).reshape(P, n_phase).astype(np.float64)
+    mean = sums / np.maximum(cnts, 1.0)
+    # BLS-like SNR of the deepest box: depth weighted by sqrt(in-box count), so a
+    # genuine stacked transit (deep AND well-populated at the true period) beats a
+    # sparse noise spike. ``-mean`` is the dip depth (baseline ~ 0 after median).
+    score = (-mean) * np.sqrt(cnts) / sigma
+    return score.max(axis=1).astype(np.float32)
+
+
+def make_periodogram_view(times: np.ndarray, flux: np.ndarray,
+                          periods: np.ndarray, n_phase: int = 64,
+                          normalize: bool = True) -> np.ndarray:
+    """Box periodogram, robustly standardized like the other views."""
+    pg = box_periodogram(times, flux, periods, n_phase=n_phase)
+    if normalize:
+        pg = normalize_view(pg)
+    return pg.astype(np.float32)
+
+
 def make_views(
     times: np.ndarray,
     flux: np.ndarray,

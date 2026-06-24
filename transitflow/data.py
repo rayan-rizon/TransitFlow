@@ -26,6 +26,7 @@ from .simulator import SimConfig, TransitSimulator
 from .utils import batch_to_torch
 
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
+_OPTIONAL_KEYS = ("periodogram",)
 
 
 def _gen_shard(args) -> str:
@@ -36,7 +37,7 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, d, sf = [], [], [], [], []
+    g, l, th, d, sf, pg = [], [], [], [], [], []
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -46,13 +47,18 @@ def _gen_shard(args) -> str:
         th.append(b["theta_std"].astype(np.float32))
         d.append(b["d"].astype(np.int8))
         sf.append(b["sigma_feat"].astype(np.float16))
+        if "periodogram" in b:
+            pg.append(b["periodogram"].astype(np.float16))
         done += bs
-    tmp = path + ".tmp.npz"
-    np.savez(tmp, **{
+    payload = {
         "global": np.concatenate(g), "local": np.concatenate(l),
         "theta_std": np.concatenate(th), "d": np.concatenate(d),
         "sigma_feat": np.concatenate(sf),
-    })
+    }
+    if pg:
+        payload["periodogram"] = np.concatenate(pg)
+    tmp = path + ".tmp.npz"
+    np.savez(tmp, **payload)
     os.replace(tmp, path)
     return path
 
@@ -115,12 +121,15 @@ class DiskDataset:
         self.paths = sorted(glob.glob(os.path.join(data_dir, "shard_*.npz")))
         if not self.paths:
             raise FileNotFoundError(f"no shards found in {data_dir}")
+        with np.load(self.paths[0]) as a0:
+            present = list(a0.keys())
+        self.keys = list(_SHARD_KEYS) + [k for k in _OPTIONAL_KEYS if k in present]
         self.in_ram = in_ram
         if in_ram:
-            buf = {k: [] for k in _SHARD_KEYS}
+            buf = {k: [] for k in self.keys}
             for p in self.paths:
                 with np.load(p) as a:
-                    for k in _SHARD_KEYS:
+                    for k in self.keys:
                         buf[k].append(np.asarray(a[k]))
             self._data = {k: np.concatenate(v) for k, v in buf.items()}
             self.n = int(len(self._data["d"]))
@@ -140,14 +149,14 @@ class DiskDataset:
 
     def _gather(self, flat_idx: np.ndarray) -> dict:
         if self.in_ram:
-            return {k: self._data[k][flat_idx] for k in _SHARD_KEYS}
+            return {k: self._data[k][flat_idx] for k in self.keys}
         shard_id = np.searchsorted(self.offsets, flat_idx, side="right") - 1
         local_idx = flat_idx - self.offsets[shard_id]
-        out = {k: [] for k in _SHARD_KEYS}
+        out = {k: [] for k in self.keys}
         for s in np.unique(shard_id):
             rows = np.sort(local_idx[shard_id == s])
             a = self._arrs[s]
-            for k in _SHARD_KEYS:
+            for k in self.keys:
                 out[k].append(np.asarray(a[k][rows]))
         return {k: np.concatenate(v) for k, v in out.items()}
 
@@ -184,6 +193,8 @@ class DiskIterator:
         raw["global"] = raw["global"].astype(np.float32)
         raw["local"] = raw["local"].astype(np.float32)
         raw["sigma_feat"] = raw["sigma_feat"].astype(np.float32)
+        if "periodogram" in raw:
+            raw["periodogram"] = raw["periodogram"].astype(np.float32)
         raw["d"] = raw["d"].astype(np.int64)
         raw["valid"] = raw["d"] == 1
         return batch_to_torch(raw, self.device)

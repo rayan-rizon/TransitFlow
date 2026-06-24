@@ -27,7 +27,7 @@ from .noise import (
 )
 from .priors import TransitPrior, kipping_to_quadratic
 from .transit_model import transit_duration, transit_flux
-from .views import make_views
+from .views import make_periodogram_view, make_views
 
 
 @dataclass
@@ -65,6 +65,11 @@ class SimConfig:
     n_radial: int = 200
     # prior regime (period range): "tess" (0.5-13 d) suits the 27-d baseline
     regime: str = "tess"
+    # box-periodogram input channel (supplies sharp period information that the
+    # binned global view lacks -> calibrated period posterior)
+    use_periodogram: bool = True
+    n_period_bins: int = 256
+    pg_n_phase: int = 64
 
     def normalized_regime_fracs(self, has_real: bool) -> tuple[float, float, float]:
         if has_real:
@@ -86,6 +91,10 @@ class TransitSimulator:
         self.noise_library = noise_library or NoiseLibrary(None)
         self.times = np.linspace(0.0, self.cfg.baseline_days, self.cfg.n_raw)
         self.dt = self.times[1] - self.times[0]
+        # log-spaced trial-period grid spanning the prior period range
+        p_lo, p_hi = self.prior.specs[0].low, self.prior.specs[0].high
+        self.period_grid = np.logspace(np.log10(p_lo), np.log10(p_hi),
+                                       self.cfg.n_period_bins)
 
     # ------------------------------------------------------------------ #
     def simulate_batch(self, B: int, rng: np.random.Generator | None = None,
@@ -190,12 +199,17 @@ class TransitSimulator:
         # ---- views ---------------------------------------------------
         gv = np.empty((B, cfg.n_global), dtype=np.float32)
         lv = np.empty((B, cfg.n_local), dtype=np.float32)
+        use_pg = cfg.use_periodogram
+        pg = np.empty((B, cfg.n_period_bins), dtype=np.float32) if use_pg else None
         for i in range(B):
             gv[i], lv[i] = make_views(
                 t, flux[i], fold_P[i], fold_t0[i], duration[i],
                 n_global=cfg.n_global, n_local=cfg.n_local,
                 n_durations=cfg.n_durations, normalize=True,
             )
+            if use_pg:
+                pg[i] = make_periodogram_view(t, flux[i], self.period_grid,
+                                              n_phase=cfg.pg_n_phase, normalize=True)
 
         # ---- targets -------------------------------------------------
         theta_std = self.prior.physical_to_std(theta_phys).astype(np.float32)
@@ -221,6 +235,8 @@ class TransitSimulator:
             "duration": duration.astype(np.float32),
             "regime": regime.astype(np.int8),  # 0 real, 1 gp, 2 white
         }
+        if use_pg:
+            out["periodogram"] = pg
         if return_raw:
             # raw light curve + cadence grid, for the exact importance-sampling
             # likelihood (the views are a lossy, period-blurred reduction)

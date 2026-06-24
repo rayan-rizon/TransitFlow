@@ -25,16 +25,22 @@ simulator:
   engine: native
   n_radial: 200
   regime: tess
+  use_periodogram: true     # box-periodogram channel -> calibrated period posterior
+  n_period_bins: 256
+  pg_n_phase: 64
 
 model:
   param_dim: 7
   embed_dim: 256
   head: fmpe               # fmpe | npe  (npe = Variant B ablation)
   use_noise_feature: true
+  use_periodogram: true     # consume the periodogram channel (period-fix)
   global_channels: [32, 64, 128, 128, 256, 256]
   local_channels: [32, 64, 128, 128]
+  pg_channels: [32, 64, 128, 128]
   global_dim: 256
   local_dim: 128
+  pg_dim: 128
   blocks_per_stage: 2
   det_hidden: 128
   det_dropout: 0.1
