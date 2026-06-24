@@ -158,11 +158,22 @@ def build_views(t, f, planet, sim, prior):
                         normalize=True)
     pg = None
     if cfg.use_periodogram:
-        pg = make_periodogram_view(t, f, sim.period_grid, n_phase=cfg.pg_n_phase,
-                                   normalize=True)
-    # noise feature: robust OOT scatter -> standardized like the simulator
-    resid = f - np.median(f)
-    sigma = 1.4826 * np.median(np.abs(resid)) + 1e-6
+        # subsample to pg_n_raw exactly as the simulator does, so the periodogram
+        # channel matches the training distribution (striding, not full-res)
+        n_pg = cfg.pg_n_raw
+        if n_pg < len(t):
+            step = max(1, len(t) // n_pg)
+            t_pg, f_pg = t[::step][:n_pg], f[::step][:n_pg]
+        else:
+            t_pg, f_pg = t, f
+        pg = make_periodogram_view(t_pg, f_pg, sim.period_grid,
+                                   n_phase=cfg.pg_n_phase, normalize=True)
+    # noise feature: estimate the *white* level from point-to-point differences
+    # (Var[x_{i+1}-x_i] = 2 sigma_white^2), which isolates white noise from
+    # stellar/GP variability -- matching the simulator's sigma_white. A plain MAD
+    # of the flux includes correlated power and badly over-/under-states sigma,
+    # which miscalibrates the depth (Rp/Rs) posterior (coverage 0.38 -> 0.67).
+    sigma = 1.4826 * np.median(np.abs(np.diff(f))) / np.sqrt(2.0) + 1e-6
     lo, hi = cfg.sigma_white_log10_low, cfg.sigma_white_log10_high
     sig_feat = (np.log10(sigma) - 0.5 * (lo + hi)) / (0.5 * (hi - lo))
     return gv, lv, pg, np.float32(sig_feat), (t, f, P, t0, dur, sigma)
