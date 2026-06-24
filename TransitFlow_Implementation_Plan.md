@@ -75,15 +75,39 @@ Raw Kepler/TESS curves are huge (Kepler ≈ 65k cadences over 4 yr; TESS 2-min �
 - **Local view:** phase-folded, transit-centered, binned to **201** points (captures depth / duration / shape → characterization).
 - Feed both views; the global view drives detection + period, the local view drives shape parameters.
 
+**2.5b Box-periodogram channel (added — period-calibration fix).**
+The two binned views above **cannot** carry a calibrated period: the global view's
+2001 bins over a 27-d baseline coarsen transit *timing* below the bin width, and the
+local view is folded on a candidate period so it is period-blind by construction.
+Empirically this made period the **one** parameter that failed SBC (p ≈ 1e-12; a
+dome-shaped rank histogram from period-dependent prior shrinkage — long periods
+under-, short periods over-estimated; see §9). A post-hoc importance-sampling
+correction failed (ESS ≈ 0.9 %: the flow's ~13 %-wide period proposal is far too
+broad relative to the <1 %-wide true posterior).
+
+The architectural fix is a **third input view**: a vectorized box (BLS-lite)
+periodogram over a log-spaced trial-period grid (256 bins over the prior range).
+For each trial period the curve is phase-folded, binned to `pg_n_phase` phase bins,
+and the power is the **count-weighted depth SNR** of the deepest box
+(`depth · √count / σ_robust`), so a genuinely stacked transit beats sparse noise
+spikes. This supplies the sub-bin period information the binned views destroy: the
+spectrum has *sharp* peaks (≈1.5 % period resolution) whose **height** also tells
+the flow how confident to be — directly addressing the regime-dependent dispersion.
+The periodogram is computed on a `pg_n_raw`-point (4096) subsample of the raw curve
+(3.7× cheaper, same resolution) and z-scored like the other views.
+*Status: implemented and wired end-to-end (`views.box_periodogram`, third CNN
+branch, disk shards, inference); full-scale SBC validation in progress.*
+
 ---
 
 ## 3. Model architecture
 
 ### 3.1 Embedding network `E(x)`
-Dual-branch 1-D CNN (ResNet-1D style):
+Tri-branch 1-D CNN (ResNet-1D style):
 - Global branch: ~6–8 conv blocks over the 2001-pt view → 256-d.
 - Local branch: ~4 conv blocks over the 201-pt view → 128-d.
-- Concatenate → MLP → **embedding `e ∈ R^256`**.
+- **Periodogram branch:** ~4 conv blocks over the 256-pt box-periodogram (§2.5b) → 128-d (gated by `use_periodogram`; the period-calibration fix).
+- Concatenate (+ optional log-σ noise feature) → MLP → **embedding `e ∈ R^256`**.
 - Params: ~5–15M. (Alternatively a small 1-D transformer; CNN is cheaper and sufficient.)
 
 ### 3.2 Detection head `g_φ`
@@ -197,13 +221,42 @@ Training set size: **1–5M** simulated light curves (cheap to generate; store a
 
 | Risk | Mitigation / pivot |
 |---|---|
-| Posterior miscoverage (SBC fails) | add importance-sampling correction (Gebhard 2024) and/or FMPE calibration / FMCPE (Ruhlmann 2025) |
+| Posterior miscoverage (SBC fails) | add importance-sampling correction (Gebhard 2024) and/or FMPE calibration / FMCPE (Ruhlmann 2025). **Realized for `P` only** — fixed architecturally via the box-periodogram channel (§2.5b) after the IS correction proved insufficient (ESS ≈ 0.9 %); 6/7 params already passed. |
 | Detection underperforms dedicated CNNs | reframe contribution as *calibrated joint characterization + UQ*, not SOTA recall — the amortized posterior is the value, not raw detection |
 | Real-noise domain gap | train predominantly on real-noise injections; add noise-level conditioning; report synthetic-vs-real ablation |
 | Variant C (spike-and-slab) unstable | fall back to Variant A factorization — paper still stands |
 | Simulator too idealized | inject hard negatives (EBs, systematics); validate IS efficiency on real data |
 
 **Kill/keep rule:** if SBC + real-planet agreement hold for Variant A *and* the FMPE-vs-NPE ablation is clean, the paper is viable even if detection only ties (not beats) CNNs.
+
+---
+
+## 9b. Engineering log (implementation fixes, most recent first)
+
+Material fixes made while bringing the implementation to a GPU-validated state. Each
+is covered by tests and committed.
+
+1. **Period SBC failure → box-periodogram channel (§2.5b).** Period was the only
+   parameter failing SBC. Diagnosed (`scripts/diagnose_period.py`) as
+   period-dependent prior shrinkage, *not* aliasing (alias mass at P/2, 2P ≈ 1 %).
+   The post-hoc IS correction (`correction.py`) was ruled out empirically
+   (ESS ≈ 0.9 %). Fix: a third periodogram input view feeding a third CNN branch,
+   giving the flow a natively sharp, confidence-aware period signal.
+2. **3.7× faster periodogram generation (`pg_n_raw`).** The naive periodogram built
+   a `(256 trial-periods × 18000-cadence)` matrix per light curve and dominated
+   generation time. Subsampling the raw curve to 4096 points for the periodogram
+   only (same period resolution) restored throughput (21 → ~44–77 LC/s).
+3. **In-RAM disk dataset (`data.py`).** `np.load(mmap_mode=…)` does **not** memory-map
+   `.npz` members (it's a zip), so every mini-batch re-read whole 40 MB shards →
+   the GPU sat **98 % starved**. Loading all shards into RAM once (≈4.4 GB for 1M
+   fp16 views) gives `O(batch)` random access and a saturated GPU (3.5 % data-wait).
+4. **float16 view overflow.** Near-constant folded windows (non-planets) have
+   MAD ≈ 0; dividing by `eps` overflowed fp16 to ±inf → NaN loss. `normalize_view`
+   now falls back std → 1.0 and clips to ±30 (fp16-safe).
+5. **Run robustness.** Pre-generation throttled to the box's *real* CPU quota
+   (cgroup `cpu.max` → ~16 cores, not the 72 `nproc` reports); long jobs run under
+   `tmux` so they survive SSH teardown; atomic checkpoints + `--resume` recover a
+   preempted instance.
 
 ---
 

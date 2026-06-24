@@ -88,7 +88,8 @@ out = inf.detect_and_characterize(global_view, local_view, sigma_feat, n_samples
 | §2.3 Hard negatives (EB / systematics / sinusoids) | `noise.py`, wired in `simulator.py` |
 | §2.4 Parameter priors | `priors.py` (`TransitPrior`, Kipping LD) |
 | §2.5 Dual-view representation | `views.py` (global 2001 / local 201) |
-| §3.1 Embedding CNN | `models/embedding.py` (dual-branch ResNet-1D) |
+| §2.5b Box-periodogram channel (period-calibration fix) | `views.py::box_periodogram` (256-bin trial-period spectrum) |
+| §3.1 Embedding CNN | `models/embedding.py` (tri-branch ResNet-1D: global + local + periodogram) |
 | §3.2 Detection head | `models/heads.py::DetectionHead` |
 | §3.3 Flow-matching head + loss | `models/heads.py::FlowMatchingHead`, `flow_matching.py` |
 | §3.4 Inference (ODE sample, IS correction) | `inference.py`, `flow_matching.py` |
@@ -117,6 +118,14 @@ out = inf.detect_and_characterize(global_view, local_view, sigma_feat, n_samples
   baseline) gets transit + correlated + white noise, then *both* views are binned
   from the same raw curve, so folding handles correlated noise correctly and the
   binning reduces white noise physically.
+* **Periodogram channel (period fix).** The two binned views cannot carry a
+  calibrated period (the global view coarsens transit timing below its bin width;
+  the local view is folded on a candidate period, so period-blind). This made `P`
+  the one parameter to fail SBC. The fix is a **third view** — a count-weighted box
+  (BLS-lite) periodogram over a 256-bin log-spaced trial-period grid — feeding a
+  third CNN branch, so the flow sees sharp, confidence-aware period information.
+  Enabled by `use_periodogram: true` in both the `simulator` and `model` configs;
+  computed on a 4096-pt subsample (`pg_n_raw`) for speed. See plan §2.5b / §9b.
 
 ---
 
@@ -156,11 +165,14 @@ CPU box or locally — it's free) and **train from disk** so the GPU runs flat-o
 ```bash
 # 0. provision; on the box:
 git clone <repo> && cd TransitFlow && python -m pip install -e ".[all]"
-python -m pytest -q                         # 61 tests — confirm the box is healthy
+python -m pytest -q                         # 68 tests — confirm the box is healthy
 
 # 1. PRE-GENERATE once (cheap CPU / local). Reused by FMPE + NPE runs.
+#    Set --workers to the box's REAL cpu quota (cgroup cpu.max), not `nproc`.
 python scripts/generate_data.py --config configs/default.yaml \
-    --n 1000000 --workers 8 --out data/tess_1M          # ~4.4 GB, fp16 views
+    --n 1000000 --workers 16 --out data/tess_1M         # ~4.4 GB fp16 views (+pg)
+# DiskDataset loads every shard into RAM on init: .npz members can't be mmap'd
+# (zip archives), so lazy access re-reads whole shards and starves the GPU ~98%.
 
 # 2. PREFLIGHT — prints throughput, GPU-starvation %, ETA, $ cost, PASS/WARN/FAIL
 python scripts/preflight.py --config configs/default.yaml \
@@ -237,7 +249,7 @@ python scripts/build_noise_library.py --mission TESS \
 ## Tests
 
 ```bash
-python -m pytest -q          # 53 tests: physics, flows, calibration, baselines, e2e
+python -m pytest -q          # 68 tests: physics, flows, calibration, baselines, e2e
 ```
 
 ## Compute
@@ -254,8 +266,10 @@ transitflow/
   priors.py            parameter priors + bijective standardizing transforms
   transit_model.py     vectorized quadratic-LD transit (native + batman engines)
   noise.py             GP / white noise, hard negatives, real-noise library
-  views.py             global + local view construction
-  simulator.py         the SBI forward model (parameters → dual-view data)
+  views.py             global + local + box-periodogram view construction
+  simulator.py         the SBI forward model (parameters → tri-view data)
+  data.py              pre-generated sharded dataset, loaded in-RAM for a fed GPU
+  correction.py        importance-sampling posterior reweighting + diagnostics
   flow_matching.py     CFM loss, ODE sampling, exact log-density
   models/              embedding CNN, detection + FMPE/NPE heads, spike-and-slab
   inference.py         amortized detect + characterize + IS diagnostic
