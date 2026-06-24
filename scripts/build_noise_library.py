@@ -44,19 +44,51 @@ def main() -> None:
     for tgt in args.targets:
         print(f"downloading {tgt} ({args.mission}) ...")
         try:
-            sr = lk.search_lightcurve(tgt, mission=args.mission)
-            lc = sr.download_all().stitch().remove_nans().normalize()
-            flux = np.asarray(lc.flux.value, dtype=np.float64)
-            flux = flux / np.nanmedian(flux)
-            # 5-sigma clip the deepest dips so injected transits dominate
-            med, std = np.nanmedian(flux), np.nanstd(flux)
-            flux = np.clip(flux, med - 5 * std, med + 5 * std)
+            # SPOC 2-min cadence products are the most reliable for TESS;
+            # FFI-based HLSP products are often in ppm (zero-centered) and
+            # can arrive as corrupt cached files that break stitching.
+            if args.mission == "TESS":
+                sr = lk.search_lightcurve(tgt, mission="TESS", author="SPOC",
+                                          exptime=120)
+                if len(sr) == 0:
+                    sr = lk.search_lightcurve(tgt, mission="TESS", author="SPOC")
+                if len(sr) == 0:
+                    sr = lk.search_lightcurve(tgt, mission="TESS")
+            else:
+                sr = lk.search_lightcurve(tgt, mission=args.mission)
+
+            if len(sr) == 0:
+                print(f"  skipped {tgt}: no data found")
+                continue
+
+            lc_col = sr.download_all()
+            if lc_col is None or len(lc_col) == 0:
+                print(f"  skipped {tgt}: download returned empty")
+                continue
+
+            # Stitch and clean; normalize() divides by median → relative flux ≈ 1
+            lc = lc_col.stitch().remove_nans()
+            flux_raw = np.asarray(lc.flux.value, dtype=np.float64)
+            med = np.nanmedian(flux_raw)
+            # Guard against zero-centered ppm data (median ≈ 0)
+            if abs(med) < 0.1:
+                print(f"  skipped {tgt}: flux appears zero-centered "
+                      f"(median={med:.3g}), likely ppm product")
+                continue
+            flux = flux_raw / med          # bring to relative flux ≈ 1
+            flux = flux[np.isfinite(flux)]
+            # 5-sigma clip so injected transits dominate hard dips
+            m, s = np.nanmedian(flux), np.nanstd(flux)
+            flux = np.clip(flux, m - 5 * s, m + 5 * s)
             # chop into non-overlapping fixed-length segments
             n = args.n_raw
-            for s in range(0, len(flux) - n + 1, n):
-                seg = flux[s:s + n]
+            n_segs_before = len(segments)
+            for start in range(0, len(flux) - n + 1, n):
+                seg = flux[start:start + n]
                 if np.all(np.isfinite(seg)):
                     segments.append(seg)
+            n_new = len(segments) - n_segs_before
+            print(f"  {tgt}: {n_new} segments from {len(flux)} cadences")
         except Exception as e:  # pragma: no cover - network dependent
             print(f"  skipped {tgt}: {e}")
 
