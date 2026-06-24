@@ -88,7 +88,8 @@ class TransitSimulator:
         self.dt = self.times[1] - self.times[0]
 
     # ------------------------------------------------------------------ #
-    def simulate_batch(self, B: int, rng: np.random.Generator | None = None) -> dict:
+    def simulate_batch(self, B: int, rng: np.random.Generator | None = None,
+                       return_raw: bool = False) -> dict:
         rng = np.random.default_rng() if rng is None else rng
         cfg = self.cfg
         t = self.times
@@ -206,7 +207,7 @@ class TransitSimulator:
         sig_feat = sig_feat / (0.5 * (cfg.sigma_white_log10_high -
                                       cfg.sigma_white_log10_low))
 
-        return {
+        out = {
             "global": gv,
             "local": lv,
             "theta_std": theta_std,
@@ -218,4 +219,11 @@ class TransitSimulator:
             "fold_P": fold_P.astype(np.float32),
             "fold_t0": fold_t0.astype(np.float32),
             "duration": duration.astype(np.float32),
+            "regime": regime.astype(np.int8),  # 0 real, 1 gp, 2 white
         }
+        if return_raw:
+            # raw light curve + cadence grid, for the exact importance-sampling
+            # likelihood (the views are a lossy, period-blurred reduction)
+            out["raw_flux"] = flux.astype(np.float32)
+            out["times"] = self.times.astype(np.float32)
+        return out
