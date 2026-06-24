@@ -279,5 +279,8 @@ transitflow/
   train.py             training loop: run dirs, periodic checkpoints, resume, logs
 configs/               default.yaml (science) + smoke.yaml (fast)
 scripts/               train / evaluate / monitor / smoke_test / build_noise_library
+                       generate_data / preflight / benchmark_speed (gate #4)
+                       validate_real (gate #3: real KOIs/TOIs vs archive)
+                       diagnose_period (stratified SBC + alias analysis)
 tests/                 unit + integration tests (incl. checkpoint/resume)
 ```
