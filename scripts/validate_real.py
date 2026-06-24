@@ -43,6 +43,24 @@ _TESS_T0_OFFSET = 2457000.0  # BTJD = BJD - 2457000 (TESS time system)
 # --------------------------------------------------------------------------- #
 # Archive query + light-curve download
 # --------------------------------------------------------------------------- #
+def _val(row, key) -> float:
+    """Read a numeric archive cell as a plain float, robustly.
+
+    NASA archive columns are astropy ``Quantity`` objects carrying units, so a
+    bare ``float(row[key])`` raises "only dimensionless scalar quantities can be
+    converted to Python scalars"; masked cells must also map to NaN.
+    """
+    v = row[key]
+    if v is np.ma.masked:
+        return float("nan")
+    if hasattr(v, "value"):        # astropy Quantity -> strip units
+        v = v.value
+    try:
+        return float(v)
+    except Exception:
+        return float("nan")
+
+
 def query_planets(n: int, p_lo: float, p_hi: float) -> list[dict]:
     """Confirmed TESS planets with the params we need, in the training P range."""
     from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
@@ -60,14 +78,14 @@ def query_planets(n: int, p_lo: float, p_hi: float) -> list[dict]:
     out = []
     for row in tab:
         try:
-            P = float(row["pl_orbper"])
-            RpRs = float(row["pl_ratror"])
-            t0 = float(row["pl_tranmid"])
+            P = _val(row, "pl_orbper")
+            RpRs = _val(row, "pl_ratror")
+            t0 = _val(row, "pl_tranmid")
             if not (np.isfinite(P) and np.isfinite(RpRs) and np.isfinite(t0)):
                 continue
-            aRs = float(row["pl_ratdor"]) if np.isfinite(float(row["pl_ratdor"])) else np.nan
-            b = float(row["pl_imppar"]) if np.isfinite(float(row["pl_imppar"])) else np.nan
-            dur_h = float(row["pl_trandur"]) if np.isfinite(float(row["pl_trandur"])) else np.nan
+            aRs = _val(row, "pl_ratdor")
+            b = _val(row, "pl_imppar")
+            dur_h = _val(row, "pl_trandur")
             out.append({
                 "name": str(row["pl_name"]), "host": str(row["hostname"]),
                 "tic": str(row["tic_id"]), "P": P, "t0_bjd": t0,
