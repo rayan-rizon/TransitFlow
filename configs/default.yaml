@@ -28,6 +28,7 @@ simulator:
   use_periodogram: true     # box-periodogram channel -> calibrated period posterior
   n_period_bins: 256
   pg_n_phase: 64
+  pg_n_raw: 4096            # subsample raw LC for periodogram only (4× faster gen)
 
 model:
   param_dim: 7

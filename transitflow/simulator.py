@@ -70,6 +70,10 @@ class SimConfig:
     use_periodogram: bool = True
     n_period_bins: int = 256
     pg_n_phase: int = 64
+    # subsample raw LC to this many points for the periodogram only (4096 is
+    # enough resolution for 256 trial periods × 64 phase bins, and reduces the
+    # (P × n_raw) matrix from 4.6 M to 1.0 M floats -> ~4× faster generation)
+    pg_n_raw: int = 4096
 
     def normalized_regime_fracs(self, has_real: bool) -> tuple[float, float, float]:
         if has_real:
@@ -208,7 +212,17 @@ class TransitSimulator:
                 n_durations=cfg.n_durations, normalize=True,
             )
             if use_pg:
-                pg[i] = make_periodogram_view(t, flux[i], self.period_grid,
+                # subsample to pg_n_raw points (uniformly spaced) so the (P×n)
+                # BLS matrix stays small; 4096 pts over 27 d gives 151 pts/day,
+                # ample for periods ≥ 0.5 d with 64 phase bins
+                n_pg = cfg.pg_n_raw
+                if n_pg < len(t):
+                    step = max(1, len(t) // n_pg)
+                    t_pg = t[::step][:n_pg]
+                    f_pg = flux[i][::step][:n_pg]
+                else:
+                    t_pg, f_pg = t, flux[i]
+                pg[i] = make_periodogram_view(t_pg, f_pg, self.period_grid,
                                               n_phase=cfg.pg_n_phase, normalize=True)
 
         # ---- targets -------------------------------------------------
