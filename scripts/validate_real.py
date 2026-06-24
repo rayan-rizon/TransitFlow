@@ -61,17 +61,25 @@ def _val(row, key) -> float:
         return float("nan")
 
 
-def query_planets(n: int, p_lo: float, p_hi: float) -> list[dict]:
-    """Confirmed TESS planets with the params we need, in the training P range."""
+def query_planets(n: int, p_lo: float, p_hi: float,
+                  rprs_lo: float, rprs_hi: float) -> list[dict]:
+    """Confirmed TESS planets *inside the training prior*, in the P range.
+
+    Bounding ``pl_ratror`` to the prior's Rp/Rs support is essential: sorting by
+    depth alone surfaces out-of-distribution systems (e.g. a planet transiting a
+    white dwarf at Rp/Rs ~ 7), which the amortized model was never trained on.
+    A fair validation stays inside the trained regime.
+    """
     from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
 
     cols = ("pl_name,hostname,tic_id,pl_orbper,pl_tranmid,pl_trandur,"
             "pl_ratror,pl_ratdor,pl_imppar,pl_rade,st_rad,disc_facility")
-    # request the high-S/N (large Rp/Rs) end first; the download stage trims to n
+    # high-S/N end first (deepest in-prior transits); download stage trims to n
     tab = NasaExoplanetArchive.query_criteria(table="pscomppars", select=cols,
                                               where=(f"pl_orbper > {p_lo} and "
                                                      f"pl_orbper < {p_hi} and "
-                                                     f"pl_ratror is not null and "
+                                                     f"pl_ratror > {rprs_lo} and "
+                                                     f"pl_ratror < {rprs_hi} and "
                                                      f"tran_flag = 1 and "
                                                      f"disc_facility like '%TESS%'"),
                                               order="pl_ratror desc")
@@ -180,9 +188,11 @@ def main():
     sim = TransitSimulator(sc, prior=prior)
     inf = TransitFlowInference(model, prior, sc)
     p_lo, p_hi = prior.specs[0].low, prior.specs[0].high
+    rprs_lo, rprs_hi = prior.specs[2].low, prior.specs[2].high   # training Rp/Rs support
 
-    print(f"== querying archive (P in [{p_lo}, {p_hi}] d, TESS) ==")
-    pool = query_planets(args.n_planets, p_lo, p_hi)
+    print(f"== querying archive (P in [{p_lo}, {p_hi}] d, Rp/Rs in "
+          f"[{rprs_lo}, {rprs_hi}], TESS) ==")
+    pool = query_planets(args.n_planets, p_lo, p_hi, rprs_lo, rprs_hi)
     print(f"   {len(pool)} candidate planets")
 
     records = []
