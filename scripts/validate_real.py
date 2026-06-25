@@ -138,6 +138,36 @@ def download_lc(planet: dict, baseline_days: float):
 
 
 # --------------------------------------------------------------------------- #
+# Detrending (make real data look like the stationary-noise training regime)
+# --------------------------------------------------------------------------- #
+def _flatten_lc(t, f, dur):
+    """Remove slow secular trends, returning flux ≈ 1 around a flat baseline.
+
+    The simulator trains on *stationary* GP + white noise — there is no slow
+    instrumental/stellar drift in the synthetic flux. Real single-sector TESS
+    light curves carry such drifts, which create spurious low-frequency power
+    that biases the box-periodogram's deepest-bin search toward the wrong period
+    (period coverage collapses once the posterior is sharp). Dividing by a wide
+    rolling-median trend brings real data into the trained distribution. The
+    window is several transit durations wide, so the brief in-transit dip does
+    not bias the trend estimate (no transit masking needed).
+    """
+    from scipy.ndimage import median_filter
+
+    dt = float(np.median(np.diff(t)))
+    if not np.isfinite(dt) or dt <= 0:
+        return f
+    # window ≈ max(1 day, 5 × transit duration), in cadences, capped below n
+    win_days = max(1.0, 5.0 * (dur if np.isfinite(dur) else 0.2))
+    win = int(np.clip(round(win_days / dt), 11, max(11, len(f) // 3)))
+    if win % 2 == 0:
+        win += 1
+    trend = median_filter(f, size=win, mode="nearest")
+    trend = np.where(np.abs(trend) < 1e-6, np.median(f), trend)
+    return f / trend
+
+
+# --------------------------------------------------------------------------- #
 # View construction (must mirror the simulator's normalization)
 # --------------------------------------------------------------------------- #
 def build_views(t, f, planet, sim, prior):
@@ -153,6 +183,9 @@ def build_views(t, f, planet, sim, prior):
         b = planet["b"] if np.isfinite(planet["b"]) else 0.3
         dur = float(transit_duration(np.array([P]), np.array([planet["RpRs"]]),
                                      np.array([aRs]), np.array([b]))[0])
+    # detrend once; all three views (and sigma) are built from the flattened flux
+    # so real data matches the stationary-noise training distribution
+    f = _flatten_lc(t, f, dur)
     gv, lv = make_views(t, f, P, t0, dur, n_global=cfg.n_global,
                         n_local=cfg.n_local, n_durations=cfg.n_durations,
                         normalize=True)
