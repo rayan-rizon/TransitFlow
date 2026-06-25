@@ -183,22 +183,29 @@ def build_views(t, f, planet, sim, prior):
         b = planet["b"] if np.isfinite(planet["b"]) else 0.3
         dur = float(transit_duration(np.array([P]), np.array([planet["RpRs"]]),
                                      np.array([aRs]), np.array([b]))[0])
-    # detrend once; all three views (and sigma) are built from the flattened flux
-    # so real data matches the stationary-noise training distribution
-    f = _flatten_lc(t, f, dur)
+    # The global/local views are built from the ORIGINAL flux: they carry the
+    # transit *depth* (Rp/Rs), and detrending here would partially subtract the
+    # in-transit dip and bias the depth posterior. A secular trend is nearly flat
+    # across the few-hour local window anyway, so it barely affects those views.
     gv, lv = make_views(t, f, P, t0, dur, n_global=cfg.n_global,
                         n_local=cfg.n_local, n_durations=cfg.n_durations,
                         normalize=True)
     pg = None
     if cfg.use_periodogram:
+        # The periodogram searches ALL trial periods, so a slow secular trend
+        # injects spurious low-frequency power that biases the deepest-bin search
+        # -> detrend ONLY the periodogram input. Attenuating the transit slightly
+        # lowers every box equally and does not shift the peak location, so depth
+        # loss here is harmless for period-finding (unlike the depth views above).
+        f_pg_src = _flatten_lc(t, f, dur)
         # subsample to pg_n_raw exactly as the simulator does, so the periodogram
         # channel matches the training distribution (striding, not full-res)
         n_pg = cfg.pg_n_raw
         if n_pg < len(t):
             step = max(1, len(t) // n_pg)
-            t_pg, f_pg = t[::step][:n_pg], f[::step][:n_pg]
+            t_pg, f_pg = t[::step][:n_pg], f_pg_src[::step][:n_pg]
         else:
-            t_pg, f_pg = t, f
+            t_pg, f_pg = t, f_pg_src
         pg = make_periodogram_view(t_pg, f_pg, sim.period_grid,
                                    n_phase=cfg.pg_n_phase, normalize=True)
     # noise feature: estimate the *white* level from point-to-point differences
