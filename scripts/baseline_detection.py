@@ -51,10 +51,9 @@ def main() -> None:
     inf = TransitFlowInference(model, prior, sc)
     rng = np.random.default_rng(7)
 
-    # BLS trial grid: the prior period support, a handful of duration fractions
+    # BLS trial grid: the prior period support, durations in days
     p_lo, p_hi = prior.specs[0].low, prior.specs[0].high
-    periods = np.geomspace(p_lo, p_hi, args.n_periods)
-    durations = np.array([0.02, 0.05, 0.1, 0.15])  # fraction of period
+    bls_durations = np.array([0.02, 0.05, 0.1, 0.15])  # transit durations in days
 
     t_full = sim.times
     step = max(1, len(t_full) // args.bls_subsample)
@@ -73,7 +72,9 @@ def main() -> None:
         for i in range(len(raw)):
             f_i = raw[i][::step]
             try:
-                res = bls_detect(t_bls, f_i, periods, durations)
+                res = bls_detect(t_bls, f_i,
+                                 period_min=float(p_lo), period_max=float(p_hi),
+                                 n_periods=args.n_periods, durations=bls_durations)
                 bls_scores.append(float(res["score"]))
             except Exception:
                 bls_scores.append(0.0)
