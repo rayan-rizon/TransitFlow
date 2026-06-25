@@ -68,13 +68,19 @@ def query_planets(n: int, p_lo: float, p_hi: float,
     Bounding ``pl_ratror`` to the prior's Rp/Rs support is essential: sorting by
     depth alone surfaces out-of-distribution systems (e.g. a planet transiting a
     white dwarf at Rp/Rs ~ 7), which the amortized model was never trained on.
-    A fair validation stays inside the trained regime.
+
+    The returned pool is a *representative* spread across the Rp/Rs range, not the
+    deepest-first cherry-pick: the deepest TESS transits (Rp/Rs ≳ 0.10) are
+    grazing / strongly limb-darkened hot Jupiters whose morphology departs from
+    the trained box-like transit, so a deepest-first sample over-tests the tail
+    and understates calibration in the regime the amortized model actually
+    operates in. We stratify across depth and shuffle so the download stage's
+    first ``n`` successes are representative.
     """
     from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
 
     cols = ("pl_name,hostname,tic_id,pl_orbper,pl_tranmid,pl_trandur,"
             "pl_ratror,pl_ratdor,pl_imppar,pl_rade,st_rad,disc_facility")
-    # high-S/N end first (deepest in-prior transits); download stage trims to n
     tab = NasaExoplanetArchive.query_criteria(table="pscomppars", select=cols,
                                               where=(f"pl_orbper > {p_lo} and "
                                                      f"pl_orbper < {p_hi} and "
@@ -82,7 +88,7 @@ def query_planets(n: int, p_lo: float, p_hi: float,
                                                      f"pl_ratror < {rprs_hi} and "
                                                      f"tran_flag = 1 and "
                                                      f"disc_facility like '%TESS%'"),
-                                              order="pl_ratror desc")
+                                              order="pl_ratror")
     out = []
     for row in tab:
         try:
@@ -102,7 +108,16 @@ def query_planets(n: int, p_lo: float, p_hi: float,
             })
         except Exception:
             continue
-    return out[: 4 * n]  # a generous pool; download stage trims to n
+    if not out:
+        return out
+    # stratified spread across the (now ascending) Rp/Rs list, then shuffle
+    out.sort(key=lambda d: d["RpRs"])
+    pool_size = min(len(out), 6 * n)
+    idx = sorted({int(i) for i in
+                  np.linspace(0, len(out) - 1, pool_size).round()})
+    pool = [out[i] for i in idx]
+    np.random.default_rng(0).shuffle(pool)
+    return pool
 
 
 def download_lc(planet: dict, baseline_days: float):
