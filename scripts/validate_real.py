@@ -140,6 +140,33 @@ def download_lc(planet: dict, baseline_days: float):
 # --------------------------------------------------------------------------- #
 # Detrending (make real data look like the stationary-noise training regime)
 # --------------------------------------------------------------------------- #
+def _refine_t0(t, f, P, dur):
+    """Re-derive the transit epoch from the *data* by a box-search at fixed P.
+
+    The archive ``t0`` is an epoch often thousands of cycles before the TESS
+    sector; propagating it forward (``t0 % P``) multiplies the published period
+    uncertainty by the cycle count, so the folded local view can be misaligned by
+    a large fraction of a period. The transit then smears across phase, its depth
+    washes out, and the Rp/Rs posterior rails to the prior floor (|z|>>1). The
+    plan prescribes folding on the ephemeris recovered from the data at hand, so
+    we keep the (reliable) published period and find the epoch as the phase of the
+    deepest box of width ~duration. Returns a BTJD epoch inside the first cycle.
+    """
+    f0 = np.asarray(f, dtype=np.float64)
+    f0 = f0 - np.median(f0)
+    dt = float(np.median(np.diff(t)))
+    half = max(0.5 * (dur if np.isfinite(dur) and dur > 0 else 0.1), dt)
+    phase = (t - t[0]) % P                                   # [0, P)
+    centers = np.linspace(0.0, P, 512, endpoint=False)
+    d = np.abs(phase[None, :] - centers[:, None])
+    d = np.minimum(d, P - d)                                 # periodic distance
+    inbox = d < half
+    cnt = inbox.sum(axis=1)
+    depth = np.where(cnt > 0, -(f0[None, :] * inbox).sum(axis=1)
+                     / np.maximum(cnt, 1), -np.inf)
+    return t[0] + float(centers[int(np.argmax(depth))])
+
+
 def _flatten_lc(t, f, P, t0, dur):
     """Remove slow secular trends, returning flux ≈ 1 around a flat baseline.
 
@@ -184,16 +211,15 @@ def _flatten_lc(t, f, P, t0, dur):
 def build_views(t, f, planet, sim, prior):
     cfg = sim.cfg
     P = planet["P"]
-    # transit epoch expressed in the LC's BTJD frame
-    t0 = planet["t0_bjd"] - _TESS_T0_OFFSET
-    # bring t0 into the observed window (fold is periodic, so any transit works)
-    t0 = t[0] + ((t0 - t[0]) % P)
     dur = planet["dur_days"]
     if not np.isfinite(dur):
         aRs = planet["aRs"] if np.isfinite(planet["aRs"]) else 10.0
         b = planet["b"] if np.isfinite(planet["b"]) else 0.3
         dur = float(transit_duration(np.array([P]), np.array([planet["RpRs"]]),
                                      np.array([aRs]), np.array([b]))[0])
+    # Re-derive the epoch from the data (propagated archive t0 drifts by many
+    # cycles -> misaligned fold -> washed-out depth -> Rp/Rs rails to the floor).
+    t0 = _refine_t0(t, f, P, dur)
     # Transit-preserving flatten: remove the secular trend (in-transit cadences
     # masked so the depth is preserved), then build ALL views from the flattened
     # flux. The global view drives the period/timing readout and is the most
