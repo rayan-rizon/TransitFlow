@@ -140,29 +140,40 @@ def download_lc(planet: dict, baseline_days: float):
 # --------------------------------------------------------------------------- #
 # Detrending (make real data look like the stationary-noise training regime)
 # --------------------------------------------------------------------------- #
-def _flatten_lc(t, f, dur):
+def _flatten_lc(t, f, P, t0, dur):
     """Remove slow secular trends, returning flux ≈ 1 around a flat baseline.
 
     The simulator trains on *stationary* GP + white noise — there is no slow
     instrumental/stellar drift in the synthetic flux. Real single-sector TESS
-    light curves carry such drifts, which create spurious low-frequency power
-    that biases the box-periodogram's deepest-bin search toward the wrong period
-    (period coverage collapses once the posterior is sharp). Dividing by a wide
-    rolling-median trend brings real data into the trained distribution. The
-    window is several transit durations wide, so the brief in-transit dip does
-    not bias the trend estimate (no transit masking needed).
+    light curves carry such drifts; a trend across the full baseline confuses the
+    model's period/timing readout from the global view (period coverage collapses
+    once the posterior is sharp). Dividing by a wide rolling-median trend brings
+    real data into the trained distribution.
+
+    Crucially the in-transit cadences are **masked** (replaced by interpolation
+    across the dip) before the trend is estimated, so the trend does not soak up
+    the transit itself — otherwise dividing by it attenuates the depth and biases
+    the Rp/Rs posterior. This is the standard transit-preserving flatten.
     """
     from scipy.ndimage import median_filter
 
     dt = float(np.median(np.diff(t)))
     if not np.isfinite(dt) or dt <= 0:
         return f
-    # window ≈ max(1 day, 5 × transit duration), in cadences, capped below n
-    win_days = max(1.0, 5.0 * (dur if np.isfinite(dur) else 0.2))
+    # window ≈ max(1 day, 8 × transit duration), in cadences, capped below n
+    win_days = max(1.0, 8.0 * (dur if np.isfinite(dur) else 0.2))
     win = int(np.clip(round(win_days / dt), 11, max(11, len(f) // 3)))
     if win % 2 == 0:
         win += 1
-    trend = median_filter(f, size=win, mode="nearest")
+    f_work = np.array(f, dtype=np.float64, copy=True)
+    if np.isfinite(P) and np.isfinite(t0) and np.isfinite(dur) and dur > 0:
+        # phase distance from transit center, in days; mask a bit wider than dur
+        phase = ((t - t0 + 0.5 * P) % P) - 0.5 * P
+        in_transit = np.abs(phase) < 0.7 * dur
+        oot = ~in_transit
+        if in_transit.any() and oot.sum() > 2:
+            f_work[in_transit] = np.interp(t[in_transit], t[oot], f[oot])
+    trend = median_filter(f_work, size=win, mode="nearest")
     trend = np.where(np.abs(trend) < 1e-6, np.median(f), trend)
     return f / trend
 
@@ -183,29 +194,25 @@ def build_views(t, f, planet, sim, prior):
         b = planet["b"] if np.isfinite(planet["b"]) else 0.3
         dur = float(transit_duration(np.array([P]), np.array([planet["RpRs"]]),
                                      np.array([aRs]), np.array([b]))[0])
-    # The global/local views are built from the ORIGINAL flux: they carry the
-    # transit *depth* (Rp/Rs), and detrending here would partially subtract the
-    # in-transit dip and bias the depth posterior. A secular trend is nearly flat
-    # across the few-hour local window anyway, so it barely affects those views.
+    # Transit-preserving flatten: remove the secular trend (in-transit cadences
+    # masked so the depth is preserved), then build ALL views from the flattened
+    # flux. The global view drives the period/timing readout and is the most
+    # trend-sensitive; the masked flatten recovers period coverage without
+    # attenuating the Rp/Rs depth.
+    f = _flatten_lc(t, f, P, t0, dur)
     gv, lv = make_views(t, f, P, t0, dur, n_global=cfg.n_global,
                         n_local=cfg.n_local, n_durations=cfg.n_durations,
                         normalize=True)
     pg = None
     if cfg.use_periodogram:
-        # The periodogram searches ALL trial periods, so a slow secular trend
-        # injects spurious low-frequency power that biases the deepest-bin search
-        # -> detrend ONLY the periodogram input. Attenuating the transit slightly
-        # lowers every box equally and does not shift the peak location, so depth
-        # loss here is harmless for period-finding (unlike the depth views above).
-        f_pg_src = _flatten_lc(t, f, dur)
         # subsample to pg_n_raw exactly as the simulator does, so the periodogram
         # channel matches the training distribution (striding, not full-res)
         n_pg = cfg.pg_n_raw
         if n_pg < len(t):
             step = max(1, len(t) // n_pg)
-            t_pg, f_pg = t[::step][:n_pg], f_pg_src[::step][:n_pg]
+            t_pg, f_pg = t[::step][:n_pg], f[::step][:n_pg]
         else:
-            t_pg, f_pg = t, f_pg_src
+            t_pg, f_pg = t, f
         pg = make_periodogram_view(t_pg, f_pg, sim.period_grid,
                                    n_phase=cfg.pg_n_phase, normalize=True)
     # noise feature: estimate the *white* level from point-to-point differences
