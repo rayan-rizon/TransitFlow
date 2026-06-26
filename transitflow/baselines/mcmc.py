@@ -43,43 +43,80 @@ def _log_prob(theta_phys: np.ndarray, times, flux, flux_err,
 def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              init: np.ndarray | None = None, n_walkers: int = 32,
              n_steps: int = 2000, burn_frac: float = 0.5, n_radial: int = 100,
-             seed: int = 0) -> dict:
+             seed: int = 0, fixed: dict[int, float] | None = None,
+             init_std_jitter: float = 0.05) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
     flux_err = np.full_like(np.asarray(times, float), flux_err) \
         if np.isscalar(flux_err) else np.asarray(flux_err, float)
     dim = prior.dim
+    fixed = dict(fixed or {})
+    fixed_idx = sorted(fixed)
+    free_idx = [i for i in range(dim) if i not in fixed]
 
     if init is None:
         init = prior.sample(1, rng)[0]
-    p0 = init[None, :] + 1e-3 * rng.standard_normal((n_walkers, dim)) * \
-        np.maximum(np.abs(init), 1e-3)
-    # keep walkers inside support
+    init = np.asarray(init, dtype=np.float64).copy()
+    for i, v in fixed.items():
+        init[i] = v
     z_low, z_high = prior.std_bounds
-    for w in range(n_walkers):
-        std = prior.physical_to_std(p0[w][None, :])[0]
-        std = np.clip(std, z_low + 1e-3, z_high - 1e-3)
-        p0[w] = prior.std_to_physical(std[None, :])[0]
+    init_std = np.clip(prior.physical_to_std(init[None, :])[0],
+                       z_low + 1e-3, z_high - 1e-3)
+    p0_std = np.tile(init_std[None, :], (n_walkers, 1))
+    if free_idx:
+        p0_std[:, free_idx] += init_std_jitter * \
+            rng.standard_normal((n_walkers, len(free_idx)))
+        p0_std[:, free_idx] = np.clip(p0_std[:, free_idx],
+                                      z_low[free_idx] + 1e-3,
+                                      z_high[free_idx] - 1e-3)
+    for i, v in fixed.items():
+        p0_std[:, i] = init_std[i]
+    p0_full = prior.std_to_physical(p0_std)
+    for i, v in fixed.items():
+        p0_full[:, i] = v
 
-    logp = lambda th: _log_prob(th, times, flux, flux_err, prior, n_radial)  # noqa
+    def expand(theta_free: np.ndarray) -> np.ndarray:
+        theta = init.copy()
+        if free_idx:
+            theta[free_idx] = theta_free
+        for i, v in fixed.items():
+            theta[i] = v
+        return theta
+
+    if not free_idx:
+        return {"samples": np.tile(init[None, :], (max(n_walkers, 1), 1)),
+                "backend": "fixed", "acceptance_fraction": float("nan"),
+                "fixed": fixed}
+
+    p0 = p0_full[:, free_idx]
+    logp = lambda th: _log_prob(expand(th), times, flux, flux_err, prior, n_radial)  # noqa
 
     if _HAS_EMCEE:
-        sampler = emcee.EnsembleSampler(n_walkers, dim, logp)
+        sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
         sampler.run_mcmc(p0, n_steps, progress=False)
-        chain = sampler.get_chain(discard=int(burn_frac * n_steps), flat=True)
+        free_chain = sampler.get_chain(discard=int(burn_frac * n_steps), flat=True)
+        acceptance = float(np.mean(sampler.acceptance_fraction))
     else:
-        chain = _native_ensemble(logp, p0, n_steps, burn_frac, rng)
-    return {"samples": chain, "backend": "emcee" if _HAS_EMCEE else "native"}
+        free_chain, acceptance = _native_ensemble(logp, p0, n_steps, burn_frac, rng)
+    chain = np.tile(init[None, :], (free_chain.shape[0], 1))
+    chain[:, free_idx] = free_chain
+    for i, v in fixed.items():
+        chain[:, i] = v
+    return {"samples": chain, "backend": "emcee" if _HAS_EMCEE else "native",
+            "acceptance_fraction": acceptance, "fixed": fixed}
 
 
-def _native_ensemble(logp, p0, n_steps, burn_frac, rng, a: float = 2.0) -> np.ndarray:
+def _native_ensemble(logp, p0, n_steps, burn_frac, rng,
+                     a: float = 2.0) -> tuple[np.ndarray, float]:
     """Affine-invariant stretch-move ensemble sampler (Goodman & Weare 2010)."""
     n_walkers, dim = p0.shape
     pos = p0.copy()
     lnp = np.array([logp(pos[w]) for w in range(n_walkers)])
     half = n_walkers // 2
     keep = []
+    proposals = 0
+    accepts = 0
     for step in range(n_steps):
         for grp in (0, 1):
             s = slice(0, half) if grp == 0 else slice(half, n_walkers)
@@ -91,14 +128,17 @@ def _native_ensemble(logp, p0, n_steps, burn_frac, rng, a: float = 2.0) -> np.nd
                 z = ((a - 1.0) * rng.random() + 1.0) ** 2 / a
                 prop = j + z * (pos[i] - j)
                 lp = logp(prop)
+                proposals += 1
                 if np.isfinite(lp):
                     log_accept = (dim - 1) * np.log(z) + lp - lnp[i]
                     if np.log(rng.random()) < log_accept:
                         pos[i] = prop
                         lnp[i] = lp
+                        accepts += 1
         if step >= burn_frac * n_steps:
             keep.append(pos.copy())
-    return np.concatenate(keep, axis=0) if keep else pos.copy()
+    chain = np.concatenate(keep, axis=0) if keep else pos.copy()
+    return chain, float(accepts / max(proposals, 1))
 
 
 def has_emcee() -> bool:

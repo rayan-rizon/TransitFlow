@@ -65,7 +65,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_config",
-      "community": 0,
+      "community": 22,
       "norm_label": "_config.py"
     },
     {
@@ -75,7 +75,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "scripts_config_build_configs",
-      "community": 0,
+      "community": 22,
       "norm_label": "build_configs()"
     },
     {
@@ -85,7 +85,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_config_rationale_1",
-      "community": 0,
+      "community": 22,
       "norm_label": "helpers to turn a yaml config into the project's dataclasses."
     },
     {
@@ -115,7 +115,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_benchmark_speed",
-      "community": 3,
+      "community": 4,
       "norm_label": "benchmark_speed.py"
     },
     {
@@ -125,7 +125,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "scripts_benchmark_speed_main",
-      "community": 3,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -155,7 +155,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_diagnose_period",
-      "community": 7,
+      "community": 4,
       "norm_label": "diagnose_period.py"
     },
     {
@@ -165,7 +165,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "scripts_diagnose_period_main",
-      "community": 7,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -215,7 +215,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_evaluate_corrected",
-      "community": 6,
+      "community": 4,
       "norm_label": "evaluate_corrected.py"
     },
     {
@@ -225,7 +225,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "scripts_evaluate_corrected_main",
-      "community": 6,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -235,7 +235,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_generate_data",
-      "community": 0,
+      "community": 16,
       "norm_label": "generate_data.py"
     },
     {
@@ -245,7 +245,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "scripts_generate_data_main",
-      "community": 0,
+      "community": 16,
       "norm_label": "main()"
     },
     {
@@ -535,7 +535,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_conftest",
-      "community": 14,
+      "community": 4,
       "norm_label": "conftest.py"
     },
     {
@@ -545,7 +545,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_conftest_prior",
-      "community": 14,
+      "community": 4,
       "norm_label": "prior()"
     },
     {
@@ -555,7 +555,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tests_conftest_fast_sim_cfg",
-      "community": 14,
+      "community": 19,
       "norm_label": "fast_sim_cfg()"
     },
     {
@@ -565,7 +565,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_conftest_fast_simulator",
-      "community": 14,
+      "community": 4,
       "norm_label": "fast_simulator()"
     },
     {
@@ -575,7 +575,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tests_conftest_tiny_model_cfg",
-      "community": 14,
+      "community": 4,
       "norm_label": "tiny_model_cfg()"
     },
     {
@@ -585,7 +585,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "tests_conftest_rng",
-      "community": 14,
+      "community": 4,
       "norm_label": "rng()"
     },
     {
@@ -595,7 +595,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_conftest_rationale_21",
-      "community": 14,
+      "community": 19,
       "norm_label": "a tiny, fast simulator configuration for unit tests."
     },
     {
@@ -612,7 +612,7 @@
       "label": "_make_lc()",
       "file_type": "code",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L9",
+      "source_location": "L10",
       "_origin": "ast",
       "id": "tests_test_baselines_make_lc",
       "community": 3,
@@ -622,7 +622,7 @@
       "label": "test_bls_recovers_period()",
       "file_type": "code",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L17",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "tests_test_baselines_test_bls_recovers_period",
       "community": 3,
@@ -632,31 +632,31 @@
       "label": "test_bls_scores_planet_above_noise()",
       "file_type": "code",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "tests_test_baselines_test_bls_scores_planet_above_noise",
       "community": 3,
       "norm_label": "test_bls_scores_planet_above_noise()"
     },
     {
-      "label": "test_mcmc_recovers_depth_roughly()",
+      "label": "test_mcmc_all_fixed_returns_fixed_samples()",
       "file_type": "code",
-      "source_file": "tests/test_baselines.py",
-      "source_location": "L34",
-      "_origin": "ast",
-      "id": "tests_test_baselines_test_mcmc_recovers_depth_roughly",
-      "community": 3,
-      "norm_label": "test_mcmc_recovers_depth_roughly()"
-    },
-    {
-      "label": "A short MCMC fit to a clean, well-sampled transit brackets the truth.",
-      "file_type": "rationale",
       "source_file": "tests/test_baselines.py",
       "source_location": "L35",
       "_origin": "ast",
-      "id": "tests_test_baselines_rationale_35",
+      "id": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
       "community": 3,
-      "norm_label": "a short mcmc fit to a clean, well-sampled transit brackets the truth."
+      "norm_label": "test_mcmc_all_fixed_returns_fixed_samples()"
+    },
+    {
+      "label": "test_mcmc_fixed_ephemeris_metadata_all_fixed()",
+      "file_type": "code",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "community": 3,
+      "norm_label": "test_mcmc_fixed_ephemeris_metadata_all_fixed()"
     },
     {
       "label": "test_correction.py",
@@ -715,7 +715,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "tests_test_correction_test_importance_weights_accepts_periodogram_model",
-      "community": 15,
+      "community": 4,
       "norm_label": "test_importance_weights_accepts_periodogram_model()"
     },
     {
@@ -755,7 +755,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_data",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_data.py"
     },
     {
@@ -765,7 +765,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "tests_test_data_sim_cfg",
-      "community": 0,
+      "community": 16,
       "norm_label": "_sim_cfg()"
     },
     {
@@ -775,7 +775,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "tests_test_data_model_cfg",
-      "community": 0,
+      "community": 16,
       "norm_label": "_model_cfg()"
     },
     {
@@ -785,7 +785,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "tests_test_data_test_generate_and_load_disk_dataset",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_generate_and_load_disk_dataset()"
     },
     {
@@ -795,7 +795,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "tests_test_data_test_resumable_generation_skips_existing",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_resumable_generation_skips_existing()"
     },
     {
@@ -805,7 +805,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "tests_test_data_test_train_from_disk",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_train_from_disk()"
     },
     {
@@ -815,7 +815,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "tests_test_data_test_preflight_verdict_and_cost",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_preflight_verdict_and_cost()"
     },
     {
@@ -825,7 +825,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "tests_test_data_test_preflight_flags_device_mismatch",
-      "community": 0,
+      "community": 16,
       "norm_label": "test_preflight_flags_device_mismatch()"
     },
     {
@@ -835,7 +835,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_data_rationale_1",
-      "community": 0,
+      "community": 16,
       "norm_label": "tests for the disk dataset pipeline and the preflight cost/health check."
     },
     {
@@ -845,7 +845,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_end_to_end",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_end_to_end.py"
     },
     {
@@ -855,7 +855,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "tests_test_end_to_end_test_short_training_runs_and_learns",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_short_training_runs_and_learns()"
     },
     {
@@ -865,7 +865,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "tests_test_end_to_end_rationale_11",
-      "community": 0,
+      "community": 19,
       "norm_label": "a short training run reduces loss and learns better-than-chance detection."
     },
     {
@@ -935,7 +935,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_flow_matching",
-      "community": 8,
+      "community": 20,
       "norm_label": "test_flow_matching.py"
     },
     {
@@ -945,7 +945,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "tests_test_flow_matching_constantvelocity",
-      "community": 8,
+      "community": 20,
       "norm_label": "constantvelocity"
     },
     {
@@ -955,7 +955,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_flow_matching_constantvelocity_init",
-      "community": 8,
+      "community": 20,
       "norm_label": ".__init__()"
     },
     {
@@ -965,7 +965,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "tests_test_flow_matching_constantvelocity_call",
-      "community": 8,
+      "community": 20,
       "norm_label": ".__call__()"
     },
     {
@@ -975,7 +975,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tests_test_flow_matching_log_normal",
-      "community": 8,
+      "community": 20,
       "norm_label": "_log_normal()"
     },
     {
@@ -985,7 +985,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "tests_test_flow_matching_test_zero_velocity_is_standard_normal",
-      "community": 8,
+      "community": 20,
       "norm_label": "test_zero_velocity_is_standard_normal()"
     },
     {
@@ -995,7 +995,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "tests_test_flow_matching_test_constant_velocity_shifts_density",
-      "community": 8,
+      "community": 20,
       "norm_label": "test_constant_velocity_shifts_density()"
     },
     {
@@ -1005,7 +1005,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "tests_test_flow_matching_test_cfm_loss_optimum_is_displacement",
-      "community": 8,
+      "community": 20,
       "norm_label": "test_cfm_loss_optimum_is_displacement()"
     },
     {
@@ -1025,7 +1025,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "tests_test_flow_matching_rationale_10",
-      "community": 8,
+      "community": 20,
       "norm_label": "a constant velocity field v(tau, theta, e) = c. param_dim attached."
     },
     {
@@ -1035,7 +1035,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "tests_test_flow_matching_rationale_26",
-      "community": 8,
+      "community": 20,
       "norm_label": "v=0 -> samples ~ n(0,i) and log_prob = log n(theta)."
     },
     {
@@ -1045,7 +1045,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "tests_test_flow_matching_rationale_40",
-      "community": 8,
+      "community": 20,
       "norm_label": "v=c -> flow maps theta0 -> theta0 + c; density shifts accordingly."
     },
     {
@@ -1055,7 +1055,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "tests_test_flow_matching_rationale_56",
-      "community": 8,
+      "community": 20,
       "norm_label": "the cfm target is theta1 - theta0; a field returning it has ~0 loss."
     },
     {
@@ -1335,7 +1335,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "tests_test_periodogram_test_box_periodogram_peaks_at_true_period_high_snr",
-      "community": 3,
+      "community": 4,
       "norm_label": "test_box_periodogram_peaks_at_true_period_high_snr()"
     },
     {
@@ -1375,7 +1375,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_periodogram_rationale_12",
-      "community": 3,
+      "community": 4,
       "norm_label": "a clean, deep transit produces periodogram power near the true period     (or a"
     },
     {
@@ -1395,7 +1395,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_priors",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_priors.py"
     },
     {
@@ -1405,7 +1405,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_priors_test_sample_shape_and_bounds",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_sample_shape_and_bounds()"
     },
     {
@@ -1415,7 +1415,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "tests_test_priors_test_std_roundtrip",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_std_roundtrip()"
     },
     {
@@ -1425,7 +1425,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_test_priors_test_std_is_standardized",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_std_is_standardized()"
     },
     {
@@ -1435,7 +1435,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "tests_test_priors_test_torch_matches_numpy",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_torch_matches_numpy()"
     },
     {
@@ -1445,7 +1445,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "tests_test_priors_test_log_prob_support",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_log_prob_support()"
     },
     {
@@ -1455,7 +1455,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "tests_test_priors_test_kipping_validity",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_kipping_validity()"
     },
     {
@@ -1465,7 +1465,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "tests_test_priors_test_param_names",
-      "community": 6,
+      "community": 3,
       "norm_label": "test_param_names()"
     },
     {
@@ -1555,7 +1555,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_spike_slab",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_spike_slab.py"
     },
     {
@@ -1565,7 +1565,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_make_targets_spikes_negatives",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_make_targets_spikes_negatives()"
     },
     {
@@ -1575,7 +1575,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_detect_prob_separates",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_detect_prob_separates()"
     },
     {
@@ -1585,7 +1585,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_threshold_between_spike_and_slab",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_threshold_between_spike_and_slab()"
     },
     {
@@ -1595,7 +1595,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_spike_slab_training_detects",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_spike_slab_training_detects()"
     },
     {
@@ -1605,7 +1605,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "tests_test_spike_slab_rationale_38",
-      "community": 1,
+      "community": 15,
       "norm_label": "variant c: a short unified-flow run reads detection from the posterior."
     },
     {
@@ -1615,7 +1615,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_training_run",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_training_run.py"
     },
     {
@@ -1625,7 +1625,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "tests_test_training_run_tiny_cfgs",
-      "community": 0,
+      "community": 19,
       "norm_label": "_tiny_cfgs()"
     },
     {
@@ -1635,7 +1635,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_test_training_run_test_run_dir_artifacts_and_checkpoints",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_run_dir_artifacts_and_checkpoints()"
     },
     {
@@ -1645,7 +1645,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "tests_test_training_run_test_resume_continues_from_checkpoint",
-      "community": 0,
+      "community": 19,
       "norm_label": "test_resume_continues_from_checkpoint()"
     },
     {
@@ -1655,7 +1655,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_training_run_rationale_1",
-      "community": 0,
+      "community": 19,
       "norm_label": "tests for production run management: run dir, checkpoints, resume, status."
     },
     {
@@ -1785,7 +1785,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_init",
-      "community": 0,
+      "community": 16,
       "norm_label": "__init__.py"
     },
     {
@@ -1795,7 +1795,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_init_rationale_1",
-      "community": 0,
+      "community": 16,
       "norm_label": "transitflow: amortized flow-matching sbi for joint exoplanet transit detection a"
     },
     {
@@ -1865,7 +1865,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "baselines_bls_has_astropy",
-      "community": 4,
+      "community": 3,
       "norm_label": "has_astropy()"
     },
     {
@@ -1942,7 +1942,7 @@
       "label": "_native_ensemble()",
       "file_type": "code",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L76",
+      "source_location": "L110",
       "_origin": "ast",
       "id": "baselines_mcmc_native_ensemble",
       "community": 3,
@@ -1952,10 +1952,10 @@
       "label": "has_emcee()",
       "file_type": "code",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L104",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "baselines_mcmc_has_emcee",
-      "community": 3,
+      "community": 4,
       "norm_label": "has_emcee()"
     },
     {
@@ -1972,9 +1972,9 @@
       "label": "Sample the transit-fit posterior. Returns physical samples ``(M, 7)``.",
       "file_type": "rationale",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L47",
+      "source_location": "L48",
       "_origin": "ast",
-      "id": "baselines_mcmc_rationale_47",
+      "id": "baselines_mcmc_rationale_48",
       "community": 3,
       "norm_label": "sample the transit-fit posterior. returns physical samples ``(m, 7)``."
     },
@@ -1982,9 +1982,9 @@
       "label": "Affine-invariant stretch-move ensemble sampler (Goodman & Weare 2010).",
       "file_type": "rationale",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L77",
+      "source_location": "L112",
       "_origin": "ast",
-      "id": "baselines_mcmc_rationale_77",
+      "id": "baselines_mcmc_rationale_112",
       "community": 3,
       "norm_label": "affine-invariant stretch-move ensemble sampler (goodman & weare 2010)."
     },
@@ -2095,7 +2095,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_data",
-      "community": 14,
+      "community": 16,
       "norm_label": "data.py"
     },
     {
@@ -2105,7 +2105,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "transitflow_data_gen_shard",
-      "community": 14,
+      "community": 16,
       "norm_label": "_gen_shard()"
     },
     {
@@ -2115,7 +2115,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "transitflow_data_generate_to_disk",
-      "community": 0,
+      "community": 16,
       "norm_label": "generate_to_disk()"
     },
     {
@@ -2125,7 +2125,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset",
-      "community": 0,
+      "community": 16,
       "norm_label": "diskdataset"
     },
     {
@@ -2135,7 +2135,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_init",
-      "community": 0,
+      "community": 16,
       "norm_label": ".__init__()"
     },
     {
@@ -2145,7 +2145,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_len",
-      "community": 0,
+      "community": 16,
       "norm_label": ".__len__()"
     },
     {
@@ -2155,7 +2155,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_gather",
-      "community": 0,
+      "community": 30,
       "norm_label": "._gather()"
     },
     {
@@ -2165,7 +2165,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator",
-      "community": 0,
+      "community": 30,
       "norm_label": "diskiterator"
     },
     {
@@ -2175,7 +2175,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_init",
-      "community": 0,
+      "community": 30,
       "norm_label": ".__init__()"
     },
     {
@@ -2185,7 +2185,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_new_perm",
-      "community": 0,
+      "community": 30,
       "norm_label": "._new_perm()"
     },
     {
@@ -2195,7 +2195,7 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_iter",
-      "community": 0,
+      "community": 30,
       "norm_label": ".__iter__()"
     },
     {
@@ -2205,7 +2205,7 @@
       "source_location": "L192",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_next",
-      "community": 0,
+      "community": 30,
       "norm_label": ".__next__()"
     },
     {
@@ -2215,7 +2215,7 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_close",
-      "community": 0,
+      "community": 30,
       "norm_label": ".close()"
     },
     {
@@ -2225,7 +2225,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_data_rationale_1",
-      "community": 14,
+      "community": 16,
       "norm_label": "disk-backed dataset: pre-generate once (cheap cpu), train fast (saturated gpu)."
     },
     {
@@ -2235,7 +2235,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "transitflow_data_rationale_33",
-      "community": 14,
+      "community": 16,
       "norm_label": "worker: generate one shard and write it atomically. returns the path."
     },
     {
@@ -2245,7 +2245,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "transitflow_data_rationale_76",
-      "community": 0,
+      "community": 16,
       "norm_label": "pre-generate ``n_total`` light curves into sharded ``.npz`` files.      resumabl"
     },
     {
@@ -2255,7 +2255,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "transitflow_data_rationale_113",
-      "community": 0,
+      "community": 16,
       "norm_label": "loads sharded light-curve data; serves shuffled batches as torch tensors.      d"
     },
     {
@@ -2265,7 +2265,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "transitflow_data_rationale_171",
-      "community": 0,
+      "community": 30,
       "norm_label": "infinite shuffled iterator over a :class:`diskdataset` for training."
     },
     {
@@ -2625,7 +2625,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tensor",
-      "community": 8,
+      "community": 17,
       "norm_label": "tensor"
     },
     {
@@ -2665,7 +2665,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "transitflow_flow_matching_log_prob",
-      "community": 8,
+      "community": 20,
       "norm_label": "log_prob()"
     },
     {
@@ -2725,7 +2725,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "transitflow_flow_matching_rationale_162",
-      "community": 8,
+      "community": 20,
       "norm_label": "exact ``log p(theta1 | e)`` in standardized space under the cnf.      integrates"
     },
     {
@@ -2745,7 +2745,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference",
-      "community": 8,
+      "community": 4,
       "norm_label": "inference.py"
     },
     {
@@ -2755,7 +2755,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference",
-      "community": 7,
+      "community": 4,
       "norm_label": "transitflowinference"
     },
     {
@@ -2765,7 +2765,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -2775,7 +2775,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_expand_std_samples",
-      "community": 7,
+      "community": 2,
       "norm_label": "._expand_std_samples()"
     },
     {
@@ -2785,7 +2785,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_to_t",
-      "community": 7,
+      "community": 2,
       "norm_label": "._to_t()"
     },
     {
@@ -2795,7 +2795,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_embed",
-      "community": 7,
+      "community": 2,
       "norm_label": ".embed()"
     },
     {
@@ -2805,7 +2805,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_detect",
-      "community": 7,
+      "community": 2,
       "norm_label": ".detect()"
     },
     {
@@ -2815,7 +2815,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_posterior_samples",
-      "community": 7,
+      "community": 2,
       "norm_label": ".posterior_samples()"
     },
     {
@@ -2825,7 +2825,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_detect_and_characterize",
-      "community": 7,
+      "community": 2,
       "norm_label": ".detect_and_characterize()"
     },
     {
@@ -2835,7 +2835,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_log_prob_std",
-      "community": 7,
+      "community": 2,
       "norm_label": ".log_prob_std()"
     },
     {
@@ -2845,7 +2845,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_importance_diagnostic",
-      "community": 7,
+      "community": 2,
       "norm_label": ".importance_diagnostic()"
     },
     {
@@ -2855,7 +2855,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_1",
-      "community": 8,
+      "community": 4,
       "norm_label": "amortized inference: detection probability, posterior samples, densities.  wraps"
     },
     {
@@ -2865,7 +2865,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_91",
-      "community": 7,
+      "community": 2,
       "norm_label": "return physical posterior samples ``(b, n_samples, 7)``."
     },
     {
@@ -2875,7 +2875,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_124",
-      "community": 7,
+      "community": 2,
       "norm_label": "exact ``log q(theta | x)`` in standardized space."
     },
     {
@@ -2885,7 +2885,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_143",
-      "community": 7,
+      "community": 2,
       "norm_label": "approximate is efficiency as a misspecification flag.          uses a gaussian l"
     },
     {
@@ -2925,7 +2925,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d",
-      "community": 15,
+      "community": 24,
       "norm_label": "residualblock1d"
     },
     {
@@ -2935,7 +2935,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d_init",
-      "community": 15,
+      "community": 24,
       "norm_label": ".__init__()"
     },
     {
@@ -2945,7 +2945,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d_forward",
-      "community": 15,
+      "community": 24,
       "norm_label": ".forward()"
     },
     {
@@ -2955,7 +2955,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch",
-      "community": 15,
+      "community": 24,
       "norm_label": "cnnbranch"
     },
     {
@@ -2965,7 +2965,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch_init",
-      "community": 15,
+      "community": 24,
       "norm_label": ".__init__()"
     },
     {
@@ -2975,7 +2975,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch_forward",
-      "community": 15,
+      "community": 24,
       "norm_label": ".forward()"
     },
     {
@@ -2995,7 +2995,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "models_embedding_dualbranchembedding_init",
-      "community": 15,
+      "community": 24,
       "norm_label": ".__init__()"
     },
     {
@@ -3005,7 +3005,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "models_embedding_dualbranchembedding_forward",
-      "community": 8,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3025,7 +3025,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_embedding_rationale_16",
-      "community": 15,
+      "community": 24,
       "norm_label": "two 3-wide conv layers + identity/projection skip, optional /2 downsample."
     },
     {
@@ -3035,7 +3035,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "models_embedding_rationale_40",
-      "community": 15,
+      "community": 24,
       "norm_label": "stack of residual blocks with progressive downsampling -> pooled vector."
     },
     {
@@ -3115,7 +3115,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "models_heads_detectionhead_forward",
-      "community": 8,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3175,7 +3175,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "models_heads_flowmatchinghead_forward",
-      "community": 8,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3245,7 +3245,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "models_npe_couplinglayer",
-      "community": 8,
+      "community": 23,
       "norm_label": "_couplinglayer"
     },
     {
@@ -3255,7 +3255,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_init",
-      "community": 8,
+      "community": 23,
       "norm_label": ".__init__()"
     },
     {
@@ -3265,7 +3265,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_forward",
-      "community": 8,
+      "community": 23,
       "norm_label": ".forward()"
     },
     {
@@ -3275,7 +3275,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_inverse",
-      "community": 8,
+      "community": 23,
       "norm_label": ".inverse()"
     },
     {
@@ -3285,7 +3285,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "models_npe_realnvp",
-      "community": 8,
+      "community": 23,
       "norm_label": "_realnvp"
     },
     {
@@ -3295,7 +3295,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "models_npe_realnvp_init",
-      "community": 8,
+      "community": 23,
       "norm_label": ".__init__()"
     },
     {
@@ -3305,7 +3305,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "models_npe_realnvp_log_prob",
-      "community": 8,
+      "community": 23,
       "norm_label": ".log_prob()"
     },
     {
@@ -3315,7 +3315,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "models_npe_realnvp_sample",
-      "community": 8,
+      "community": 23,
       "norm_label": ".sample()"
     },
     {
@@ -3335,7 +3335,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "models_npe_npehead_init",
-      "community": 8,
+      "community": 23,
       "norm_label": ".__init__()"
     },
     {
@@ -3345,7 +3345,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_npe_npehead_log_prob",
-      "community": 8,
+      "community": 17,
       "norm_label": ".log_prob()"
     },
     {
@@ -3355,7 +3355,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "models_npe_npehead_sample",
-      "community": 8,
+      "community": 17,
       "norm_label": ".sample()"
     },
     {
@@ -3365,7 +3365,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "models_npe_npehead_nll",
-      "community": 8,
+      "community": 17,
       "norm_label": ".nll()"
     },
     {
@@ -3385,7 +3385,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "models_npe_rationale_24",
-      "community": 8,
+      "community": 23,
       "norm_label": "conditional affine coupling (realnvp) with a fixed binary mask."
     },
     {
@@ -3395,7 +3395,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "models_npe_rationale_56",
-      "community": 8,
+      "community": 23,
       "norm_label": "fallback conditional realnvp over a standard-normal base."
     },
     {
@@ -3415,7 +3415,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "models_npe_rationale_112",
-      "community": 8,
+      "community": 17,
       "norm_label": "return ``(b, n, param_dim)`` posterior samples."
     },
     {
@@ -3425,7 +3425,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_spike_slab",
-      "community": 1,
+      "community": 15,
       "norm_label": "spike_slab.py"
     },
     {
@@ -3435,7 +3435,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabconfig",
-      "community": 1,
+      "community": 15,
       "norm_label": "spikeslabconfig"
     },
     {
@@ -3445,7 +3445,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter",
-      "community": 1,
+      "community": 15,
       "norm_label": "spikeslabadapter"
     },
     {
@@ -3455,7 +3455,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_init",
-      "community": 1,
+      "community": 15,
       "norm_label": ".__init__()"
     },
     {
@@ -3465,7 +3465,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_make_targets",
-      "community": 1,
+      "community": 15,
       "norm_label": ".make_targets()"
     },
     {
@@ -3475,7 +3475,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_detect_prob",
-      "community": 1,
+      "community": 17,
       "norm_label": ".detect_prob()"
     },
     {
@@ -3485,7 +3485,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "models_spike_slab_train_spike_slab",
-      "community": 1,
+      "community": 15,
       "norm_label": "train_spike_slab()"
     },
     {
@@ -3495,7 +3495,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_1",
-      "community": 1,
+      "community": 15,
       "norm_label": "variant c (experimental): unified spike-and-slab posterior.  a single posterior"
     },
     {
@@ -3505,7 +3505,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_37",
-      "community": 1,
+      "community": 15,
       "norm_label": "maps (theta_std, d) to spike-and-slab targets and reads detection back."
     },
     {
@@ -3515,7 +3515,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_47",
-      "community": 1,
+      "community": 15,
       "norm_label": "augmented training targets: spike the depth dim for non-planets."
     },
     {
@@ -3525,7 +3525,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_62",
-      "community": 1,
+      "community": 17,
       "norm_label": "posterior detection probability = p(depth dim above threshold).          ``sampl"
     },
     {
@@ -3535,7 +3535,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_73",
-      "community": 1,
+      "community": 15,
       "norm_label": "train variant c: one unified flow over all rows (no detection head, no mask)."
     },
     {
@@ -3585,7 +3585,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_embed",
-      "community": 8,
+      "community": 17,
       "norm_label": ".embed()"
     },
     {
@@ -3595,7 +3595,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_detect_logits",
-      "community": 8,
+      "community": 17,
       "norm_label": ".detect_logits()"
     },
     {
@@ -3605,7 +3605,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_velocity",
-      "community": 8,
+      "community": 17,
       "norm_label": ".velocity()"
     },
     {
@@ -3895,7 +3895,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors",
-      "community": 6,
+      "community": 4,
       "norm_label": "priors.py"
     },
     {
@@ -3965,7 +3965,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior",
-      "community": 3,
+      "community": 4,
       "norm_label": "transitprior"
     },
     {
@@ -3995,7 +3995,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_dim",
-      "community": 3,
+      "community": 4,
       "norm_label": ".dim()"
     },
     {
@@ -4005,7 +4005,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_names",
-      "community": 3,
+      "community": 4,
       "norm_label": ".names()"
     },
     {
@@ -4035,7 +4035,7 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_u",
-      "community": 3,
+      "community": 2,
       "norm_label": "._physical_to_u()"
     },
     {
@@ -4045,7 +4045,7 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std",
-      "community": 3,
+      "community": 2,
       "norm_label": ".physical_to_std()"
     },
     {
@@ -4065,7 +4065,7 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_torch_buffers",
-      "community": 3,
+      "community": 17,
       "norm_label": ".torch_buffers()"
     },
     {
@@ -4075,7 +4075,7 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_to_physical_torch",
-      "community": 3,
+      "community": 17,
       "norm_label": ".std_to_physical_torch()"
     },
     {
@@ -4085,7 +4085,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std_torch",
-      "community": 3,
+      "community": 17,
       "norm_label": ".physical_to_std_torch()"
     },
     {
@@ -4095,7 +4095,7 @@
       "source_location": "L210",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_physical",
-      "community": 3,
+      "community": 2,
       "norm_label": ".log_prob_physical()"
     },
     {
@@ -4105,7 +4105,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_std",
-      "community": 3,
+      "community": 2,
       "norm_label": ".log_prob_std()"
     },
     {
@@ -4115,7 +4115,7 @@
       "source_location": "L236",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_bounds",
-      "community": 3,
+      "community": 2,
       "norm_label": ".std_bounds()"
     },
     {
@@ -4125,7 +4125,7 @@
       "source_location": "L242",
       "_origin": "ast",
       "id": "transitflow_priors_kipping_to_quadratic",
-      "community": 14,
+      "community": 3,
       "norm_label": "kipping_to_quadratic()"
     },
     {
@@ -4135,7 +4135,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "transitflow_priors_quadratic_to_kipping",
-      "community": 6,
+      "community": 3,
       "norm_label": "quadratic_to_kipping()"
     },
     {
@@ -4145,7 +4145,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_1",
-      "community": 6,
+      "community": 4,
       "norm_label": "parameter priors and bijective transforms for transitflow.  the inference target"
     },
     {
@@ -4165,7 +4165,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_92",
-      "community": 3,
+      "community": 4,
       "norm_label": "joint prior over the 7-d transit parameter vector with standardization.      the"
     },
     {
@@ -4195,7 +4195,7 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_184",
-      "community": 3,
+      "community": 17,
       "norm_label": "return (log_mask, u_mean, u_std, u_low, u_high) as tensors."
     },
     {
@@ -4205,7 +4205,7 @@
       "source_location": "L211",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_211",
-      "community": 3,
+      "community": 2,
       "norm_label": "log prior density in physical space; ``-inf`` outside support."
     },
     {
@@ -4215,7 +4215,7 @@
       "source_location": "L222",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_222",
-      "community": 3,
+      "community": 2,
       "norm_label": "log prior density in standardized space; ``-inf`` outside support.          in `"
     },
     {
@@ -4225,7 +4225,7 @@
       "source_location": "L243",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_243",
-      "community": 14,
+      "community": 3,
       "norm_label": "map kipping (2013) (q1, q2) in [0,1]^2 to quadratic ld (u1, u2).      guarantees"
     },
     {
@@ -4235,7 +4235,7 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_257",
-      "community": 6,
+      "community": 3,
       "norm_label": "inverse of :func:`kipping_to_quadratic`."
     },
     {
@@ -4255,7 +4255,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "transitflow_simulator_simconfig",
-      "community": 0,
+      "community": 19,
       "norm_label": "simconfig"
     },
     {
@@ -4265,7 +4265,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "transitflow_simulator_simconfig_normalized_regime_fracs",
-      "community": 14,
+      "community": 19,
       "norm_label": ".normalized_regime_fracs()"
     },
     {
@@ -4275,7 +4275,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator",
-      "community": 14,
+      "community": 4,
       "norm_label": "transitsimulator"
     },
     {
@@ -4285,7 +4285,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator_init",
-      "community": 14,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -4315,7 +4315,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_36",
-      "community": 0,
+      "community": 19,
       "norm_label": "configuration of the forward simulator."
     },
     {
@@ -4325,7 +4325,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_89",
-      "community": 14,
+      "community": 4,
       "norm_label": "vectorized forward simulator producing dual-view sbi training data."
     },
     {
@@ -4345,7 +4345,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "transitflow_train_trainconfig",
-      "community": 0,
+      "community": 19,
       "norm_label": "trainconfig"
     },
     {
@@ -4365,7 +4365,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_train_compute_losses",
-      "community": 0,
+      "community": 15,
       "norm_label": "compute_losses()"
     },
     {
@@ -4405,7 +4405,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "transitflow_train_load_checkpoint",
-      "community": 0,
+      "community": 4,
       "norm_label": "load_checkpoint()"
     },
     {
@@ -4535,7 +4535,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "transitflow_train_rationale_92",
-      "community": 0,
+      "community": 15,
       "norm_label": "forward pass returning the component losses (differentiable)."
     },
     {
@@ -4685,7 +4685,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_utils",
-      "community": 0,
+      "community": 22,
       "norm_label": "utils.py"
     },
     {
@@ -4695,7 +4695,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "transitflow_utils_set_seed",
-      "community": 0,
+      "community": 22,
       "norm_label": "set_seed()"
     },
     {
@@ -4725,7 +4725,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "transitflow_utils_load_config",
-      "community": 0,
+      "community": 22,
       "norm_label": "load_config()"
     },
     {
@@ -4735,7 +4735,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "transitflow_utils_merge_into_dataclass",
-      "community": 0,
+      "community": 22,
       "norm_label": "merge_into_dataclass()"
     },
     {
@@ -4745,7 +4745,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "transitflow_utils_batch_to_torch",
-      "community": 1,
+      "community": 15,
       "norm_label": "batch_to_torch()"
     },
     {
@@ -4755,7 +4755,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator",
-      "community": 0,
+      "community": 1,
       "norm_label": "simulatoriterator"
     },
     {
@@ -4775,7 +4775,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_iter",
-      "community": 0,
+      "community": 1,
       "norm_label": ".__iter__()"
     },
     {
@@ -4795,7 +4795,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_close",
-      "community": 0,
+      "community": 1,
       "norm_label": ".close()"
     },
     {
@@ -4805,7 +4805,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "transitflow_utils_mp_worker",
-      "community": 14,
+      "community": 22,
       "norm_label": "_mp_worker()"
     },
     {
@@ -4895,7 +4895,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_1",
-      "community": 0,
+      "community": 22,
       "norm_label": "shared utilities: config loading, seeding, device selection, data iteration."
     },
     {
@@ -4915,7 +4915,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_35",
-      "community": 0,
+      "community": 22,
       "norm_label": "load a yaml config into a plain dict."
     },
     {
@@ -4925,7 +4925,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_43",
-      "community": 0,
+      "community": 22,
       "norm_label": "return a copy of dataclass ``dc`` with keys from ``overrides`` applied."
     },
     {
@@ -4935,7 +4935,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_57",
-      "community": 1,
+      "community": 15,
       "norm_label": "move the simulator's numpy batch onto a device as tensors.      on cuda the host"
     },
     {
@@ -4945,7 +4945,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_84",
-      "community": 0,
+      "community": 1,
       "norm_label": "infinite iterator of on-the-fly simulated batches (no disk storage)."
     },
     {
@@ -4955,7 +4955,7 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_108",
-      "community": 14,
+      "community": 22,
       "norm_label": "worker process: build a simulator and stream batches onto the queue."
     },
     {
@@ -5739,10 +5739,20 @@
       "norm_label": "fixes made"
     },
     {
+      "label": "Vast smoke after conditional-MCMC fix",
+      "file_type": "document",
+      "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
+      "source_location": "L44",
+      "_origin": "ast",
+      "id": "artifacts_char5_gate_audit_2026_06_26_vast_smoke_after_conditional_mcmc_fix",
+      "community": 9,
+      "norm_label": "vast smoke after conditional-mcmc fix"
+    },
+    {
       "label": "Downloaded evidence",
       "file_type": "document",
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
-      "source_location": "L43",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "artifacts_char5_gate_audit_2026_06_26_downloaded_evidence",
       "community": 9,
@@ -5752,7 +5762,7 @@
       "label": "Next run rule",
       "file_type": "document",
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
-      "source_location": "L51",
+      "source_location": "L72",
       "_origin": "ast",
       "id": "artifacts_char5_gate_audit_2026_06_26_next_run_rule",
       "community": 9,
@@ -8928,6 +8938,17 @@
       "target": "baselines_bls_bls_detect"
     },
     {
+      "relation": "imports_from",
+      "context": "submodule_import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "tests_test_baselines",
+      "target": "baselines_mcmc",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -8972,11 +8993,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "tests_test_baselines",
-      "target": "tests_test_baselines_test_mcmc_recovers_depth_roughly"
+      "target": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "tests_test_baselines",
+      "target": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -9089,36 +9120,26 @@
       "target": "baselines_bls_bls_detect"
     },
     {
-      "relation": "rationale_for",
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L35",
+      "source_location": "L43",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_baselines_rationale_35",
-      "target": "tests_test_baselines_test_mcmc_recovers_depth_roughly"
+      "source": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
+      "target": "baselines_mcmc_run_mcmc",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L44",
+      "source_location": "L39",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_baselines_test_mcmc_recovers_depth_roughly",
-      "target": "baselines_mcmc_run_mcmc"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_baselines.py",
-      "source_location": "L40",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_baselines_test_mcmc_recovers_depth_roughly",
-      "target": "transitflow_priors_kipping_to_quadratic"
+      "source": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
+      "target": "transitflow_priors_kipping_to_quadratic",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9127,20 +9148,64 @@
       "source_file": "tests/test_baselines.py",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_baselines_test_mcmc_recovers_depth_roughly",
-      "target": "transitflow_priors_transitprior"
+      "source": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
+      "target": "transitflow_priors_transitprior",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_baselines.py",
-      "source_location": "L41",
+      "source_location": "L40",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_baselines_test_mcmc_recovers_depth_roughly",
-      "target": "transitflow_transit_model_transit_flux"
+      "source": "tests_test_baselines_test_mcmc_all_fixed_returns_fixed_samples",
+      "target": "transitflow_transit_model_transit_flux",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "target": "baselines_mcmc_run_mcmc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "target": "transitflow_priors_kipping_to_quadratic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "target": "transitflow_priors_transitprior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_baselines.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "tests_test_baselines_test_mcmc_fixed_ephemeris_metadata_all_fixed",
+      "target": "transitflow_transit_model_transit_flux",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -10797,9 +10862,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L87",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference",
-      "target": "evaluation_sbc_run_sbc",
-      "confidence_score": 1.0
+      "target": "evaluation_sbc_run_sbc"
     },
     {
       "relation": "imports",
@@ -10868,9 +10933,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L71",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference",
-      "target": "tests_test_inference_test_log_prob_slices_characterization_target",
-      "confidence_score": 1.0
+      "target": "tests_test_inference_test_log_prob_slices_characterization_target"
     },
     {
       "relation": "contains",
@@ -10888,9 +10953,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference",
-      "target": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model",
-      "confidence_score": 1.0
+      "target": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model"
     },
     {
       "relation": "imports_from",
@@ -10987,9 +11052,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference_test_log_prob_slices_characterization_target",
-      "target": "tests_test_inference_inference",
-      "confidence_score": 1.0
+      "target": "tests_test_inference_inference"
     },
     {
       "relation": "calls",
@@ -11009,9 +11074,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model",
-      "target": "tests_test_inference_inference",
-      "confidence_score": 1.0
+      "target": "tests_test_inference_inference"
     },
     {
       "relation": "calls",
@@ -11020,9 +11085,9 @@
       "source_file": "tests/test_inference.py",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model",
-      "target": "evaluation_sbc_run_sbc",
-      "confidence_score": 1.0
+      "target": "evaluation_sbc_run_sbc"
     },
     {
       "relation": "imports",
@@ -12119,9 +12184,9 @@
       "source_file": "tests/test_simulator.py",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_simulator_rationale_40",
-      "target": "tests_test_simulator_test_planet_local_views_deeper_on_average",
-      "confidence_score": 1.0
+      "target": "tests_test_simulator_test_planet_local_views_deeper_on_average"
     },
     {
       "relation": "calls",
@@ -13666,9 +13731,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_transitflowinference_expand_std_samples",
-      "target": "ndarray",
-      "confidence_score": 1.0
+      "target": "ndarray"
     },
     {
       "relation": "references",
@@ -14195,11 +14260,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L47",
+      "source_location": "L48",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_rationale_47",
-      "target": "baselines_mcmc_run_mcmc"
+      "source": "baselines_mcmc_rationale_48",
+      "target": "baselines_mcmc_run_mcmc",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -14227,11 +14292,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L77",
+      "source_location": "L112",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_rationale_77",
-      "target": "baselines_mcmc_native_ensemble"
+      "source": "baselines_mcmc_rationale_112",
+      "target": "baselines_mcmc_native_ensemble",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -14576,9 +14641,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_76",
-      "target": "transitflow_data_generate_to_disk",
-      "confidence_score": 1.0
+      "target": "transitflow_data_generate_to_disk"
     },
     {
       "relation": "method",
@@ -14657,9 +14722,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L113",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_113",
-      "target": "transitflow_data_diskdataset",
-      "confidence_score": 1.0
+      "target": "transitflow_data_diskdataset"
     },
     {
       "relation": "calls",
@@ -14758,9 +14823,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L171",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_171",
-      "target": "transitflow_data_diskiterator",
-      "confidence_score": 1.0
+      "target": "transitflow_data_diskiterator"
     },
     {
       "relation": "imports",
@@ -16087,9 +16152,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_transitflowinference",
-      "target": "transitflow_inference_transitflowinference_expand_std_samples",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_expand_std_samples"
     },
     {
       "relation": "method",
@@ -16190,9 +16255,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L118",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_transitflowinference_detect_and_characterize",
-      "target": "transitflow_inference_transitflowinference_expand_std_samples",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_expand_std_samples"
     },
     {
       "relation": "calls",
@@ -16201,9 +16266,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L99",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_transitflowinference_posterior_samples",
-      "target": "transitflow_inference_transitflowinference_expand_std_samples",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_expand_std_samples"
     },
     {
       "relation": "calls",
@@ -16266,9 +16331,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_91",
-      "target": "transitflow_inference_transitflowinference_posterior_samples",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_posterior_samples"
     },
     {
       "relation": "calls",
@@ -16287,9 +16352,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L124",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_124",
-      "target": "transitflow_inference_transitflowinference_log_prob_std",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_log_prob_std"
     },
     {
       "relation": "calls",
@@ -16308,9 +16373,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L143",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_143",
-      "target": "transitflow_inference_transitflowinference_importance_diagnostic",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_importance_diagnostic"
     },
     {
       "relation": "calls",
@@ -19631,9 +19696,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_92",
-      "target": "transitflow_train_compute_losses",
-      "confidence_score": 1.0
+      "target": "transitflow_train_compute_losses"
     },
     {
       "relation": "calls",
@@ -19718,9 +19783,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_116",
-      "target": "transitflow_train_evaluate",
-      "confidence_score": 1.0
+      "target": "transitflow_train_evaluate"
     },
     {
       "relation": "calls",
@@ -19827,9 +19892,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L203",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_203",
-      "target": "transitflow_train_train",
-      "confidence_score": 1.0
+      "target": "transitflow_train_train"
     },
     {
       "relation": "calls",
@@ -19958,9 +20023,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L446",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_446",
-      "target": "transitflow_train_health",
-      "confidence_score": 1.0
+      "target": "transitflow_train_health"
     },
     {
       "relation": "calls",
@@ -20023,9 +20088,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L514",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_514",
-      "target": "transitflow_train_preflight",
-      "confidence_score": 1.0
+      "target": "transitflow_train_preflight"
     },
     {
       "relation": "contains",
@@ -21275,9 +21340,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26"
     },
     {
       "relation": "contains",
@@ -21285,9 +21350,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_downloaded_evidence",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_downloaded_evidence"
     },
     {
       "relation": "contains",
@@ -21295,9 +21360,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_fixes_made",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_fixes_made"
     },
     {
       "relation": "contains",
@@ -21305,8 +21370,18 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_next_run_rule",
+      "target": "artifacts_char5_gate_audit_2026_06_26_next_run_rule"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
+      "source_location": "L44",
+      "weight": 1.0,
+      "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
+      "target": "artifacts_char5_gate_audit_2026_06_26_vast_smoke_after_conditional_mcmc_fix",
       "confidence_score": 1.0
     },
     {
@@ -21315,9 +21390,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_verdict",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_verdict"
     },
     {
       "relation": "contains",
@@ -21325,9 +21400,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_what_failed",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_what_failed"
     },
     {
       "relation": "contains",
@@ -21335,9 +21410,9 @@
       "source_file": "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "artifacts_char5_gate_audit_2026_06_26_transitflow_char5_gate_audit_2026_06_26",
-      "target": "artifacts_char5_gate_audit_2026_06_26_what_passed",
-      "confidence_score": 1.0
+      "target": "artifacts_char5_gate_audit_2026_06_26_what_passed"
     },
     {
       "relation": "contains",
@@ -21581,5 +21656,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "877987414e02d2dec921ea62142f6edbb658a066"
+  "built_at_commit": "d5a5475331b928d94ec0b1db98caa6084172d0c0"
 }

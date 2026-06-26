@@ -1,0 +1,24 @@
+{
+  "torch": "2.12.0+cu130",
+  "cuda": true,
+  "gpu": "NVIDIA GeForce RTX 4070 Ti SUPER",
+  "smoke_metrics": {
+    "detection_auc_ge_0.99": false,
+    "posterior_sbc_p_gt_0.05": true,
+    "all_parameter_sbc_p_gt_0.05": null,
+    "characterization_sbc_p_gt_0.05": true,
+    "coverage_error_le_0.03": null,
+    "characterization_coverage_error_le_0.03": true
+  },
+  "posterior_param_names": [
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "detection": {
+    "roc_auc": 0.8748778103616814,
+    "average_precision": 0.8552388138440724
+  }
+}

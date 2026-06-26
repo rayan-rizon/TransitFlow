@@ -286,6 +286,8 @@ def main():
     ap.add_argument("--mcmc-steps", type=int, default=1500)
     ap.add_argument("--mcmc-detect-threshold", type=float, default=0.9,
                     help="only run same-light-curve MCMC for detected planets")
+    ap.add_argument("--mcmc-full-ephemeris", action="store_true",
+                    help="sample P and t0 in MCMC instead of conditioning on the folded ephemeris")
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
@@ -383,8 +385,13 @@ def main():
                 init = np.array([P, ((t0 - _t[0]) / P) % 1.0, pl["RpRs"],
                                  pl["aRs"] if np.isfinite(pl["aRs"]) else 10.0,
                                  pl["b"] if np.isfinite(pl["b"]) else 0.3, 0.4, 0.3])
+                fixed = None
+                if getattr(inf.model.cfg, "param_dim", 7) == 5 and \
+                        not args.mcmc_full_ephemeris:
+                    fixed = {0: P, 1: ((t0 - _t[0]) / P) % 1.0}
                 mc_out = run_mcmc(t_rel, _f, sigma, prior=prior, init=init,
-                                  n_steps=args.mcmc_steps, n_radial=60)
+                                  n_steps=args.mcmc_steps, n_radial=60,
+                                  fixed=fixed)
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:
@@ -406,6 +413,9 @@ def main():
                 by_name[pl["name"]]["mcmc_wasserstein"] = wd
                 by_name[pl["name"]]["mcmc_wasserstein_width_fraction"] = wd_norm
                 by_name[pl["name"]]["mcmc_backend"] = mc_out["backend"]
+                by_name[pl["name"]]["mcmc_acceptance_fraction"] = \
+                    mc_out.get("acceptance_fraction")
+                by_name[pl["name"]]["mcmc_fixed"] = mc_out.get("fixed", {})
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
                 ess_txt = "" if ess is None else f" ESS={ess:.3f}"
@@ -459,6 +469,15 @@ def main():
                 "median_ess_fraction": float(np.median(ess_vals)),
                 "min_ess_fraction": float(np.min(ess_vals)),
             }
+        fixed_rows = [r.get("mcmc_fixed", {}) for r in mcmc_rows]
+        summary["mcmc_conditioning"] = {
+            "ephemeris_fixed": bool(fixed_rows and all(
+                set(map(int, f.keys())) == {0, 1} for f in fixed_rows)),
+            "acceptance_fraction_median": float(np.nanmedian([
+                r.get("mcmc_acceptance_fraction", float("nan"))
+                for r in mcmc_rows
+            ])),
+        }
         for k in _CMP:
             vals = [r["mcmc_wasserstein"][k] for r in mcmc_rows
                     if k in r["mcmc_wasserstein"]]

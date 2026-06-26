@@ -1,0 +1,135 @@
+{
+  "checkpoint": "/workspace/runs/char5_smoke_small/checkpoints/latest.pt",
+  "head": "fmpe",
+  "noise_lib": null,
+  "noise_lib_available": false,
+  "param_names": [
+    "P",
+    "t0_phase",
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "posterior_param_names": [
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "ephemeris_conditioned": true,
+  "characterization_param_names": [
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "detection": {
+    "roc_auc": 0.8748778103616814,
+    "average_precision": 0.8552388138440724
+  },
+  "sbc_pvalues": [
+    0.4568361255919618,
+    0.7836913118130484,
+    0.11684948016509451,
+    0.9734793951465333,
+    0.1961523572074952
+  ],
+  "sbc_pvalues_by_param": {
+    "RpRs": 0.4568361255919618,
+    "aRs": 0.7836913118130484,
+    "b": 0.11684948016509451,
+    "q1": 0.9734793951465333,
+    "q2": 0.1961523572074952
+  },
+  "characterization_sbc_pvalues": [
+    0.4568361255919618,
+    0.7836913118130484,
+    0.11684948016509451,
+    0.9734793951465333,
+    0.1961523572074952
+  ],
+  "characterization_sbc_pvalues_by_param": {
+    "RpRs": 0.4568361255919618,
+    "aRs": 0.7836913118130484,
+    "b": 0.11684948016509451,
+    "q1": 0.9734793951465333,
+    "q2": 0.1961523572074952
+  },
+  "coverage_calibration_error": null,
+  "characterization_coverage_calibration_error": 0.02894736842105264,
+  "coverage_levels": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.39999999999999997,
+    0.44999999999999996,
+    0.49999999999999994,
+    0.5499999999999999,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.7999999999999999,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "coverage_overall": [
+    0.0875,
+    0.125,
+    0.175,
+    0.2125,
+    0.2625,
+    0.3125,
+    0.4,
+    0.4125,
+    0.475,
+    0.5375,
+    0.6,
+    0.625,
+    0.6625,
+    0.7375,
+    0.75,
+    0.7625,
+    0.7875,
+    0.875,
+    0.9
+  ],
+  "characterization_coverage_overall": [
+    0.0875,
+    0.125,
+    0.175,
+    0.2125,
+    0.2625,
+    0.3125,
+    0.4,
+    0.4125,
+    0.475,
+    0.5375,
+    0.6,
+    0.625,
+    0.6625,
+    0.7375,
+    0.75,
+    0.7625,
+    0.7875,
+    0.875,
+    0.9
+  ],
+  "gate_status": {
+    "detection_auc_ge_0.99": false,
+    "posterior_sbc_p_gt_0.05": true,
+    "all_parameter_sbc_p_gt_0.05": null,
+    "characterization_sbc_p_gt_0.05": true,
+    "coverage_error_le_0.03": null,
+    "characterization_coverage_error_le_0.03": true
+  }
+}

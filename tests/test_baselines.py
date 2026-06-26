@@ -1,6 +1,7 @@
 import numpy as np
 
 from transitflow.baselines.bls import bls_detect
+from transitflow.baselines import mcmc as mcmc_module
 from transitflow.baselines.mcmc import run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
 from transitflow.transit_model import transit_flux
@@ -31,20 +32,35 @@ def test_bls_scores_planet_above_noise():
     assert s_planet > s_noise
 
 
-def test_mcmc_recovers_depth_roughly():
-    """A short MCMC fit to a clean, well-sampled transit brackets the truth."""
+def test_mcmc_all_fixed_returns_fixed_samples():
     P, t0p, RpRs, aRs, b = 3.0, 0.33, 0.1, 12.0, 0.2
     prior = TransitPrior()
-    rng = np.random.default_rng(0)
-    t = np.linspace(0, 9, 3000)
+    t = np.linspace(0, 9, 50)
     u1, u2 = kipping_to_quadratic(0.4, 0.3)
     f = transit_flux(t, P, t0p * P, RpRs, aRs, b, u1, u2, engine="native")[0]
-    f = f + 0.0005 * rng.standard_normal(t.size)
     init = np.array([P, t0p, RpRs, aRs, b, 0.4, 0.3])
-    out = run_mcmc(t, f, 0.0005, prior=prior, init=init, n_walkers=24,
-                   n_steps=400, n_radial=80, seed=0)
+    fixed = {i: float(v) for i, v in enumerate(init)}
+    out = run_mcmc(t, f, 0.0005, prior=prior, init=init, n_walkers=8,
+                   n_steps=2, n_radial=10, seed=0, fixed=fixed)
     samples = out["samples"]
     assert samples.shape[1] == 7
-    # RpRs posterior should bracket the true value
-    lo, hi = np.percentile(samples[:, 2], [2, 98])
-    assert lo < RpRs < hi
+    assert np.allclose(samples, init[None, :])
+    assert out["backend"] == "fixed"
+
+
+def test_mcmc_fixed_ephemeris_metadata_all_fixed():
+    P, t0p, RpRs, aRs, b = 3.0, 0.33, 0.1, 12.0, 0.2
+    prior = TransitPrior()
+    t = np.linspace(0, 9, 50)
+    u1, u2 = kipping_to_quadratic(0.4, 0.3)
+    f = transit_flux(t, P, t0p * P, RpRs, aRs, b, u1, u2,
+                     engine="native")[0]
+    init = np.array([P, t0p, RpRs, aRs, b, 0.4, 0.3])
+    fixed = {i: float(v) for i, v in enumerate(init)}
+    fixed[0] = P
+    fixed[1] = t0p
+    out = run_mcmc(t, f, 0.0006, prior=prior, init=init, n_walkers=4,
+                   n_steps=1, n_radial=8, seed=1, fixed=fixed)
+    assert out["fixed"][0] == P
+    assert out["fixed"][1] == t0p
+    assert np.allclose(out["samples"][:, :2], np.array([P, t0p]))

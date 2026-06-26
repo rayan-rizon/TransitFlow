@@ -39,6 +39,27 @@ The 5-parameter characterization posterior fixes the invalid SBC target. The cal
   - `best_detection.pt` = highest validation detection AUC.
   - `latest.pt` remains final/resume checkpoint.
 - `validate_real.py` supports `--detector-ckpt`, so real detection and posterior characterization can use separately selected checkpoints without mixing claims.
+- Real-data MCMC comparison now supports fixed ephemeris conditioning. For the 5D model, the default MCMC comparator fixes `P` and `t0_phase` to the same folded ephemeris used by the amortized posterior; use `--mcmc-full-ephemeris` only as a separate diagnostic.
+
+## Vast smoke after conditional-MCMC fix
+
+Vast instance `176.12.30.23:41161` was prepared with `torch 2.12.0+cu130`; CUDA saw `NVIDIA GeForce RTX 4070 Ti SUPER`.
+
+Smoke tests run on Vast:
+
+- Direct smoke passed:
+  - fixed-parameter MCMC returns fixed samples;
+  - 5D ephemeris-conditioned inference returns full 7D physical samples;
+  - standardized returned samples preserve the first two ephemeris dimensions.
+- Targeted pytest passed: `4 passed`.
+- Broader smoke pytest passed: `28 passed`, with only the known PyTorch scalar-conversion warning.
+- Small GPU train/evaluate smoke passed structurally:
+  - `posterior_param_names == ["RpRs", "aRs", "b", "q1", "q2"]`;
+  - `len(sbc_pvalues) == 5`;
+  - `all_parameter_sbc_p_gt_0.05 is None`;
+  - 120-step smoke characterization SBC and coverage gates passed.
+
+The 120-step smoke detection AUC did not pass and is not a metrics claim; it only verifies pipeline mechanics before a proper run.
 
 ## Downloaded evidence
 
@@ -55,4 +76,4 @@ Before another full run:
 1. Run a small smoke test that verifies `posterior_param_names == [RpRs, aRs, b, q1, q2]`.
 2. Evaluate synthetic gates on the posterior-calibrated checkpoint.
 3. Run real validation with `--ckpt <posterior>` and `--detector-ckpt <detector>`.
-4. Only continue to a full real-data claim if MCMC prior-fraction gate passes for `RpRs`, `aRs`, and `b`.
+4. Run real MCMC with fixed ephemeris for the 5D model; only continue to a full real-data claim if MCMC prior-fraction gate passes for `RpRs`, `aRs`, and `b`.
