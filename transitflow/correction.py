@@ -45,16 +45,19 @@ def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 2
 
 def importance_weights(inference, global_view, local_view, sigma_feat,
                        raw_flux: np.ndarray, times: np.ndarray, sigma: float,
-                       n_samples: int = 1000, logprob_steps: int = 40) -> dict:
+                       n_samples: int = 1000, logprob_steps: int = 40,
+                       periodogram=None, ephem_feat=None) -> dict:
     """Importance-sampling weights for one object's amortized posterior.
 
     Returns physical + standardized proposal samples, normalized weights ``w``,
     and the ESS fraction.  ``sigma`` is the per-cadence white-noise std.
     """
     inf = inference
-    e = inf.embed(global_view, local_view, sigma_feat)              # (1, E)
+    e = inf.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
     phys, std = inf.posterior_samples(global_view, local_view, sigma_feat,
-                                      n_samples=n_samples, return_std=True)
+                                      n_samples=n_samples, return_std=True,
+                                      periodogram=periodogram,
+                                      ephem_feat=ephem_feat)
     phys, std = phys[0], std[0]                                     # (N, 7)
     logq = inf.log_prob_std(std, e.repeat(std.shape[0], 1), )       # (N,)
     logprior = inf.prior.log_prob_std(std)                         # (N,) const in box

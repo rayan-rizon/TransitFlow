@@ -102,6 +102,24 @@ def white_noise(sigma: np.ndarray, n: int,
     return rng.normal(size=(sigma.shape[0], n)) * sigma
 
 
+def estimate_white_sigma(flux: np.ndarray) -> np.ndarray:
+    """Estimate per-cadence white scatter from point-to-point differences.
+
+    Real out-of-transit segments contain slow stellar/instrumental structure, so
+    the raw standard deviation overstates the white-noise level used for
+    conditioning.  For independent white noise,
+    ``std(x[i+1] - x[i]) = sqrt(2) * sigma``; the robust MAD version matches the
+    estimator used by the real-data validation path.
+    """
+    f = np.asarray(flux, dtype=np.float64)
+    if f.ndim == 1:
+        f = f[None, :]
+    d = np.diff(f, axis=1)
+    med = np.nanmedian(d, axis=1, keepdims=True)
+    mad = np.nanmedian(np.abs(d - med), axis=1)
+    return 1.4826 * mad / np.sqrt(2.0)
+
+
 # --------------------------------------------------------------------------- #
 # Hard negatives (injected into the raw curve)
 # --------------------------------------------------------------------------- #

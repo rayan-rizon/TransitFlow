@@ -47,10 +47,14 @@ def main():
             if got >= args.n_obj:
                 break
             g, l, sf = b["global"][i], b["local"][i], b["sigma_feat"][i]
+            pg = b["periodogram"][i] if "periodogram" in b else None
+            eph = b["ephem_feat"][i] if "ephem_feat" in b else None
             tstd = pr.physical_to_std(b["theta_phys"][i][None, :])[0]
             r = importance_weights(inf, g, l, sf, b["raw_flux"][i].astype(np.float64),
                                    b["times"].astype(np.float64), float(b["sigma"][i]),
-                                   n_samples=args.n_post, logprob_steps=args.logprob_steps)
+                                   n_samples=args.n_post,
+                                   logprob_steps=args.logprob_steps,
+                                   periodogram=pg, ephem_feat=eph)
             # uncorrected (flow): integer rank of truth among proposal samples
             flow_ranks.append((r["std"] < tstd[None, :]).sum(0))
             # corrected: weighted CDF of truth -> scaled to the same [0, N] range

@@ -66,6 +66,29 @@ def test_importance_weights_and_correction():
     assert res.shape == (50, 7)
 
 
+def test_importance_weights_accepts_periodogram_model():
+    sc = SimConfig(n_global=128, n_local=65, baseline_days=27.0, n_raw=2500,
+                   frac_real=0.0, frac_gp=0.0, frac_white=1.0, planet_fraction=1.0,
+                   n_radial=50, regime="tess", use_periodogram=True,
+                   n_period_bins=32, pg_n_raw=512)
+    pr = TransitPrior(TransitPrior.default_specs("tess"))
+    sim = TransitSimulator(sc, prior=pr)
+    mc = ModelConfig(embed_dim=32, global_channels=(16, 32), local_channels=(16, 32),
+                     global_dim=32, local_dim=16, fm_hidden=48, fm_blocks=2,
+                     fm_time_dim=16, use_periodogram=True, pg_channels=(16, 32),
+                     pg_dim=16)
+    inf = TransitFlowInference(TransitFlow(mc), pr, sc, ode_steps=10)
+    b = sim.simulate_batch(4, np.random.default_rng(8), return_raw=True)
+    i = int(np.where(b["valid"])[0][0])
+    r = importance_weights(inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
+                           b["raw_flux"][i].astype(np.float64),
+                           b["times"].astype(np.float64), float(b["sigma"][i]),
+                           n_samples=32, logprob_steps=10,
+                           periodogram=b["periodogram"][i])
+    assert r["phys"].shape == (32, 7)
+    assert np.isfinite(r["w"]).all()
+
+
 def test_importance_weights_recover_true_posterior_synthetic():
     """On a high-SNR object the IS weights concentrate near the truth."""
     sc, pr, sim, inf = _setup()

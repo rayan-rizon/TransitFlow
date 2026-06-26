@@ -10,6 +10,8 @@ DATA_DIR=/workspace/data/tess_1M_real
 NOISE_LIB=/workspace/data/noise_lib.npz
 RUN_DIR=/workspace/TransitFlow/runs/fmpe_pg_real
 RESULT_DIR=/workspace/results_real_v3
+POSTERIOR_CKPT=$RUN_DIR/checkpoints/latest.pt
+DETECTOR_CKPT=$RUN_DIR/checkpoints/best_detection.pt
 
 mkdir -p /workspace/data
 
@@ -84,12 +86,18 @@ stage TRAIN $LOG_DIR/train_real.log \
         --expect-device cuda \
         --no-preflight
 
+if [ ! -f "$DETECTOR_CKPT" ]; then
+    echo "[pipeline] WARNING: $DETECTOR_CKPT missing; falling back to legacy best.pt"
+    DETECTOR_CKPT=$RUN_DIR/checkpoints/best.pt
+fi
+
 # ─────────────────────────────────────────────────────────────────────────────
 # STAGE 4: Evaluate (SBC + coverage + detection + speed)
 # ─────────────────────────────────────────────────────────────────────────────
 stage EVAL $LOG_DIR/eval_real.log \
     $PYTHON scripts/evaluate.py \
-        --ckpt $RUN_DIR/checkpoints/best.pt \
+        --ckpt $POSTERIOR_CKPT \
+        --noise-lib $NOISE_LIB \
         --out $RESULT_DIR/eval \
         --plots
 
@@ -100,7 +108,8 @@ echo "=== EVAL METRICS ===" && cat $RESULT_DIR/eval/metrics.json
 # ─────────────────────────────────────────────────────────────────────────────
 stage REAL_VAL $LOG_DIR/real_v3.log \
     $PYTHON scripts/validate_real.py \
-        --ckpt $RUN_DIR/checkpoints/best.pt \
+        --ckpt $POSTERIOR_CKPT \
+        --detector-ckpt $DETECTOR_CKPT \
         --n-planets 30 \
         --out $RESULT_DIR/real
 

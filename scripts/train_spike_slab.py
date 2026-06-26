@@ -90,7 +90,8 @@ def main():
         batch = next(data)
         nf = batch["sigma_feat"] if model.cfg.use_noise_feature else None
         pg = batch.get("periodogram") if model.cfg.use_periodogram else None
-        e = model.embed(batch["global"], batch["local"], nf, pg)
+        eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+        e = model.embed(batch["global"], batch["local"], nf, pg, eph)
         targets = adapter.make_targets(batch["theta_std"], batch["d"])
         loss = cfm_loss(model.velocity_fn(), targets, e, mask=None)  # all rows
         opt.zero_grad(set_to_none=True)
@@ -133,9 +134,11 @@ def main():
         if not m.any():
             continue
         pg = b["periodogram"][m] if "periodogram" in b else None
+        eph = b["ephem_feat"][m] if "ephem_feat" in b else None
         cov_s.append(inf.posterior_samples(b["global"][m], b["local"][m],
                                            b["sigma_feat"][m],
-                                           n_samples=args.n_posterior, periodogram=pg))
+                                           n_samples=args.n_posterior, periodogram=pg,
+                                           ephem_feat=eph))
         cov_t.append(b["theta_phys"][m])
         got += int(m.sum())
     cov_s = np.concatenate(cov_s)[:args.n_sbc]
@@ -150,8 +153,10 @@ def main():
     while got < args.n_detection:
         b = sim.simulate_batch(256, rng)
         pg = b.get("periodogram")
+        eph = b.get("ephem_feat")
         _, s_std = inf.posterior_samples(b["global"], b["local"], b["sigma_feat"],
-                                         n_samples=512, return_std=True, periodogram=pg)
+                                         n_samples=512, return_std=True,
+                                         periodogram=pg, ephem_feat=eph)
         p_det = adapter.detect_prob(torch.as_tensor(s_std)).numpy()
         labels.append(b["d"]); scores.append(p_det); got += len(p_det)
     labels = np.concatenate(labels)[:args.n_detection]

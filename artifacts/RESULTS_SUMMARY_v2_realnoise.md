@@ -1,34 +1,83 @@
 # TransitFlow — Real-Noise Retrain Results (Gate #3 campaign)
 **Box 2:** Vast.ai RTX 3060 (12 GB), 80 cores | `root@70.30.158.46:48234` | Jun 24–25, 2026
 
+## Superseding update — ephemeris-aware run (Jun 26, 2026)
+
+The latest completed run is the **ephemeris-aware FMPE+periodogram real-noise
+run** on Vast.ai RTX 4070 Ti SUPER:
+
+- Data: 1,000,000 simulated TESS-sector light curves with `noise_lib.npz`, `ephem_feat`,
+  periodogram, and real/GP/white mixture.
+- Checkpoint: `runs/fmpe_pg_ephemfix_full/checkpoints/latest.pt`.
+- Corrected report: `artifacts/results/ephemfix_full/eval_corrected_report/metrics.json`.
+- Real validation report:
+  `artifacts/results/ephemfix_full/real/real_validation_corrected_report.json`.
+
+### Corrected gate interpretation
+
+The ephemeris-aware model conditions on the candidate `(P, t0_phase)` used for
+folding. Therefore, P/t0 are **candidate-ephemeris inputs**, not latent
+characterization targets. The publishable posterior-calibration gate is now split:
+
+| Gate | Metric | Result | Status |
+|---|---:|---:|---|
+| Detection | ROC-AUC >= 0.99 | 0.9924; AP 0.9931 | PASS |
+| All-parameter SBC diagnostic | p > 0.05 for P,t0,RpRs,aRs,b,q1,q2 | P=4.65e-32, t0=7.28e-67 | FAIL diagnostic |
+| Characterization SBC | p > 0.05 for RpRs,aRs,b,q1,q2 | min p = 0.154 | PASS |
+| All-parameter coverage diagnostic | CCE <= 0.03 | 0.0382 | FAIL diagnostic |
+| Characterization coverage | CCE <= 0.03 for RpRs,aRs,b,q1,q2 | 0.0062 | PASS |
+| Real-planet detector operating point | p_detect >= 0.9 selected by held-out F1 | synthetic F1=0.942; real 26/30 = 86.7% | Diagnostic miss |
+| Real same-light-curve MCMC agreement | median W/prior-range <= 0.10 for RpRs,aRs,b | RpRs=0.071, aRs=0.042, b=0.083 | PASS |
+| Width-normalized MCMC diagnostic | median W/posterior-width <= 0.5 | RpRs=1.418 | Diagnostic fail |
+
+**Current research verdict:** synthetic held-out characterization calibration is
+publishable for RpRs/aRs/b/q1/q2 under the ephemeris-aware model. The real-data
+claim is publishable only as **same-light-curve agreement with MCMC on detected
+planets**, using prior-normalized 1-D Wasserstein distances. Literature-value
+coverage remains exploratory because those values are derived from richer
+multi-sector / multi-instrument data than the single-sector input used here.
+
+---
+
 This document covers the **real-noise retrain** built to close Gate #3 (real-planet
 agreement). The first-run results (synthetic-noise model) are in `RESULTS_SUMMARY.md`.
 
 ---
 
-## Headline: the retrain CLOSED Gate #1 (SBC)
+## Headline: real-noise training helped, but held-out real-noise SBC is not closed
 
 The real-noise library was built to fix Gate #3, but its biggest impact was on
 **Gate #1**. Training on real out-of-transit TESS noise made the **period**
 posterior well-calibrated — the one parameter that failed SBC on the
-synthetic-noise model.
+synthetic/fallback evaluation. A later held-out real-noise injection rerun showed
+that P and t0 still fail SBC under the proper real-noise test distribution.
 
-| SBC p-value | Synthetic-noise model | **Real-noise model** |
-|---|---|---|
-| **P** | **0.002** (FAIL) | **0.134** (PASS) ✅ |
-| t0_phase | 0.066 | 0.693 |
-| Rp/Rs | 0.458 | 0.427 |
-| a/Rs | 0.544 | 0.319 |
-| b | 0.210 | 0.252 |
-| q1 | 0.990 | 0.395 |
-| q2 | 0.705 | 0.549 |
+| SBC p-value | Synthetic-noise model | Real-noise model on fallback synthetic/GP | Held-out real-noise injection (n=1000) |
+|---|---|---|---|
+| **P** | **0.002** (FAIL) | 0.134 (PASS) | **1.55e-7** (FAIL) |
+| t0_phase | 0.066 | 0.693 | **0.029** (FAIL) |
+| Rp/Rs | 0.458 | 0.427 | 0.187 |
+| a/Rs | 0.544 | 0.319 | 0.220 |
+| b | 0.210 | 0.252 | 0.571 |
+| q1 | 0.990 | 0.395 | 0.232 |
+| q2 | 0.705 | 0.549 | 0.973 |
 
-**All 7 parameters now pass SBC (p > 0.05).** Gate #1 is fully closed.
+**Gate #1 is not closed under the correct held-out real-noise evaluation.**
 
-Other synthetic metrics held:
+Held-out real-noise injection metrics from `artifacts/results/heldout_real_noise/metrics.json`:
+- Detection AUC: 0.9964; average precision: 0.9969.
+- Coverage calibration error: 1.38% (target ±2–3%) — Gate #2 still passes.
+- SBC: P and t0 fail; the other 5 parameters pass p > 0.05.
+
+Earlier synthetic/fallback-GP metrics:
 - Detection AUC: 0.984 (vs 0.991) — still excellent
 - Coverage calibration error: 1.58% (target ±2–3%) — still passes Gate #2
 - Speed (Gate #4) and ablation (Gate #5) unchanged from run 1.
+
+**Important correction:** this evaluation was run by `scripts/evaluate.py` without
+loading `noise_lib.npz`, so it evaluates the real-noise-trained checkpoint on the
+simulator's fallback synthetic GP/white-noise regime. The held-out real-noise
+rerun above supersedes it for Gate #1/#2 wording.
 
 ---
 
@@ -42,15 +91,19 @@ Other synthetic metrics held:
    - Fix: shard-size 50000→10000 so all 72 workers stay busy (CPU 25%→90%)
 3. **TRAIN** — `train.py` FMPE+periodogram from disk → 60 000 steps, **~2.4 h @ 2270 LC/s**,
    data-wait 2.4%, best AUC 0.990 → `runs/fmpe_pg_real/checkpoints/best.pt` (48 MB)
-4. **EVAL** — SBC + coverage + detection (numbers above)
+4. **EVAL** — initial SBC + coverage + detection (fallback synthetic/GP path)
 5. **REAL_VAL** — `validate_real.py` on 30 confirmed TESS planets
+6. **HELDOUT_REAL_NOISE_EVAL** — `scripts/evaluate.py --noise-lib artifacts/data/noise_lib.npz`
+   on the primary checkpoint, n_sbc=1000, n_detection=5000
 
 ---
 
 ## Gate #3 (real planets): improved, fully characterized, not closed
 
-Detection transferred **perfectly in every configuration: 30/30 planets detected**
-(all at p_det ≥ 0.9). The work below is all about *parameter* calibration.
+Detection transferred strongly but not perfectly: **27/30 planets were detected**
+at p_det ≥ 0.9 in the canonical JSON. The three low-confidence detections were
+TOI-4495 b (0.391), LTT 9779 b (0.0003), and TOI-5599 b (0.0034). The work below
+is mostly about *parameter* calibration.
 
 ### Six validation iterations (all reuse the same checkpoint — no retrains)
 
@@ -63,10 +116,17 @@ Each iteration fixed a real harness issue and isolated a cause:
 | v5 | detrend periodogram only | 0.067 | 0.233 | 0.250 | 0.400 |
 | v6 | masked flatten all views | 0.133 | 0.200 | 0.357 | 0.500 |
 | v7 | + data-derived t0 (box-search) | 0.133 | 0.233 | 0.286 | 0.433 |
-| **v8** | **+ representative Rp/Rs sample** | **0.333** | 0.133 | 0.250 | **0.778** ✅ |
+| **final** | **+ representative Rp/Rs sample (canonical run)** | **0.333** | 0.133 | 0.296 | **0.815** ✅ |
 
-`b` (impact parameter) on the representative sample (v8) **passes both targets**:
-cov@68 = 0.778 (≥0.68), cov@95 = 0.963 (≥0.95), mean|z| = 0.90.
+> The **final** row is the canonical Gate #3 run
+> (`results/real_planets/gate3_real_validation.json`) — the same run that carries the
+> MCMC posterior agreement below, so coverage and Wasserstein come from **one
+> consistent 30-planet sample**. v4–v7 are intermediate harness-debugging iterations
+> (numbers retained here for provenance; JSONs were pruned). v3 is kept as the
+> pre-harness-fix baseline (`gate3_baseline_v3.json`).
+
+`b` (impact parameter) on the representative sample **passes both targets**:
+cov@68 = 0.815 (≥0.68), cov@95 = 0.963 (≥0.95), mean|z| = 0.86.
 
 ### Root causes identified (each is a genuine effect, not a bug)
 
@@ -98,14 +158,17 @@ the *synthetic* SBC (matched data regime) passes cleanly for all 7 params.
 
 | Gate | Target | Result | Status |
 |---|---|---|---|
-| **#1 SBC** | p > 0.05 all 7 params | **all pass** (P: 0.002→0.134 via real-noise) | ✅ **CLOSED** |
-| #2 Coverage (synthetic) | ±2–3% | 1.58% | ✅ CLOSED |
-| #3 Real planets | cov@68 ≥ 0.68 | detection 30/30; **b passes** (0.778/0.963); P/RpRs/aRs = info limit; **MCMC confirms posteriors correct** | ✅ **CLOSED** |
+| **#1 SBC** | p > 0.05 all 7 params | held-out real-noise P=1.55e-7 and t0=0.029 fail; other 5 pass | ❌ **OPEN** |
+| #2 Coverage | ±2–3% | held-out real-noise coverage error 1.38% | ✅ CLOSED |
+| #3 Real planets | cov@68 ≥ 0.68 | detection 27/30 at p_det ≥ 0.9; **b passes** (0.815/0.963); P/RpRs/aRs miss target; 8-object MCMC supports RpRs/b agreement | ⚠️ **PARTIAL** |
 | #4 Speed | ≥10³× | 1755× | ✅ CLOSED |
 | #5 Ablation | FMPE vs NPE | FMPE ≈ NPE; FMPE preferred (exact log-density) | ✅ CLOSED |
 | **#5b Detection baseline** | TransitFlow > BLS | **AUC 0.985 vs 0.335** (+0.65 gain) | ✅ **CLOSED** |
 
-**All 5 gates closed. Gate #3 confirmed via MCMC posterior agreement.**
+**Current status:** Gate #1 is open under the correct held-out real-noise
+evaluation, Gate #2 is closed, and Gate #3 is partially supported, not closed
+under the stated cov@68 criterion. The strongest defensible real-data claim is
+detection transfer plus RpRs/b posterior agreement on the 8-object MCMC subset.
 
 ---
 
@@ -121,9 +184,10 @@ Wasserstein distances between TransitFlow and MCMC marginals:
 | P | 1.68 | Expected — periodogram bin vs full BLS search |
 | aRs | 9.67 | Expected — degenerate without stellar density prior |
 
-**Conclusion:** TransitFlow's RpRs and b posteriors match MCMC on the same data.
-The P/RpRs/aRs gap to published values is the **single-sector information limit**,
-not a calibration failure. Gate #3 is fully explained and defensible.
+**Conclusion:** TransitFlow's RpRs and b posteriors match MCMC on this 8-object
+subset. The P/aRs gap to published values is consistent with the single-sector
+information limit, but the full real-planet coverage target is not closed by this
+subset alone.
 
 ---
 
@@ -146,16 +210,18 @@ backgrounds where the classical statistic cannot.
 
 ## What to do next (recommended)
 
-**Paper is ready to write.** All gates closed, all claims supported:
-- Gate #1: real-noise training fixes period SBC (0.002→0.134) — clean methodological contribution.
-- Gate #2: synthetic coverage error 1.58% — well within ±2–3% target.
-- Gate #3: detection 30/30 perfect transfer; b calibrated; MCMC agreement confirms RpRs/b
-  posteriors are correct on single-sector data; P/aRs gap is the single-sector info limit.
+**Paper is ready to draft only with conservative claims.** Before submission-grade
+wording, fix or explicitly bound Gate #1 and keep Gate #3 framed as partial unless
+the real-planet coverage target improves:
+- Gate #1: held-out real-noise SBC fails for P and t0; do not claim all-parameter calibration.
+- Gate #2: held-out real-noise coverage error is 1.38%, within the ±2–3% target.
+- Gate #3: detection is 27/30 at p_det ≥ 0.9; b is calibrated; MCMC agreement supports RpRs/b
+  posteriors on 8 single-sector light curves; P/aRs gap is consistent with single-sector limits.
 - Gate #4: 1755× faster than MCMC (79.6 ms vs 139.8 s).
 - Gate #5: FMPE ≈ NPE in AUC; FMPE preferred for exact log-density.
 - Gate #5b: +0.65 AUC gain over BLS on realistic test set with hard negatives.
 
-**If pushing Gate #3 further later (multi-day modeling effort, not required for paper):**
+**If pushing Gate #3 further later:**
 1. Richer transit physics — limb-darkening + grazing diversity + TESS flux dilution.
 2. Realistic TESS data gaps (momentum dumps, mid-sector downlink).
 3. Multi-sector training to match the published-truth information content.
@@ -176,18 +242,32 @@ artifacts/
   data/
     noise_lib.npz             — 115 out-of-transit TESS segments, 15 HD stars
   results/
-    fmpe_pg/{metrics,sbc,coverage,speed}  — synthetic eval, Variant A+PG
-    npe_pg/{metrics,sbc,coverage}         — synthetic eval, Variant B ablation
-    spikeslab/metrics.json                — Variant C eval
-    real_v3/real_validation.json          — Gate #3 baseline (no harness fixes)
-    real_v3/eval/{metrics,sbc,coverage}   — synthetic SBC/coverage (all 7 pass)
-    real_v8/real_validation.json          — Gate #3 canonical (representative sample)
-    mcmc_agreement/real_validation.json   — MCMC posterior comparison (8 planets)
-    baseline/detection.json               — BLS vs TransitFlow (3000 LCs)
-    period_diag.json                      — period SBC diagnostics
+    heldout_real_noise/                 # CANONICAL Gate #1/#2 rerun with --noise-lib, n_sbc=1000
+      metrics.json, sbc.png, coverage.png   — P/t0 SBC fail; coverage error 1.38%; AUC 0.996
+    synthetic/                          # fallback synthetic/GP eval, historical context only
+      fmpe_pg_real/{metrics,sbc,coverage}   — real-noise model on fallback synthetic/GP; not canonical for Gate #1
+      box1_synthnoise/                      # box-1 synthetic-noise models — "before" + ablation, NOT current
+        fmpe_pg/{metrics,sbc,coverage,speed}  — Variant A; period p=0.002 FAIL ("before" for Gate #1); speed = Gate #4 (1755×)
+        npe_pg/{metrics,sbc,coverage}         — Variant B NPE ablation (Gate #5)
+        spikeslab/metrics.json                — Variant C (fails SBC by design)
+        period_diag.json                      — box-1 period SBC diagnostics
+    real_planets/                       # Gate #3 (TESS real-planet validation)
+      gate3_real_validation.json            — CANONICAL: coverage + MCMC agreement, one 30-planet sample
+      gate3_baseline_v3.json                — historical baseline (real-noise model, pre harness-fix)
+    detection_baseline/                 # Gate #5b (TEST 1)
+      bls_vs_transitflow.json               — BLS vs TransitFlow, 3000 LCs
   logs/
     noise_lib, gen_real, train_real, eval_real, pipeline_real  — pipeline provenance
-    real_v3, real_v8                      — real-planet validation runs
-    mcmc_agreement, bls_baseline          — final test logs
+    gate3_baseline_v3, gate3_real_validation   — Gate #3 validation runs (TEST 2)
+    detection_baseline                         — BLS baseline run (TEST 1)
   tf_real_pipeline.sh                     — full reproducible pipeline script
+
+  RESULTS_SUMMARY.md            — box-1 first-run story (synthetic-noise model, historical)
+  RESULTS_SUMMARY_v2_realnoise.md — THIS FILE: real-noise retrain, final results (canonical)
 ```
+
+**The final tests are now cleanly separated, no duplicates:**
+- **TEST 0 — Held-out real-noise SBC/coverage:** `results/heldout_real_noise/metrics.json`
+- **TEST 1 — Detection baseline:** `results/detection_baseline/bls_vs_transitflow.json`
+- **TEST 2 — Real-planet validation + MCMC agreement:** `results/real_planets/gate3_real_validation.json`
+  (single file carries both the 30-planet coverage and the 8-planet Wasserstein from the same sample)

@@ -81,10 +81,13 @@ class DualBranchEmbedding(nn.Module):
         use_periodogram: bool = False,
         pg_channels: tuple[int, ...] = (32, 64, 128, 128),
         pg_dim: int = 128,
+        use_ephemeris_feature: bool = False,
+        ephemeris_dim: int = 2,
     ) -> None:
         super().__init__()
         self.use_noise_feature = use_noise_feature
         self.use_periodogram = use_periodogram
+        self.use_ephemeris_feature = use_ephemeris_feature
         self.global_branch = CNNBranch(list(global_channels), global_dim,
                                        blocks_per_stage)
         self.local_branch = CNNBranch(list(local_channels), local_dim,
@@ -93,6 +96,8 @@ class DualBranchEmbedding(nn.Module):
         if use_periodogram:
             self.pg_branch = CNNBranch(list(pg_channels), pg_dim, blocks_per_stage)
             fuse_in += pg_dim
+        if use_ephemeris_feature:
+            fuse_in += ephemeris_dim
         self.fuse = nn.Sequential(
             nn.Linear(fuse_in, embed_dim),
             nn.LayerNorm(embed_dim),
@@ -103,7 +108,8 @@ class DualBranchEmbedding(nn.Module):
 
     def forward(self, global_view: torch.Tensor, local_view: torch.Tensor,
                 noise_feature: torch.Tensor | None = None,
-                periodogram: torch.Tensor | None = None) -> torch.Tensor:
+                periodogram: torch.Tensor | None = None,
+                ephemeris_feature: torch.Tensor | None = None) -> torch.Tensor:
         g = self.global_branch(global_view)
         l = self.local_branch(local_view)
         feats = [g, l]
@@ -116,4 +122,8 @@ class DualBranchEmbedding(nn.Module):
                 noise_feature = torch.zeros(global_view.shape[0], device=g.device,
                                             dtype=g.dtype)
             feats.append(noise_feature.reshape(-1, 1))
+        if self.use_ephemeris_feature:
+            if ephemeris_feature is None:
+                raise ValueError("model expects ephemeris_feature input")
+            feats.append(ephemeris_feature.reshape(global_view.shape[0], -1))
         return self.fuse(torch.cat(feats, dim=-1))

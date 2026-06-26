@@ -1,0 +1,135 @@
+{
+  "checkpoint": "/workspace/runs/fmpe_pg_char5_full/checkpoints/best.pt",
+  "head": "fmpe",
+  "noise_lib": "/workspace/TransitFlow/artifacts/data/noise_lib.npz",
+  "noise_lib_available": true,
+  "param_names": [
+    "P",
+    "t0_phase",
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "posterior_param_names": [
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "ephemeris_conditioned": true,
+  "characterization_param_names": [
+    "RpRs",
+    "aRs",
+    "b",
+    "q1",
+    "q2"
+  ],
+  "detection": {
+    "roc_auc": 0.9969695121394812,
+    "average_precision": 0.9973775278590203
+  },
+  "sbc_pvalues": [
+    4.975676955925727e-08,
+    1.3843527169579138e-06,
+    0.015598120311891896,
+    0.00022152906795357933,
+    0.2902691425608195
+  ],
+  "sbc_pvalues_by_param": {
+    "RpRs": 4.975676955925727e-08,
+    "aRs": 1.3843527169579138e-06,
+    "b": 0.015598120311891896,
+    "q1": 0.00022152906795357933,
+    "q2": 0.2902691425608195
+  },
+  "characterization_sbc_pvalues": [
+    4.975676955925727e-08,
+    1.3843527169579138e-06,
+    0.015598120311891896,
+    0.00022152906795357933,
+    0.2902691425608195
+  ],
+  "characterization_sbc_pvalues_by_param": {
+    "RpRs": 4.975676955925727e-08,
+    "aRs": 1.3843527169579138e-06,
+    "b": 0.015598120311891896,
+    "q1": 0.00022152906795357933,
+    "q2": 0.2902691425608195
+  },
+  "coverage_calibration_error": null,
+  "characterization_coverage_calibration_error": 0.016263157894736868,
+  "coverage_levels": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.39999999999999997,
+    0.44999999999999996,
+    0.49999999999999994,
+    0.5499999999999999,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.7999999999999999,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "coverage_overall": [
+    0.059199999999999996,
+    0.10639999999999998,
+    0.16,
+    0.21039999999999998,
+    0.2594,
+    0.314,
+    0.36739999999999995,
+    0.41320000000000007,
+    0.46699999999999997,
+    0.5202,
+    0.5678,
+    0.6258,
+    0.6768000000000001,
+    0.7246,
+    0.7722,
+    0.8186,
+    0.8676,
+    0.917,
+    0.9614
+  ],
+  "characterization_coverage_overall": [
+    0.059199999999999996,
+    0.10639999999999998,
+    0.16,
+    0.21039999999999998,
+    0.2594,
+    0.314,
+    0.36739999999999995,
+    0.41320000000000007,
+    0.46699999999999997,
+    0.5202,
+    0.5678,
+    0.6258,
+    0.6768000000000001,
+    0.7246,
+    0.7722,
+    0.8186,
+    0.8676,
+    0.917,
+    0.9614
+  ],
+  "gate_status": {
+    "detection_auc_ge_0.99": true,
+    "posterior_sbc_p_gt_0.05": false,
+    "all_parameter_sbc_p_gt_0.05": null,
+    "characterization_sbc_p_gt_0.05": false,
+    "coverage_error_le_0.03": null,
+    "characterization_coverage_error_le_0.03": true
+  }
+}

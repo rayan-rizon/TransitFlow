@@ -90,7 +90,8 @@ def train_spike_slab(simulator, model, n_steps: int = 2000, batch_size: int = 12
         batch = batch_to_torch(simulator.simulate_batch(batch_size, rng), device)
         nf = batch["sigma_feat"] if model.cfg.use_noise_feature else None
         pg = batch.get("periodogram") if model.cfg.use_periodogram else None
-        e = model.embed(batch["global"], batch["local"], nf, pg)
+        eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+        e = model.embed(batch["global"], batch["local"], nf, pg, eph)
         targets = adapter.make_targets(batch["theta_std"], batch["d"])
         loss = cfm_loss(model.velocity_fn(), targets, e, mask=None)  # all rows
         opt.zero_grad(set_to_none=True)

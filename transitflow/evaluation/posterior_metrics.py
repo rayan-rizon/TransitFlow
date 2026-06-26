@@ -7,14 +7,15 @@ from scipy.stats import wasserstein_distance
 
 
 def negative_log_prob_true(inference, theta_true_phys: np.ndarray,
-                           global_view, local_view, sigma_feat=None) -> np.ndarray:
+                           global_view, local_view, sigma_feat=None,
+                           periodogram=None, ephem_feat=None) -> np.ndarray:
     """Negative log posterior density of the true parameters (std space).
 
     Lower is better; a proper scoring rule sensitive to both bias and width.
     """
     prior = inference.prior
     theta_std = prior.physical_to_std(theta_true_phys)
-    e = inference.embed(global_view, local_view, sigma_feat)
+    e = inference.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
     lp = inference.log_prob_std(theta_std, e)
     return -lp
 

@@ -31,6 +31,7 @@ class ModelConfig:
     head: str = "fmpe"                      # "fmpe" | "npe"
     use_noise_feature: bool = True
     use_periodogram: bool = False          # box-periodogram branch (period info)
+    use_ephemeris_feature: bool = False    # candidate (P, t0_phase) conditioning
     # embedding
     global_channels: tuple = (32, 64, 128, 128, 256, 256)
     local_channels: tuple = (32, 64, 128, 128)
@@ -70,6 +71,8 @@ class TransitFlow(nn.Module):
             use_periodogram=c.use_periodogram,
             pg_channels=c.pg_channels,
             pg_dim=c.pg_dim,
+            use_ephemeris_feature=c.use_ephemeris_feature,
+            ephemeris_dim=2,
         )
         self.detection = DetectionHead(c.embed_dim, c.det_hidden, c.det_dropout)
         if c.head == "fmpe":
@@ -86,8 +89,10 @@ class TransitFlow(nn.Module):
     # ------------------------------------------------------------------ #
     def embed(self, global_view: torch.Tensor, local_view: torch.Tensor,
               noise_feature: torch.Tensor | None = None,
-              periodogram: torch.Tensor | None = None) -> torch.Tensor:
-        return self.embedding(global_view, local_view, noise_feature, periodogram)
+              periodogram: torch.Tensor | None = None,
+              ephemeris_feature: torch.Tensor | None = None) -> torch.Tensor:
+        return self.embedding(global_view, local_view, noise_feature, periodogram,
+                              ephemeris_feature)
 
     def detect_logits(self, e: torch.Tensor) -> torch.Tensor:
         return self.detection(e)

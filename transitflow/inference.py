@@ -34,13 +34,26 @@ class TransitFlowInference:
         self.ode_steps = ode_steps
         self.ode_method = ode_method
 
+    def _expand_std_samples(self, std_np: np.ndarray, ephem_feat=None) -> np.ndarray:
+        if std_np.shape[-1] == 7:
+            return std_np
+        if std_np.shape[-1] != 5:
+            raise ValueError(f"unsupported posterior dimensionality: {std_np.shape[-1]}")
+        if ephem_feat is None:
+            raise ValueError("5D characterization posterior requires ephem_feat")
+        eph = np.asarray(ephem_feat, dtype=np.float32)
+        if eph.ndim == 1:
+            eph = eph[None]
+        eph = np.broadcast_to(eph[:, None, :], std_np.shape[:2] + (2,))
+        return np.concatenate([eph, std_np], axis=-1)
+
     # ------------------------------------------------------------------ #
     def _to_t(self, a):
         return torch.as_tensor(np.asarray(a, dtype=np.float32), device=self.device)
 
     @torch.no_grad()
     def embed(self, global_view, local_view, sigma_feat=None,
-              periodogram=None) -> torch.Tensor:
+              periodogram=None, ephem_feat=None) -> torch.Tensor:
         g = self._to_t(global_view)
         l = self._to_t(local_view)
         if g.ndim == 1:
@@ -56,36 +69,45 @@ class TransitFlowInference:
             pg = self._to_t(periodogram)
             if pg.ndim == 1:
                 pg = pg[None]
-        return self.model.embed(g, l, nf, pg)
+        eph = None
+        if self.model.cfg.use_ephemeris_feature:
+            if ephem_feat is None:
+                raise ValueError("model expects ephem_feat input")
+            eph = self._to_t(ephem_feat)
+            if eph.ndim == 1:
+                eph = eph[None]
+        return self.model.embed(g, l, nf, pg, eph)
 
     @torch.no_grad()
     def detect(self, global_view, local_view, sigma_feat=None,
-               periodogram=None) -> np.ndarray:
-        e = self.embed(global_view, local_view, sigma_feat, periodogram)
+               periodogram=None, ephem_feat=None) -> np.ndarray:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
         return torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
 
     @torch.no_grad()
     def posterior_samples(self, global_view, local_view, sigma_feat=None,
                           n_samples: int = 2000, return_std: bool = False,
-                          periodogram=None):
+                          periodogram=None, ephem_feat=None):
         """Return physical posterior samples ``(B, n_samples, 7)``."""
-        e = self.embed(global_view, local_view, sigma_feat, periodogram)
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,
                              n_steps=self.ode_steps, method=self.ode_method)
         else:
             std = self.model.posterior.sample(e, n_samples)
         std_np = std.cpu().numpy()
-        phys = self.prior.std_to_physical(std_np.reshape(-1, std_np.shape[-1]))
-        phys = phys.reshape(std_np.shape)
+        std_full = self._expand_std_samples(std_np, ephem_feat)
+        phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
+        phys = phys.reshape(std_full.shape)
         if return_std:
-            return phys, std_np
+            return phys, std_full
         return phys
 
     @torch.no_grad()
     def detect_and_characterize(self, global_view, local_view, sigma_feat=None,
-                                n_samples: int = 2000, periodogram=None) -> dict:
-        e = self.embed(global_view, local_view, sigma_feat, periodogram)
+                                n_samples: int = 2000, periodogram=None,
+                                ephem_feat=None) -> dict:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
         p_det = torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,
@@ -93,9 +115,10 @@ class TransitFlowInference:
         else:
             std = self.model.posterior.sample(e, n_samples)
         std_np = std.cpu().numpy()
-        phys = self.prior.std_to_physical(std_np.reshape(-1, std_np.shape[-1]))
-        phys = phys.reshape(std_np.shape)
-        return {"p_detect": p_det, "samples": phys, "samples_std": std_np}
+        std_full = self._expand_std_samples(std_np, ephem_feat)
+        phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
+        phys = phys.reshape(std_full.shape)
+        return {"p_detect": p_det, "samples": phys, "samples_std": std_full}
 
     def log_prob_std(self, theta_std, e) -> np.ndarray:
         """Exact ``log q(theta | x)`` in standardized space."""
@@ -103,6 +126,8 @@ class TransitFlowInference:
                              device=self.device)
         if ts.ndim == 1:
             ts = ts[None]
+        if self.model.cfg.param_dim == 5 and ts.shape[-1] == 7:
+            ts = ts[..., 2:]
         if self.model.head_type == "fmpe":
             lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)
         else:
@@ -113,7 +138,8 @@ class TransitFlowInference:
     # Importance-sampling efficiency diagnostic (approximate)
     # ------------------------------------------------------------------ #
     def importance_diagnostic(self, global_view, local_view, fold_P, fold_t0,
-                              sigma_feat=None, n_samples: int = 500) -> dict:
+                              sigma_feat=None, n_samples: int = 500,
+                       periodogram=None, ephem_feat=None) -> dict:
         """Approximate IS efficiency as a misspecification flag.
 
         Uses a Gaussian likelihood on the *local* view: each posterior draw is
@@ -126,10 +152,13 @@ class TransitFlowInference:
         """
         gv = np.asarray(global_view, dtype=np.float64).reshape(-1)
         lv = np.asarray(local_view, dtype=np.float64).reshape(-1)
-        e = self.embed(gv.astype(np.float32), lv.astype(np.float32), sigma_feat)
+        e = self.embed(gv.astype(np.float32), lv.astype(np.float32), sigma_feat,
+                       periodogram, ephem_feat)
         phys, std = self.posterior_samples(gv.astype(np.float32),
                                            lv.astype(np.float32), sigma_feat,
-                                           n_samples=n_samples, return_std=True)
+                                           n_samples=n_samples, return_std=True,
+                                           periodogram=periodogram,
+                                           ephem_feat=ephem_feat)
         phys = phys[0]                     # (n, 7)
         std = std[0]
         logq = self.log_prob_std(std, e.repeat(std.shape[0], 1))  # (n,)

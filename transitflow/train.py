@@ -11,7 +11,8 @@ Production features for long unattended (e.g. Vast.ai) runs:
   `status.json`, and a `config.yaml` snapshot — everything needed to monitor and
   resume.
 * **Periodic checkpoints** (`ckpt_every`) writing `latest.pt` + rotating
-  `step_*.pt`, plus a `best.pt` by validation detection AUC; each checkpoint
+  `step_*.pt`, plus `best.pt` by validation posterior loss and
+  `best_detection.pt` by validation detection AUC; each checkpoint
   carries model + optimizer + step + history so a run **resumes** exactly.
 * **Live metrics** appended to `training_log.jsonl` and summarized in
   `status.json` (step, throughput, ETA, losses, last eval) for `scripts/monitor.py`
@@ -32,6 +33,7 @@ import torch.nn.functional as F
 
 from .flow_matching import cfm_loss
 from .models.transitflow import ModelConfig, TransitFlow
+from .noise import NoiseLibrary
 from .simulator import SimConfig, TransitSimulator
 from .utils import (
     PrefetchSimulator,
@@ -90,16 +92,20 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
     """Forward pass returning the component losses (differentiable)."""
     noise_feat = batch["sigma_feat"] if model.cfg.use_noise_feature else None
     pg = batch.get("periodogram") if model.cfg.use_periodogram else None
-    e = model.embed(batch["global"], batch["local"], noise_feat, pg)
+    eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+    e = model.embed(batch["global"], batch["local"], noise_feat, pg, eph)
     det_logits = model.detect_logits(e)
     d = batch["d"].float()
     l_det = F.binary_cross_entropy_with_logits(det_logits, d)
 
     mask = batch["valid"]
+    target = batch["theta_std"]
+    if model.cfg.param_dim == 5:
+        target = batch.get("theta_char_std", batch["theta_std"][:, 2:])
     if model.head_type == "fmpe":
-        l_post = cfm_loss(model.velocity_fn(), batch["theta_std"], e, mask=mask)
+        l_post = cfm_loss(model.velocity_fn(), target, e, mask=mask)
     else:
-        l_post = model.posterior.nll(batch["theta_std"], e, mask=mask)
+        l_post = model.posterior.nll(target, e, mask=mask)
 
     total = l_post + lambda_det * l_det
     return {"total": total, "posterior": l_post.detach(), "detection": l_det.detach()}
@@ -120,7 +126,8 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> 
         agg["detection"] += float(out["detection"])
         noise_feat = batch["sigma_feat"] if model.cfg.use_noise_feature else None
         pg = batch.get("periodogram") if model.cfg.use_periodogram else None
-        e = model.embed(batch["global"], batch["local"], noise_feat, pg)
+        eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+        e = model.embed(batch["global"], batch["local"], noise_feat, pg, eph)
         prob = torch.sigmoid(model.detect_logits(e))
         agg["det_acc"] += float(((prob > 0.5).long() == batch["d"]).float().mean())
         all_d.append(batch["d"].cpu().numpy())
@@ -139,7 +146,8 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> 
 def save_checkpoint(model: TransitFlow, model_cfg: ModelConfig,
                     sim_cfg: SimConfig, path: str, optimizer=None,
                     step: int = 0, history: dict | None = None,
-                    best: dict | None = None) -> None:
+                    best: dict | None = None,
+                    best_detection: dict | None = None) -> None:
     payload = {
         "state_dict": model.state_dict(),
         "model_cfg": asdict(model_cfg),
@@ -147,6 +155,7 @@ def save_checkpoint(model: TransitFlow, model_cfg: ModelConfig,
         "step": step,
         "history": history or {},
         "best": best or {},
+        "best_detection": best_detection or {},
     }
     if optimizer is not None:
         payload["optimizer"] = optimizer.state_dict()
@@ -229,6 +238,10 @@ def train(
             except Exception:
                 writer = None
 
+    noise_library = NoiseLibrary.load(train_cfg.noise_lib_path)
+    if train_cfg.noise_lib_path and not noise_library.available():
+        raise ValueError(f"noise library could not be loaded: {train_cfg.noise_lib_path}")
+
     # data iterators
     if train_cfg.data_source == "disk":
         from .data import DiskIterator
@@ -242,8 +255,9 @@ def train(
             train_cfg.prefetch, train_cfg.seed, train_cfg.noise_lib_path)
     else:
         train_iter = SimulatorIterator(
-            TransitSimulator(sim_cfg), train_cfg.batch_size, device, train_cfg.seed)
-    val_simulator = TransitSimulator(sim_cfg)
+            TransitSimulator(sim_cfg, noise_library=noise_library),
+            train_cfg.batch_size, device, train_cfg.seed)
+    val_simulator = TransitSimulator(sim_cfg, noise_library=noise_library)
     val_iter = SimulatorIterator(val_simulator, train_cfg.batch_size, device,
                                  seed=train_cfg.seed + 99991)
 
@@ -252,7 +266,8 @@ def train(
                             weight_decay=train_cfg.weight_decay)
 
     history = {"step": [], "total": [], "posterior": [], "detection": [], "val": []}
-    best = {"roc_auc": -1.0, "step": -1}
+    best = {"posterior": float("inf"), "step": -1}
+    best_detection = {"roc_auc": -1.0, "step": -1}
     start_step = 0
 
     # resume
@@ -265,6 +280,7 @@ def train(
         start_step = int(ckpt.get("step", 0))
         history = ckpt.get("history", history)
         best = ckpt.get("best", best)
+        best_detection = ckpt.get("best_detection", best_detection)
         if verbose:
             print(f"resumed from {resume_path} at step {start_step}")
 
@@ -342,7 +358,8 @@ def train(
                 if status_path:
                     _write_status(status_path, run_dir, model.head_type, str(device),
                                   count_parameters(model), step, train_cfg.n_steps,
-                                  rec, best, t_start, eta, sps, status, health)
+                                  rec, best, t_start, eta, sps, status, health,
+                                  best_detection)
                 if verbose:
                     warn = "" if not health["warnings"] else \
                         "  [" + ",".join(health["warnings"]) + "]"
@@ -357,12 +374,19 @@ def train(
                 if writer:
                     for k, v in val.items():
                         writer.add_scalar(f"val/{k}", v, step)
-                if val.get("roc_auc", -1) > best["roc_auc"]:
-                    best = {"roc_auc": val["roc_auc"], "step": step, **val}
+                if val.get("posterior", float("inf")) < best["posterior"]:
+                    best = {"step": step, **val}
                     if ckpt_dir:
                         save_checkpoint(model, model_cfg, sim_cfg,
                                         os.path.join(ckpt_dir, "best.pt"), opt,
-                                        step, history, best)
+                                        step, history, best, best_detection)
+                if val.get("roc_auc", -1) > best_detection["roc_auc"]:
+                    best_detection = {"step": step, **val}
+                    if ckpt_dir:
+                        save_checkpoint(model, model_cfg, sim_cfg,
+                                        os.path.join(ckpt_dir, "best_detection.pt"),
+                                        opt, step, history, best,
+                                        best_detection)
                 if verbose:
                     print(f"  [val] post {val['posterior']:.4f} det {val['detection']:.4f} "
                           f"acc {val['det_acc']:.3f} auc {val['roc_auc']:.3f}")
@@ -370,9 +394,10 @@ def train(
             if ckpt_dir and (step + 1) % train_cfg.ckpt_every == 0:
                 save_checkpoint(model, model_cfg, sim_cfg,
                                 os.path.join(ckpt_dir, "latest.pt"), opt, step + 1,
-                                history, best)
+                                history, best, best_detection)
                 _rotate_step_ckpt(model, model_cfg, sim_cfg, ckpt_dir, step + 1,
-                                  opt, history, best, train_cfg.keep_last)
+                                  opt, history, best, best_detection,
+                                  train_cfg.keep_last)
     except KeyboardInterrupt:
         status = "interrupted"
         if verbose:
@@ -385,16 +410,17 @@ def train(
     if ckpt_dir:
         save_checkpoint(model, model_cfg, sim_cfg,
                         os.path.join(ckpt_dir, "latest.pt"), opt, final_step,
-                        history, best)
+                        history, best, best_detection)
     elif train_cfg.ckpt_path:
         save_checkpoint(model, model_cfg, sim_cfg, train_cfg.ckpt_path, opt,
-                        final_step, history, best)
+                        final_step, history, best, best_detection)
     if status_path:
         last = {"step": final_step}
         _write_status(status_path, run_dir, model.head_type, str(device),
                       count_parameters(model), final_step, train_cfg.n_steps,
                       history_tail(history), best, t_start, 0.0, 0.0,
-                      "done" if status == "running" else status)
+                      "done" if status == "running" else status,
+                      best_detection=best_detection)
     if writer:
         writer.close()
     if verbose and run_dir:
@@ -433,7 +459,8 @@ def _health(device, train_cfg: TrainConfig, total_loss: float,
 
 
 def _write_status(path, run_dir, head, device, params, step, total_steps, rec,
-                  best, t_start, eta, sps, status, health=None) -> None:
+                  best, t_start, eta, sps, status, health=None,
+                  best_detection=None) -> None:
     obj = {
         "run_dir": run_dir, "head": head, "device": device, "params": params,
         "status": status, "step": step, "total_steps": total_steps,
@@ -446,6 +473,7 @@ def _write_status(path, run_dir, head, device, params, step, total_steps, rec,
                  "detection": rec.get("detection")},
         "lr": rec.get("lr"),
         "best": best,
+        "best_detection": best_detection or {},
         "health": health or {"healthy": True, "device": device, "warnings": []},
         "updated_unix": time.time(),
     }
@@ -453,10 +481,10 @@ def _write_status(path, run_dir, head, device, params, step, total_steps, rec,
 
 
 def _rotate_step_ckpt(model, model_cfg, sim_cfg, ckpt_dir, step, opt, history,
-                      best, keep_last) -> None:
+                      best, best_detection, keep_last) -> None:
     save_checkpoint(model, model_cfg, sim_cfg,
                     os.path.join(ckpt_dir, f"step_{step:08d}.pt"), opt, step,
-                    history, best)
+                    history, best, best_detection)
     steps = sorted(f for f in os.listdir(ckpt_dir)
                    if f.startswith("step_") and f.endswith(".pt"))
     for old in steps[:-keep_last]:
@@ -496,6 +524,11 @@ def preflight(model_cfg: ModelConfig | None = None,
     train_cfg = train_cfg or TrainConfig()
     device = get_device(train_cfg.device)
     issues, warns = [], []
+    noise_library = NoiseLibrary.load(train_cfg.noise_lib_path)
+    if train_cfg.noise_lib_path and not noise_library.available():
+        return _preflight_report({"verdict": "FAIL", "ok": False,
+                                  "issues": [f"noise library load failed: {train_cfg.noise_lib_path}"]},
+                                 verbose)
 
     # data source (mirror train())
     if train_cfg.data_source == "disk":
@@ -511,8 +544,8 @@ def preflight(model_cfg: ModelConfig | None = None,
                                train_cfg.num_workers, train_cfg.prefetch, 1,
                                train_cfg.noise_lib_path)
     else:
-        it = SimulatorIterator(TransitSimulator(sim_cfg), train_cfg.batch_size,
-                               device, 1)
+        it = SimulatorIterator(TransitSimulator(sim_cfg, noise_library=noise_library),
+                               train_cfg.batch_size, device, 1)
 
     model = TransitFlow(model_cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=train_cfg.lr)

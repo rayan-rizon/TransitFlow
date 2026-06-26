@@ -37,16 +37,19 @@ def main():
 
     b = sim.simulate_batch(args.n_amortized, rng, return_raw=True)
     pg = b.get("periodogram")
+    eph = b.get("ephem_feat")
     # warmup
     inf.detect_and_characterize(b["global"][:8], b["local"][:8], b["sigma_feat"][:8],
                                 n_samples=args.n_post,
-                                periodogram=pg[:8] if pg is not None else None)
+                                periodogram=pg[:8] if pg is not None else None,
+                                ephem_feat=eph[:8] if eph is not None else None)
     if dev.type == "cuda":
         torch.cuda.synchronize()
     t0 = time.time()
     inf.detect_and_characterize(b["global"], b["local"], b["sigma_feat"],
                                 n_samples=args.n_post,
-                                periodogram=pg if pg is not None else None)
+                                periodogram=pg if pg is not None else None,
+                                ephem_feat=eph if eph is not None else None)
     if dev.type == "cuda":
         torch.cuda.synchronize()
     amort_per_obj = (time.time() - t0) / args.n_amortized

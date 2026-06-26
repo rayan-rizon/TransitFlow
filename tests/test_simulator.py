@@ -6,10 +6,14 @@ def test_batch_keys_and_shapes(fast_simulator, fast_sim_cfg, rng):
     assert b["global"].shape == (32, fast_sim_cfg.n_global)
     assert b["local"].shape == (32, fast_sim_cfg.n_local)
     assert b["theta_std"].shape == (32, 7)
+    assert b["theta_char_std"].shape == (32, 5)
     assert b["theta_phys"].shape == (32, 7)
     assert b["d"].shape == (32,)
     assert b["sigma_feat"].shape == (32,)
+    assert b["ephem_feat"].shape == (32, 2)
     assert np.all(np.isfinite(b["global"])) and np.all(np.isfinite(b["local"]))
+    assert np.all(np.isfinite(b["ephem_feat"]))
+    assert np.allclose(b["theta_char_std"], b["theta_std"][:, 2:])
 
 
 def test_valid_mask_matches_label(fast_simulator, rng):
@@ -45,3 +49,23 @@ def test_planet_local_views_deeper_on_average(prior):
     argmin = b["local"].argmin(axis=1)
     # most clean transits dip near the centre bin (100)
     assert np.mean(np.abs(argmin - 100) <= 20) > 0.7
+
+
+def test_real_noise_sigma_feature_uses_drawn_segment(prior):
+    from transitflow.noise import NoiseLibrary, estimate_white_sigma
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    rng = np.random.default_rng(12)
+    sigma = 0.003
+    segments = 1.0 + rng.normal(0.0, sigma, size=(4, 512))
+    cfg = SimConfig(n_global=64, n_local=41, baseline_days=2.0, n_raw=512,
+                    planet_fraction=1.0, frac_real=1.0, frac_gp=0.0,
+                    frac_white=0.0, sigma_white_log10_low=-4.0,
+                    sigma_white_log10_high=-2.0, n_radial=60,
+                    regime="tess", use_periodogram=False)
+    sim = TransitSimulator(cfg, prior=prior, noise_library=NoiseLibrary(segments))
+    b = sim.simulate_batch(64, np.random.default_rng(13))
+    expected_sigma = estimate_white_sigma(segments)
+    assert b["sigma"].min() >= expected_sigma.min() * 0.8
+    assert b["sigma"].max() <= expected_sigma.max() * 1.2
+    assert b["sigma_feat"].std() < 0.2

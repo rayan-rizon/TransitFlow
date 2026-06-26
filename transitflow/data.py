@@ -26,7 +26,7 @@ from .simulator import SimConfig, TransitSimulator
 from .utils import batch_to_torch
 
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
-_OPTIONAL_KEYS = ("periodogram",)
+_OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std")
 
 
 def _gen_shard(args) -> str:
@@ -37,7 +37,7 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, d, sf, pg = [], [], [], [], [], []
+    g, l, th, thc, d, sf, pg, ef = [], [], [], [], [], [], [], []
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -45,18 +45,24 @@ def _gen_shard(args) -> str:
         g.append(b["global"].astype(np.float16))
         l.append(b["local"].astype(np.float16))
         th.append(b["theta_std"].astype(np.float32))
+        thc.append(b["theta_char_std"].astype(np.float32))
         d.append(b["d"].astype(np.int8))
         sf.append(b["sigma_feat"].astype(np.float16))
         if "periodogram" in b:
             pg.append(b["periodogram"].astype(np.float16))
+        if "ephem_feat" in b:
+            ef.append(b["ephem_feat"].astype(np.float16))
         done += bs
     payload = {
         "global": np.concatenate(g), "local": np.concatenate(l),
         "theta_std": np.concatenate(th), "d": np.concatenate(d),
         "sigma_feat": np.concatenate(sf),
+        "theta_char_std": np.concatenate(thc),
     }
     if pg:
         payload["periodogram"] = np.concatenate(pg)
+    if ef:
+        payload["ephem_feat"] = np.concatenate(ef)
     tmp = path + ".tmp.npz"
     np.savez(tmp, **payload)
     os.replace(tmp, path)

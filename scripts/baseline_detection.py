@@ -67,8 +67,10 @@ def main() -> None:
         b = sim.simulate_batch(args.batch, rng, return_raw=True)
         raw = b["raw_flux"]
         pg = b.get("periodogram")
+        eph = b.get("ephem_feat")
         # TransitFlow detection probability (vectorized over the batch)
-        p_det = inf.detect(b["global"], b["local"], b["sigma_feat"], periodogram=pg)
+        p_det = inf.detect(b["global"], b["local"], b["sigma_feat"],
+                           periodogram=pg, ephem_feat=eph)
         for i in range(len(raw)):
             f_i = raw[i][::step]
             try:

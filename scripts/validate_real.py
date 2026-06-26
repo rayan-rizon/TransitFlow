@@ -264,7 +264,11 @@ def build_views(t, f, planet, sim, prior):
     sigma = 1.4826 * np.median(np.abs(np.diff(f))) / np.sqrt(2.0) + 1e-6
     lo, hi = cfg.sigma_white_log10_low, cfg.sigma_white_log10_high
     sig_feat = (np.log10(sigma) - 0.5 * (lo + hi)) / (0.5 * (hi - lo))
-    return gv, lv, pg, np.float32(sig_feat), (t, f, P, t0, dur, sigma)
+    ephem_phys = prior.sample(1, np.random.default_rng(0))
+    ephem_phys[0, 0] = P
+    ephem_phys[0, 1] = ((t0 - t.min()) / P) % 1.0
+    ephem_feat = prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)[0]
+    return gv, lv, pg, np.float32(sig_feat), ephem_feat, (t, f, P, t0, dur, sigma)
 
 
 # --------------------------------------------------------------------------- #
@@ -273,11 +277,19 @@ def build_views(t, f, planet, sim, prior):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default="runs/fmpe_pg/best.pt")
+    ap.add_argument("--detector-ckpt", default=None,
+                    help="optional checkpoint used only for p_detect")
     ap.add_argument("--n-planets", type=int, default=30)
     ap.add_argument("--n-post", type=int, default=2000)
     ap.add_argument("--with-mcmc", type=int, default=0,
                     help="run a per-object MCMC on the first K planets (shape agreement)")
     ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--mcmc-detect-threshold", type=float, default=0.9,
+                    help="only run same-light-curve MCMC for detected planets")
+    ap.add_argument("--is-correct-mcmc", action="store_true",
+                    help="use likelihood-corrected amortized samples for MCMC agreement")
+    ap.add_argument("--is-samples", type=int, default=3000,
+                    help="proposal samples for likelihood correction")
     ap.add_argument("--out", default="results/real")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
@@ -286,6 +298,12 @@ def main():
     prior = TransitPrior(TransitPrior.default_specs(sc.regime))
     sim = TransitSimulator(sc, prior=prior)
     inf = TransitFlowInference(model, prior, sc)
+    detector_inf = inf
+    if args.detector_ckpt:
+        detector_model, _, detector_sc = load_checkpoint(args.detector_ckpt)
+        if detector_sc != sc:
+            raise SystemExit("--detector-ckpt must use the same simulator config")
+        detector_inf = TransitFlowInference(detector_model, prior, sc)
     p_lo, p_hi = prior.specs[0].low, prior.specs[0].high
     rprs_lo, rprs_hi = prior.specs[2].low, prior.specs[2].high   # training Rp/Rs support
 
@@ -303,12 +321,14 @@ def main():
             if lc is None:
                 continue
             t, f = lc
-            gv, lv, pg, sf, raw = build_views(t, f, pl, sim, prior)
+            gv, lv, pg, sf, eph, raw = build_views(t, f, pl, sim, prior)
             out = inf.detect_and_characterize(gv, lv, np.array([sf]),
                                               n_samples=args.n_post,
-                                              periodogram=pg)
+                                              periodogram=pg, ephem_feat=eph)
+            p_detect = detector_inf.detect(gv, lv, np.array([sf]),
+                                           periodogram=pg, ephem_feat=eph)
             samp = out["samples"][0]                  # (n_post, 7)
-            rec = {"name": pl["name"], "p_detect": float(out["p_detect"][0]),
+            rec = {"name": pl["name"], "p_detect": float(p_detect[0]),
                    "params": {}}
             for k, idx in _CMP.items():
                 v = pl[k]
@@ -338,52 +358,142 @@ def main():
     if args.with_mcmc > 0:
         from scipy.stats import wasserstein_distance
 
+        from transitflow.correction import importance_weights, sir_resample
         from transitflow.baselines.mcmc import run_mcmc
-        print(f"== MCMC shape agreement (first {args.with_mcmc}) ==")
-        # re-run download+views for the first K (kept simple; small K)
+        print(f"== MCMC shape agreement (first {args.with_mcmc} detected planets) ==")
+        by_name = {r["name"]: r for r in records
+                   if r["p_detect"] >= args.mcmc_detect_threshold}
         done = 0
         for pl in pool:
             if done >= args.with_mcmc:
                 break
+            if pl["name"] not in by_name:
+                continue
             try:
                 lc = download_lc(pl, sc.baseline_days)
                 if lc is None:
                     continue
                 t, f = lc
-                gv, lv, pg, sf, raw = build_views(t, f, pl, sim, prior)
+                gv, lv, pg, sf, eph, raw = build_views(t, f, pl, sim, prior)
                 (_t, _f, P, t0, dur, sigma) = raw
+                t_rel = _t - _t[0]
                 amort = inf.posterior_samples(gv, lv, np.array([sf]),
-                                              n_samples=args.n_post, periodogram=pg)[0]
+                                              n_samples=args.n_post, periodogram=pg,
+                                              ephem_feat=eph)[0]
                 init = np.array([P, ((t0 - _t[0]) / P) % 1.0, pl["RpRs"],
                                  pl["aRs"] if np.isfinite(pl["aRs"]) else 10.0,
                                  pl["b"] if np.isfinite(pl["b"]) else 0.3, 0.4, 0.3])
-                mc_out = run_mcmc(_t, _f, sigma, prior=prior, init=init,
+                mc_out = run_mcmc(t_rel, _f, sigma, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60)
                 mc_s = mc_out["samples"]
+                ess = None
+                if args.is_correct_mcmc:
+                    corr = importance_weights(
+                        inf, gv, lv, np.array([sf]), _f, t_rel, sigma,
+                        n_samples=args.is_samples, periodogram=pg, ephem_feat=eph)
+                    amort = sir_resample(corr["phys"], corr["w"], args.n_post,
+                                         np.random.default_rng(done + 1234))
+                    ess = corr["ess_fraction"]
                 wd = {k: float(wasserstein_distance(amort[:, idx], mc_s[:, idx]))
                       for k, idx in _CMP.items()}
-                for r in records:
-                    if r["name"] == pl["name"]:
-                        r["mcmc_wasserstein"] = wd
-                        r["mcmc_backend"] = mc_out["backend"]
-                print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}")
+                wd_norm = {}
+                for k, idx in _CMP.items():
+                    q_am = np.percentile(amort[:, idx], [16, 84])
+                    q_mc = np.percentile(mc_s[:, idx], [16, 84])
+                    width = max(float(q_am[1] - q_am[0]),
+                                float(q_mc[1] - q_mc[0]), 1e-12)
+                    wd_norm[k] = wd[k] / width
+                by_name[pl["name"]]["mcmc_wasserstein"] = wd
+                by_name[pl["name"]]["mcmc_wasserstein_width_fraction"] = wd_norm
+                by_name[pl["name"]]["mcmc_backend"] = mc_out["backend"]
+                if ess is not None:
+                    by_name[pl["name"]]["is_ess_fraction"] = float(ess)
+                ess_txt = "" if ess is None else f" ESS={ess:.3f}"
+                print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}{ess_txt}")
                 done += 1
             except Exception as e:
                 print(f"   mcmc skip {pl.get('name','?')}: {e}")
 
     # ---- aggregate -----------------------------------------------------
-    summary = {"n_planets": len(records), "checkpoint": args.ckpt, "per_param": {}}
-    for k in _CMP:
-        vals = [r["params"][k] for r in records if k in r["params"]]
-        if not vals:
-            continue
-        summary["per_param"][k] = {
-            "n": len(vals),
-            "median_frac_err": float(np.median([v["frac_err"] for v in vals])),
-            "coverage_68": float(np.mean([v["in_68"] for v in vals])),  # target 0.68
-            "coverage_95": float(np.mean([v["in_95"] for v in vals])),  # target 0.95
-            "mean_abs_z": float(np.mean([abs(v["z"]) for v in vals])),
-        }
+    def _summarize(rows):
+        out = {}
+        for k in _CMP:
+            vals = [r["params"][k] for r in rows if k in r["params"]]
+            if not vals:
+                continue
+            out[k] = {
+                "n": len(vals),
+                "median_frac_err": float(np.median([v["frac_err"] for v in vals])),
+                "coverage_68": float(np.mean([v["in_68"] for v in vals])),
+                "coverage_95": float(np.mean([v["in_95"] for v in vals])),
+                "mean_abs_z": float(np.mean([abs(v["z"]) for v in vals])),
+            }
+        return out
+
+    detected = [r for r in records if r["p_detect"] >= 0.9]
+    summary = {
+        "n_planets": len(records),
+        "checkpoint": args.ckpt,
+        "detector_checkpoint": args.detector_ckpt or args.ckpt,
+        "detection": {
+            "threshold": 0.9,
+            "n_detected": len(detected),
+            "detected_fraction": float(len(detected) / max(len(records), 1)),
+            "median_p_detect": float(np.median([r["p_detect"] for r in records]))
+            if records else float("nan"),
+        },
+        "per_param": _summarize(records),
+        "detected_per_param": _summarize(detected),
+    }
+    mcmc_rows = [r for r in records if "mcmc_wasserstein" in r]
+    if mcmc_rows:
+        ranges = {"P": p_hi - p_lo, "RpRs": rprs_hi - rprs_lo,
+                  "aRs": prior.specs[3].high - prior.specs[3].low,
+                  "b": prior.specs[4].high - prior.specs[4].low}
+        summary["mcmc_agreement"] = {}
+        ess_vals = [r["is_ess_fraction"] for r in mcmc_rows if "is_ess_fraction" in r]
+        if ess_vals:
+            summary["importance_correction"] = {
+                "enabled": True,
+                "n_samples": args.is_samples,
+                "median_ess_fraction": float(np.median(ess_vals)),
+                "min_ess_fraction": float(np.min(ess_vals)),
+            }
+        for k in _CMP:
+            vals = [r["mcmc_wasserstein"][k] for r in mcmc_rows
+                    if k in r["mcmc_wasserstein"]]
+            norm_vals = [r["mcmc_wasserstein_width_fraction"][k] for r in mcmc_rows
+                         if k in r.get("mcmc_wasserstein_width_fraction", {})]
+            if vals:
+                summary["mcmc_agreement"][k] = {
+                    "n": len(vals),
+                    "median_wasserstein": float(np.median(vals)),
+                    "median_wasserstein_prior_fraction": float(np.median(vals) /
+                                                               ranges[k]),
+                    "median_wasserstein_width_fraction": float(np.median(norm_vals))
+                    if norm_vals else float("nan"),
+                }
+    detected_cov95 = [v["coverage_95"] for v in summary["detected_per_param"].values()]
+    detected_cov68 = [v["coverage_68"] for v in summary["detected_per_param"].values()]
+    mcmc_char_prior = [
+        summary["mcmc_agreement"][k]["median_wasserstein_prior_fraction"]
+        for k in ("RpRs", "aRs", "b") if k in summary.get("mcmc_agreement", {})
+    ]
+    mcmc_char_width = [
+        summary["mcmc_agreement"][k]["median_wasserstein_width_fraction"]
+        for k in ("RpRs", "aRs", "b") if k in summary.get("mcmc_agreement", {})
+    ]
+    summary["gate_status"] = {
+        "detected_fraction_ge_0.9": bool(summary["detection"]["detected_fraction"] >= 0.9),
+        "detected_cov68_ge_0.5_all_params": bool(detected_cov68 and
+                                                 min(detected_cov68) >= 0.5),
+        "detected_cov95_ge_0.8_all_params": bool(detected_cov95 and
+                                                 min(detected_cov95) >= 0.8),
+        "mcmc_characterization_prior_fraction_le_0.1": bool(
+            mcmc_char_prior and max(mcmc_char_prior) <= 0.1),
+        "mcmc_characterization_width_fraction_le_0.5_diagnostic": bool(
+            mcmc_char_width and max(mcmc_char_width) <= 0.5),
+    }
     report = {"summary": summary, "records": records}
     with open(os.path.join(args.out, "real_validation.json"), "w") as fh:
         json.dump(report, fh, indent=2)

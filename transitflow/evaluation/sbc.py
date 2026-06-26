@@ -64,6 +64,11 @@ def run_sbc(inference, simulator, n_sims: int = 500, n_posterior: int = 1000,
     """
     rng = np.random.default_rng() if rng is None else rng
     prior = inference.prior
+    param_names = list(prior.names)
+    target_slice = slice(None)
+    if inference.model.cfg.param_dim == 5:
+        param_names = param_names[2:]
+        target_slice = slice(2, None)
     trues_phys, trues_std, ranks = [], [], []
     collected = 0
     while collected < n_sims:
@@ -75,18 +80,21 @@ def run_sbc(inference, simulator, n_sims: int = 500, n_posterior: int = 1000,
         l = batch["local"][mask]
         sf = batch["sigma_feat"][mask]
         pg = batch["periodogram"][mask] if "periodogram" in batch else None
+        eph = batch["ephem_feat"][mask] if "ephem_feat" in batch else None
         tp = batch["theta_phys"][mask]
         # unclipped standardized samples + standardized truth -> proper ranks
         _, samples_std = inference.posterior_samples(
-            g, l, sf, n_samples=n_posterior, return_std=True, periodogram=pg)
+            g, l, sf, n_samples=n_posterior, return_std=True, periodogram=pg,
+            ephem_feat=eph)
         t_std = prior.physical_to_std(tp)
-        r = sbc_ranks(t_std, samples_std)
-        trues_phys.append(tp)
-        trues_std.append(t_std)
+        r = sbc_ranks(t_std[:, target_slice], samples_std[:, :, target_slice])
+        trues_phys.append(tp[:, target_slice])
+        trues_std.append(t_std[:, target_slice])
         ranks.append(r)
         collected += mask.sum()
     trues_phys = np.concatenate(trues_phys)[:n_sims]
     ranks = np.concatenate(ranks)[:n_sims]
     return {"ranks": ranks, "theta_true": trues_phys,
             "theta_true_std": np.concatenate(trues_std)[:n_sims],
+            "param_names": param_names,
             "uniformity": sbc_uniformity(ranks)}

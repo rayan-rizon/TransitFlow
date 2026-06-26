@@ -20,6 +20,7 @@ import numpy as np
 from .noise import (
     NoiseLibrary,
     eclipsing_binary_signal,
+    estimate_white_sigma,
     sample_correlated_noise,
     single_event_signal,
     sinusoid_signal,
@@ -199,6 +200,11 @@ class TransitSimulator:
         if real_mask.any():
             seg = self.noise_library.draw(int(real_mask.sum()), cfg.n_raw, rng)
             flux[real_mask] *= seg
+            sigma_white[real_mask] = np.clip(
+                estimate_white_sigma(seg),
+                10.0 ** cfg.sigma_white_log10_low,
+                10.0 ** cfg.sigma_white_log10_high,
+            )
 
         # ---- views ---------------------------------------------------
         gv = np.empty((B, cfg.n_global), dtype=np.float32)
@@ -228,6 +234,7 @@ class TransitSimulator:
         # ---- targets -------------------------------------------------
         theta_std = self.prior.physical_to_std(theta_phys).astype(np.float32)
         theta_std[is_neg] = 0.0  # undefined for non-planets; masked in the loss
+        theta_char_std = theta_std[:, 2:].astype(np.float32)
 
         # noise-level conditioning feature: standardized log10 sigma
         sig_feat = (np.log10(sigma_white) - 0.5 *
@@ -235,15 +242,25 @@ class TransitSimulator:
         sig_feat = sig_feat / (0.5 * (cfg.sigma_white_log10_high -
                                       cfg.sigma_white_log10_low))
 
+        # Explicit candidate ephemeris conditioning.  The local view is folded on
+        # this candidate, so P/t0 are not purely image-derived quantities; making
+        # the candidate available to the posterior is the identifiable setup.
+        ephem_phys = theta_phys.copy()
+        ephem_phys[:, 0] = fold_P
+        ephem_phys[:, 1] = (fold_t0 / np.maximum(fold_P, 1e-12)) % 1.0
+        ephem_feat = self.prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)
+
         out = {
             "global": gv,
             "local": lv,
             "theta_std": theta_std,
+            "theta_char_std": theta_char_std,
             "theta_phys": theta_phys.astype(np.float32),
             "d": d,
             "valid": is_planet,
             "sigma": sigma_white.astype(np.float32),
             "sigma_feat": sig_feat.astype(np.float32),
+            "ephem_feat": ephem_feat,
             "fold_P": fold_P.astype(np.float32),
             "fold_t0": fold_t0.astype(np.float32),
             "duration": duration.astype(np.float32),

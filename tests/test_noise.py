@@ -3,6 +3,7 @@ import numpy as np
 from transitflow.noise import (
     NoiseLibrary,
     eclipsing_binary_signal,
+    estimate_white_sigma,
     sample_correlated_noise,
     single_event_signal,
     sinusoid_signal,
@@ -54,3 +55,13 @@ def test_noise_library_roundtrip():
     assert seg.shape == (8, 2000)
     empty = NoiseLibrary(None)
     assert not empty.available()
+
+
+def test_estimate_white_sigma_ignores_slow_trend():
+    rng = np.random.default_rng(3)
+    sigma = 0.002
+    t = np.linspace(0.0, 1.0, 20000)
+    trend = 0.01 * np.sin(2 * np.pi * t)
+    flux = 1.0 + trend + rng.normal(0.0, sigma, size=t.size)
+    est = estimate_white_sigma(flux)[0]
+    assert np.isclose(est, sigma, rtol=0.15)

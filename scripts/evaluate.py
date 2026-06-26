@@ -25,8 +25,10 @@ from transitflow.evaluation import (
     coverage_calibration_error,
     detection_metrics,
     run_sbc,
+    sbc_uniformity,
 )
 from transitflow.inference import TransitFlowInference
+from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
@@ -38,8 +40,9 @@ def detection_eval(inference, simulator, n: int, rng) -> dict:
     while got < n:
         batch = simulator.simulate_batch(256, rng)
         pg = batch.get("periodogram")
+        eph = batch.get("ephem_feat")
         p = inference.detect(batch["global"], batch["local"], batch["sigma_feat"],
-                             periodogram=pg)
+                             periodogram=pg, ephem_feat=eph)
         labels.append(batch["d"])
         scores.append(p)
         periods.append(batch["theta_phys"][:, 0])
@@ -57,6 +60,8 @@ def main() -> None:
     ap.add_argument("--n-sbc", type=int, default=300)
     ap.add_argument("--n-posterior", type=int, default=1000)
     ap.add_argument("--n-detection", type=int, default=1000)
+    ap.add_argument("--noise-lib", default=None,
+                    help="optional real-noise .npz for held-out noise-injection evaluation")
     ap.add_argument("--out", default="results/eval")
     ap.add_argument("--plots", action="store_true")
     ap.add_argument("--seed", type=int, default=123)
@@ -65,9 +70,13 @@ def main() -> None:
 
     model, mcfg, scfg = load_checkpoint(args.ckpt)
     prior = TransitPrior(TransitPrior.default_specs(scfg.regime))
-    simulator = TransitSimulator(scfg, prior=prior)
+    noise_library = NoiseLibrary.load(args.noise_lib)
+    simulator = TransitSimulator(scfg, prior=prior, noise_library=noise_library)
     inference = TransitFlowInference(model, prior, scfg)
     rng = np.random.default_rng(args.seed)
+
+    if args.noise_lib and not noise_library.available():
+        raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
 
     print("== detection ==")
     det = detection_eval(inference, simulator, args.n_detection, rng)
@@ -78,6 +87,18 @@ def main() -> None:
                   n_posterior=args.n_posterior, rng=rng)
     unif = sbc["uniformity"]
     print("SBC uniformity p-values:", [round(p, 3) for p in unif["pvalue"]])
+    param_names = list(prior.names)
+    sbc_param_names = list(sbc.get("param_names", param_names))
+    if model.cfg.param_dim == 5:
+        char_dims = list(range(2, len(param_names)))
+        char_names = list(param_names[2:])
+        char_unif = unif
+    else:
+        char_dims = list(range(2, len(param_names))) if model.cfg.use_ephemeris_feature \
+            else list(range(len(param_names)))
+        char_names = [param_names[i] for i in char_dims]
+        char_ranks = sbc["ranks"][:, char_dims]
+        char_unif = sbc_uniformity(char_ranks)
 
     print("== coverage ==")
     # reuse SBC posteriors for coverage by re-sampling a fresh set
@@ -89,49 +110,91 @@ def main() -> None:
         if not mask.any():
             continue
         pg = batch["periodogram"][mask] if "periodogram" in batch else None
+        eph = batch["ephem_feat"][mask] if "ephem_feat" in batch else None
         s = inference.posterior_samples(batch["global"][mask], batch["local"][mask],
                                         batch["sigma_feat"][mask],
-                                        n_samples=args.n_posterior, periodogram=pg)
+                                        n_samples=args.n_posterior, periodogram=pg,
+                                        ephem_feat=eph)
         cov_samples.append(s)
         cov_true.append(batch["theta_phys"][mask])
         got += int(mask.sum())
     cov_samples = np.concatenate(cov_samples)[:args.n_sbc]
     cov_true = np.concatenate(cov_true)[:args.n_sbc]
-    cov = central_interval_coverage(cov_true, cov_samples)
-    cce = coverage_calibration_error(cov["levels"], cov["coverage_overall"])
-    print(f"coverage calibration error (lower=better): {cce:.4f}")
+    if model.cfg.param_dim == 5:
+        cov = central_interval_coverage(cov_true[:, char_dims],
+                                        cov_samples[:, :, char_dims])
+        cce = None
+    else:
+        cov = central_interval_coverage(cov_true, cov_samples)
+        cce = coverage_calibration_error(cov["levels"], cov["coverage_overall"])
+    cov_char = central_interval_coverage(cov_true[:, char_dims],
+                                         cov_samples[:, :, char_dims],
+                                         levels=cov["levels"])
+    cce_char = coverage_calibration_error(cov_char["levels"],
+                                          cov_char["coverage_overall"])
+    if cce is not None:
+        print(f"coverage calibration error (lower=better): {cce:.4f}")
+    if model.cfg.use_ephemeris_feature:
+        print("characterization SBC p-values:",
+              [round(p, 3) for p in char_unif["pvalue"]])
+        print(f"characterization coverage calibration error: {cce_char:.4f}")
 
     report = {
         "checkpoint": args.ckpt,
         "head": model.head_type,
+        "noise_lib": args.noise_lib,
+        "noise_lib_available": noise_library.available(),
+        "param_names": param_names,
+        "posterior_param_names": sbc_param_names,
+        "ephemeris_conditioned": bool(model.cfg.use_ephemeris_feature),
+        "characterization_param_names": char_names,
         "detection": det,
         "sbc_pvalues": unif["pvalue"],
+        "sbc_pvalues_by_param": dict(zip(sbc_param_names, unif["pvalue"])),
+        "characterization_sbc_pvalues": char_unif["pvalue"],
+        "characterization_sbc_pvalues_by_param": dict(zip(char_names,
+                                                          char_unif["pvalue"])),
         "coverage_calibration_error": cce,
+        "characterization_coverage_calibration_error": cce_char,
         "coverage_levels": cov["levels"].tolist(),
         "coverage_overall": cov["coverage_overall"].tolist(),
+        "characterization_coverage_overall": cov_char["coverage_overall"].tolist(),
+        "gate_status": {
+            "detection_auc_ge_0.99": bool(det["roc_auc"] >= 0.99),
+            "posterior_sbc_p_gt_0.05": bool(min(unif["pvalue"]) > 0.05),
+            "all_parameter_sbc_p_gt_0.05": None if model.cfg.param_dim == 5
+            else bool(min(unif["pvalue"]) > 0.05),
+            "characterization_sbc_p_gt_0.05": bool(min(char_unif["pvalue"]) > 0.05),
+            "coverage_error_le_0.03": None if cce is None else bool(cce <= 0.03),
+            "characterization_coverage_error_le_0.03": bool(cce_char <= 0.03),
+        },
     }
     with open(os.path.join(args.out, "metrics.json"), "w") as f:
         json.dump(report, f, indent=2)
     print("wrote", os.path.join(args.out, "metrics.json"))
 
     if args.plots:
-        _make_plots(sbc, cov, args.out, prior)
+        _make_plots(sbc, cov, args.out, sbc_param_names)
 
 
-def _make_plots(sbc, cov, out, prior) -> None:
+def _make_plots(sbc, cov, out, param_names) -> None:
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     ranks = sbc["ranks"]
     D = ranks.shape[1]
-    fig, axes = plt.subplots(2, 4, figsize=(14, 6))
+    n_cols = min(4, D)
+    n_rows = int(np.ceil(D / n_cols))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(3.5 * n_cols, 3.0 * n_rows))
+    axes = np.atleast_1d(axes).ravel()
     for j in range(D):
-        ax = axes.flat[j]
+        ax = axes[j]
         ax.hist(ranks[:, j], bins=20, color="steelblue", alpha=0.8)
         ax.axhline(len(ranks) / 20, color="k", ls="--", lw=1)
-        ax.set_title(prior.names[j])
-    axes.flat[-1].axis("off")
+        ax.set_title(param_names[j])
+    for ax in axes[D:]:
+        ax.axis("off")
     fig.suptitle("SBC rank histograms (flat = calibrated)")
     fig.tight_layout()
     fig.savefig(os.path.join(out, "sbc.png"), dpi=120)

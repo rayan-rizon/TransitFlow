@@ -71,7 +71,9 @@ def main() -> None:
     # --- detection ---
     from transitflow.evaluation import detection_metrics
     test = simulator.simulate_batch(512, rng)
-    pdet = inference.detect(test["global"], test["local"], test["sigma_feat"])
+    pdet = inference.detect(test["global"], test["local"], test["sigma_feat"],
+                            periodogram=test.get("periodogram"),
+                            ephem_feat=test.get("ephem_feat"))
     dm = detection_metrics(test["d"], pdet)
     print(f"\nDetection ROC-AUC: {dm['roc_auc']:.3f}  "
           f"AP: {dm['average_precision']:.3f}")
@@ -89,8 +91,11 @@ def main() -> None:
         m = b["valid"]
         if not m.any():
             continue
+        pg = b["periodogram"][m] if "periodogram" in b else None
+        eph = b["ephem_feat"][m] if "ephem_feat" in b else None
         cov_s.append(inference.posterior_samples(b["global"][m], b["local"][m],
-                                                 b["sigma_feat"][m], n_samples=n_post))
+                                                 b["sigma_feat"][m], n_samples=n_post,
+                                                 periodogram=pg, ephem_feat=eph))
         cov_t.append(b["theta_phys"][m])
         got += int(m.sum())
     cov = central_interval_coverage(np.concatenate(cov_t)[:200],
@@ -103,7 +108,9 @@ def main() -> None:
     while one["d"][0] != 1:
         one = simulator.simulate_batch(1, np.random.default_rng(int(rng.integers(1e6))))
     res = inference.detect_and_characterize(one["global"], one["local"],
-                                            one["sigma_feat"], n_samples=n_post)
+                                            one["sigma_feat"], n_samples=n_post,
+                                            periodogram=one.get("periodogram"),
+                                            ephem_feat=one.get("ephem_feat"))
     samp = res["samples"][0]
     true = one["theta_phys"][0]
     print(f"\nSingle planet: p(detect)={res['p_detect'][0]:.3f}")
@@ -112,7 +119,9 @@ def main() -> None:
         print(f"  {name:9s} true={true[j]:+.4f}  post=[{lo:+.4f}, {hi:+.4f}]")
     isd = inference.importance_diagnostic(
         one["global"][0], one["local"][0], float(one["fold_P"][0]),
-        float(one["fold_t0"][0]), one["sigma_feat"][0], n_samples=300)
+        float(one["fold_t0"][0]), one["sigma_feat"][0], n_samples=300,
+        periodogram=one["periodogram"][0] if "periodogram" in one else None,
+        ephem_feat=one["ephem_feat"][0] if "ephem_feat" in one else None)
     print(f"IS efficiency (ESS/N): {isd['ess_fraction']:.3f}")
 
     print("\n" + "=" * 70)

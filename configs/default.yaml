@@ -31,11 +31,12 @@ simulator:
   pg_n_raw: 4096            # subsample raw LC for periodogram only (4× faster gen)
 
 model:
-  param_dim: 7
+  param_dim: 5
   embed_dim: 256
   head: fmpe               # fmpe | npe  (npe = Variant B ablation)
   use_noise_feature: true
   use_periodogram: true     # consume the periodogram channel (period-fix)
+  use_ephemeris_feature: true # condition on candidate P/t0 used for folding
   global_channels: [32, 64, 128, 128, 256, 256]
   local_channels: [32, 64, 128, 128]
   pg_channels: [32, 64, 128, 128]

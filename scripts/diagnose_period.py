@@ -43,9 +43,12 @@ def main():
         mk = b["valid"]
         if not mk.any():
             continue
+        pg = b["periodogram"][mk] if "periodogram" in b else None
+        eph = b["ephem_feat"][mk] if "ephem_feat" in b else None
         ph, std = inf.posterior_samples(b["global"][mk], b["local"][mk],
                                         b["sigma_feat"][mk], n_samples=L,
-                                        return_std=True)
+                                        return_std=True, periodogram=pg,
+                                        ephem_feat=eph)
         tp = b["theta_phys"][mk]
         tstd = pr.physical_to_std(tp)
         ranks.append((std[:, :, 0] < tstd[:, 0][:, None]).sum(1))

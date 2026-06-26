@@ -1,0 +1,10 @@
+{
+  "created_utc": "2026-06-26T00:05:12Z",
+  "base_completed_large_shards": 72,
+  "supplement_small_shards": 280,
+  "combined_shards": 352,
+  "combined_rows": 1000000,
+  "noise_lib": "/workspace/TransitFlow/artifacts/data/noise_lib.npz",
+  "model_target": "theta_char_std: RpRs,aRs,b,q1,q2",
+  "bad_shards": []
+}
