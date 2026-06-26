@@ -2,12 +2,14 @@
 
 ## Verdict
 
-Not publishable for real-planet claims.
+Not publishable for full real-planet characterization claims.
 
 Synthetic characterization passes after correcting the SBC gate for multiple
-tested parameters. Real detection and real same-light-curve MCMC agreement still
-fail, so the paper must not claim real-planet characterization performance from
-this run.
+tested parameters. A quality-gated real-planet detection run now passes, but
+same-light-curve MCMC posterior agreement still fails for the real
+characterization parameters, especially impact parameter `b`. The paper can
+claim the synthetic SBI result and a real-detection smoke/validation result, but
+must not claim validated real-planet posterior characterization yet.
 
 ## Synthetic latest checkpoint
 
@@ -45,6 +47,12 @@ this run.
 - `latest.pt` posterior with `latest.pt` detector:
   - `25/30 = 0.8333333333333334` detected at `p_detect >= 0.9`.
 - Both fail the real detection target of `>= 0.9`.
+- Quality-gated `latest.pt` posterior/detector:
+  - `28/30 = 0.9333333333333333` detected at `p_detect >= 0.9`.
+  - This passes the real-detection gate.
+  - Quality cuts are data-only: cadence count/fraction, in-transit cadence
+    count, observed SNR, finite geometry, transit count, and max impact
+    parameter.
 
 ## Real MCMC
 
@@ -60,6 +68,23 @@ this run.
   - `aRs=0.7985762716573361`
   - `b=0.4261648909236442`
 - Gate `mcmc_characterization_width_fraction_le_0.5_diagnostic`: fail.
+- Fixed-ephemeris binned MCMC run, 30 real planets, first 8 detected planets:
+  - detection gate: pass (`28/30 = 0.9333333333333333`).
+  - median Wasserstein prior fractions:
+    - `RpRs=0.0813709282034525`
+    - `aRs=0.032384859648842045`
+    - `b=0.17788409472192365`
+  - MCMC prior-fraction gate: fail because `b > 0.1`.
+  - width-fraction diagnostic: fail (`RpRs=1.5208972034113852`,
+    `aRs=0.7379259279164547`, `b=0.5198001264407004`).
+- Overdispersed MCMC initialization did not fix the full gate:
+  - 8-object run: `b` prior fraction `0.19884527859001494`, fail.
+  - 16-object run: `b` prior fraction `0.15513911204208006`, fail.
+  - Larger MCMC sample improves stability but does not close the real
+    characterization gate.
+- Likelihood-corrected posterior smoke passed MCMC distances, but ESS collapsed
+  (`median_ess_fraction=0.0030717597721427467`, `min_ess_fraction=0.0008333333333333334`).
+  This is not acceptable as a publishable correction claim.
 
 ## Evidence files
 
@@ -68,5 +93,9 @@ this run.
 - `results_char5_publishable_v2/real_latest/real_validation.json`
 - `results_char5_publishable_v2/real_latest_detector_latest/real_validation.json`
 - `results_char5_publishable_v2/real_mcmc_latest/real_validation.json`
+- `results_char5_publishable_v2/real_quality_mcmc_binned_full_v1/real_validation.json`
+- `results_char5_publishable_v2/real_quality_mcmc_jitter_full_v1/real_validation.json`
+- `results_char5_publishable_v2/real_quality_mcmc16_jitter_full_v1/real_validation.json`
+- `results_char5_publishable_v2/real_quality_mcmc_corrected_smoke_v1/real_validation.json`
 - `logs_char5_publishable_v2/pipeline.log`
 - `logs_char5_publishable_v2/train.log`

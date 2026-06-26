@@ -170,8 +170,8 @@
     "semantic_hash": ""
   },
   "transitflow/correction.py": {
-    "mtime": 1782405545.180771,
-    "ast_hash": "cb2034b3217475e032bde96606f170b3",
+    "mtime": 1782492730.9770145,
+    "ast_hash": "faf4b4dd55441dbd26908f548cc08d45",
     "semantic_hash": ""
   },
   "transitflow/data.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "scripts/validate_real.py": {
-    "mtime": 1782482542.077053,
-    "ast_hash": "ce8ec265271d38abcdb146c5df887897",
+    "mtime": 1782493072.8891113,
+    "ast_hash": "7ed60d36c0674178d5b52ae60d10bde5",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md": {
-    "mtime": 1782482614.7660463,
-    "ast_hash": "20428a1e308f9134b6ab6ab13061d807",
+    "mtime": 1782495042.8975122,
+    "ast_hash": "07a2ec93d748a83fab21c9293c954cc9",
     "semantic_hash": ""
   },
   "artifacts/vast_smoke_2026-06-26/logs/vast_smoke_summary.json": {
@@ -460,23 +460,53 @@
     "semantic_hash": ""
   },
   "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_latest/real_validation.json": {
-    "mtime": 1782481306.0,
-    "ast_hash": "30203c3fcd52ae10ebad7c869a67fce9",
+    "mtime": 1782482863.67007,
+    "ast_hash": "37ddd68a4e5249090fef2604f006f433",
     "semantic_hash": ""
   },
   "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_mcmc_latest/real_validation.json": {
-    "mtime": 1782481507.0,
-    "ast_hash": "7ab7c725fb6dffd8444c8f820a2427fc",
+    "mtime": 1782482863.668668,
+    "ast_hash": "532cb63d2ac3ca67bb6dafe34ef6182f",
     "semantic_hash": ""
   },
   "tests/test_evaluate_gates.py": {
-    "mtime": 1782482558.4469445,
-    "ast_hash": "63f2ca0c3490001cba8a5981544bdc0c",
+    "mtime": 1782493083.4074032,
+    "ast_hash": "533dcc0ea4373817c32c1152e7f25bd1",
     "semantic_hash": ""
   },
   "artifacts/ssh_monitor_command.md": {
     "mtime": 1782482700.7820978,
     "ast_hash": "91fd0bb1ed9802f22837588f9bf04ac7",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_latest_detector_latest/real_validation.json": {
+    "mtime": 1782482863.6713407,
+    "ast_hash": "37b55a6bf5e948f5c5504cb54f1fa338",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc16_jitter_full_v1/real_validation.json": {
+    "mtime": 1782494925.0,
+    "ast_hash": "7d8a031a0a8472432d090c99db0d8b96",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_binned_full_v1/real_validation.json": {
+    "mtime": 1782492670.0,
+    "ast_hash": "8ae044968f0aea870d4ecdd08e6d80a0",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_corrected_smoke_v1/real_validation.json": {
+    "mtime": 1782493034.0,
+    "ast_hash": "61cceee71a6041b9ca2cf59f39ca8a59",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_jitter_full_v1/real_validation.json": {
+    "mtime": 1782494095.0,
+    "ast_hash": "7d86b57e1d5e41cdff04912507d8a5c0",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/SUMMARY.md": {
+    "mtime": 1782495013.3408222,
+    "ast_hash": "a047357e557b2516570e5a5b5b9d52f9",
     "semantic_hash": ""
   }
 }

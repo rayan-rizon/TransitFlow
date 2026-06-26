@@ -50,7 +50,8 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     """Importance-sampling weights for one object's amortized posterior.
 
     Returns physical + standardized proposal samples, normalized weights ``w``,
-    and the ESS fraction.  ``sigma`` is the per-cadence white-noise std.
+    and the ESS fraction. ``sigma`` may be a scalar per-cadence white-noise std
+    or an array of per-point errors for binned likelihoods.
     """
     inf = inference
     e = inf.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
@@ -64,7 +65,10 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     pred = render_raw_flux(phys, times, n_radial=inf.sim_cfg.n_radial,
                            engine=inf.sim_cfg.engine)               # (N, n_raw)
     resid = raw_flux[None, :] - pred
-    loglik = -0.5 * np.sum(resid * resid, axis=1) / (sigma * sigma)
+    sigma = np.asarray(sigma, dtype=np.float64)
+    loglik = -0.5 * np.sum(resid * resid / (sigma[None, :] * sigma[None, :])
+                           if sigma.ndim else resid * resid / float(sigma * sigma),
+                           axis=1)
     logw = loglik + logprior - logq
     logw = np.where(np.isfinite(logw), logw, -np.inf)
     logw -= np.max(logw)

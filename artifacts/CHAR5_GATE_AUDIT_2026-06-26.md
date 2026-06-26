@@ -2,9 +2,9 @@
 
 ## Verdict
 
-Not publishable yet as a full real-data claim.
+Not publishable yet as a full real-data characterization claim.
 
-The 5-parameter characterization posterior fixes the invalid SBC target. The calibrated `latest.pt` checkpoint passes synthetic SBI gates under a multiple-comparison-aware SBC gate, but real-planet detection/characterization still fails. Do not claim real-planet performance until the real gates pass on a predeclared run.
+The 5-parameter characterization posterior fixes the invalid SBC target. The calibrated `latest.pt` checkpoint passes synthetic SBI gates under a multiple-comparison-aware SBC gate. After data-only real-light-curve quality gating, real detection passes (`28/30`), but same-light-curve MCMC posterior agreement still fails for real characterization, especially `b`. Do not claim real-planet posterior characterization until that gate passes on a predeclared run.
 
 ## What passed
 
@@ -14,13 +14,14 @@ The 5-parameter characterization posterior fixes the invalid SBC target. The cal
   - Bonferroni per-test alpha: `0.01`; minimum p-value: `0.011551931514417801`.
   - Raw diagnostic `all p > 0.05` is false; this is reported but is not the required family-wise gate.
 - Synthetic characterization coverage error, `latest.pt`: `0.0024736842105263267`.
+- Quality-gated real detection, `latest.pt`: `28/30 = 0.9333333333333333` at `p_detect >= 0.9`.
 
 ## What failed
 
 - Posterior-loss `best.pt` is not the calibrated checkpoint for the publishable-v2 run:
   - `best.pt` SBC p-values: `RpRs=1.2809393920693547e-05`, `aRs=0.1502764475906208`, `b=0.27054351335208193`, `q1=0.8939952044232142`, `q2=0.8733105587372922`.
   - Cause: lowest validation posterior loss is not a reliable calibration-selection rule. Use the final `latest.pt` checkpoint unless a calibration sweep is predeclared.
-- Real detection failed on publishable-v2:
+- Raw real detection failed on publishable-v2:
   - With `best_detection.pt`: `24/30 = 0.8` at `p_detect >= 0.9`.
   - With `latest.pt` as detector: `25/30 = 0.8333333333333334` at `p_detect >= 0.9`.
 - Real same-light-curve MCMC agreement failed for calibrated `latest.pt`:
@@ -28,6 +29,14 @@ The 5-parameter characterization posterior fixes the invalid SBC target. The cal
   - `b` median Wasserstein prior fraction: `0.2046256519315231` > `0.1`.
   - Width-normalized `RpRs` diagnostic: `1.435496412648805` > `0.5`.
   - Width-normalized `aRs` diagnostic: `0.7985762716573361` > `0.5`.
+- Quality-gated fixed-ephemeris binned MCMC still failed:
+  - 8-object full run: detection passed (`28/30`), but `b` prior fraction `0.17788409472192365` > `0.1`.
+  - Overdispersed 8-object full run: `b` prior fraction `0.19884527859001494` > `0.1`.
+  - Overdispersed 16-object full run: `b` prior fraction `0.15513911204208006` > `0.1`.
+  - This rules out the original full-cadence runtime issue and small MCMC sample size as the only causes.
+- Likelihood-corrected posterior smoke is not acceptable as a pass path:
+  - MCMC distances passed, but ESS collapsed (`median_ess_fraction=0.0030717597721427467`, `min_ess_fraction=0.0008333333333333334`).
+  - A correction with ESS near zero is a degeneracy diagnostic, not a publishable calibrated posterior.
 - Literature interval coverage diagnostics fail and must stay exploratory unless catalog uncertainty and real-light-curve likelihood assumptions are modeled explicitly.
 
 ## Fixes made
@@ -43,6 +52,13 @@ The 5-parameter characterization posterior fixes the invalid SBC target. The cal
 - `validate_real.py` supports `--detector-ckpt`, so real detection and posterior characterization can use separately selected checkpoints without mixing claims.
 - Real-data MCMC comparison now supports fixed ephemeris conditioning. For the 5D model, the default MCMC comparator fixes `P` and `t0_phase` to the same folded ephemeris used by the amortized posterior; use `--mcmc-full-ephemeris` only as a separate diagnostic.
 - Real validation gates now exclude fixed `P` from characterization coverage gates; `P` remains in the report only as an ephemeris sanity check.
+- Real validation now separates pass/fail gates from diagnostics:
+  - `gate_status`: real detection and MCMC posterior agreement.
+  - `diagnostic_status`: archive-literature coverage diagnostics only.
+- Real validation now applies data-only quality gates before real validation, rejecting weak, sparse, missing-geometry, or out-of-regime single-sector rows.
+- Fixed-ephemeris MCMC now phase-bins cadence data with `sigma/sqrt(n)` bin errors, making the comparator tractable without changing the fixed-ephemeris Gaussian likelihood target.
+- Real MCMC walker initialization is configurable and defaults to a wider standardized jitter (`0.15`) for less brittle geometry exploration.
+- Importance-corrected real validation now reports an ESS gate when correction is enabled.
 
 ## Vast smoke after conditional-MCMC fix
 
@@ -74,6 +90,13 @@ Remote evidence was downloaded to:
 - `artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/`
 - `artifacts/vast_publishable_v2_2026-06-26/logs_char5_publishable_v2/`
 
+Additional real-validation evidence downloaded:
+
+- `artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_binned_full_v1/`
+- `artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_jitter_full_v1/`
+- `artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc16_jitter_full_v1/`
+- `artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_quality_mcmc_corrected_smoke_v1/`
+
 ## Next run rule
 
 Before another full run:
@@ -81,4 +104,5 @@ Before another full run:
 1. Run a small smoke test that verifies `posterior_param_names == [RpRs, aRs, b, q1, q2]`.
 2. Evaluate synthetic gates on `latest.pt`, unless a calibration-sweep checkpoint rule is predeclared before looking at test results.
 3. Run real validation with `latest.pt` as posterior and detector unless a detector checkpoint also passes the real detection gate on a predeclared validation split.
-4. Run real MCMC with fixed ephemeris for the 5D model; only continue to a full real-data claim if MCMC prior-fraction gate passes for `RpRs`, `aRs`, and `b`.
+4. Run real MCMC with fixed ephemeris for the 5D model; only continue to a full real-data characterization claim if MCMC prior-fraction gate passes for `RpRs`, `aRs`, and `b`.
+5. Current next research fix is model-side, not gate-side: improve real-domain posterior calibration for impact parameter/shape degeneracy, then rerun the same predeclared quality-gated real suite.
