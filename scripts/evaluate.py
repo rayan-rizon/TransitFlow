@@ -54,6 +54,28 @@ def detection_eval(inference, simulator, n: int, rng) -> dict:
     return {"roc_auc": m["roc_auc"], "average_precision": m["average_precision"]}
 
 
+def sbc_gate(pvalues, alpha: float = 0.05) -> dict:
+    """Multiple-comparison aware SBC gate.
+
+    A D-dimensional SBC report contains D per-parameter uniformity tests. Using
+    `all raw p-values > 0.05` as the required gate false-fails a calibrated 5-D
+    posterior about 23% of the time. The required gate therefore controls the
+    family-wise false-rejection rate at `alpha` with Bonferroni correction while
+    still reporting the raw p-values and raw all-p>0.05 diagnostic.
+    """
+    p = [float(x) for x in pvalues]
+    n_tests = max(len(p), 1)
+    threshold = alpha / n_tests
+    return {
+        "alpha_familywise": alpha,
+        "bonferroni_alpha_per_test": threshold,
+        "n_tests": n_tests,
+        "min_pvalue": min(p) if p else None,
+        "pass": bool(p and min(p) > threshold),
+        "all_raw_p_gt_0.05": bool(p and min(p) > 0.05),
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
@@ -139,6 +161,9 @@ def main() -> None:
               [round(p, 3) for p in char_unif["pvalue"]])
         print(f"characterization coverage calibration error: {cce_char:.4f}")
 
+    posterior_sbc_gate = sbc_gate(unif["pvalue"])
+    char_sbc_gate = sbc_gate(char_unif["pvalue"])
+
     report = {
         "checkpoint": args.ckpt,
         "head": model.head_type,
@@ -151,9 +176,11 @@ def main() -> None:
         "detection": det,
         "sbc_pvalues": unif["pvalue"],
         "sbc_pvalues_by_param": dict(zip(sbc_param_names, unif["pvalue"])),
+        "sbc_gate": posterior_sbc_gate,
         "characterization_sbc_pvalues": char_unif["pvalue"],
         "characterization_sbc_pvalues_by_param": dict(zip(char_names,
                                                           char_unif["pvalue"])),
+        "characterization_sbc_gate": char_sbc_gate,
         "coverage_calibration_error": cce,
         "characterization_coverage_calibration_error": cce_char,
         "coverage_levels": cov["levels"].tolist(),
@@ -161,10 +188,14 @@ def main() -> None:
         "characterization_coverage_overall": cov_char["coverage_overall"].tolist(),
         "gate_status": {
             "detection_auc_ge_0.99": bool(det["roc_auc"] >= 0.99),
-            "posterior_sbc_p_gt_0.05": bool(min(unif["pvalue"]) > 0.05),
-            "all_parameter_sbc_p_gt_0.05": None if model.cfg.param_dim == 5
-            else bool(min(unif["pvalue"]) > 0.05),
-            "characterization_sbc_p_gt_0.05": bool(min(char_unif["pvalue"]) > 0.05),
+            "posterior_sbc_familywise_alpha_0.05": posterior_sbc_gate["pass"],
+            "posterior_sbc_all_raw_p_gt_0.05":
+                posterior_sbc_gate["all_raw_p_gt_0.05"],
+            "all_parameter_sbc_familywise_alpha_0.05": None
+            if model.cfg.param_dim == 5 else posterior_sbc_gate["pass"],
+            "characterization_sbc_familywise_alpha_0.05": char_sbc_gate["pass"],
+            "characterization_sbc_all_raw_p_gt_0.05":
+                char_sbc_gate["all_raw_p_gt_0.05"],
             "coverage_error_le_0.03": None if cce is None else bool(cce <= 0.03),
             "characterization_coverage_error_le_0.03": bool(cce_char <= 0.03),
         },

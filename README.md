@@ -211,11 +211,12 @@ the process likely hung), `DIVERGED` (non-finite loss), or `CPU-LONG-RUN`
 non-finite losses rather than burning hours on a diverged run.
 
 `status.json` holds live `step`, `progress`, `throughput_lc_per_s`, `data_wait_frac`,
-`eta`, current losses, `best` validation AUC, and a `health` block — poll it from
-anywhere. Checkpoints land in
-`runs/fmpe/checkpoints/`: `latest.pt` (resume), `best.pt` (highest val AUC), and
-rotating `step_*.pt`. Each is written atomically, so a killed instance never
-leaves a corrupt file.
+`eta`, current losses, `best` validation posterior loss, `best_detection`
+validation AUC, and a `health` block — poll it from anywhere. Checkpoints land in
+`runs/fmpe/checkpoints/`: `latest.pt` (final/resume checkpoint), `best.pt`
+(lowest validation posterior loss), `best_detection.pt` (highest validation
+detection AUC), and rotating `step_*.pt`. Each is written atomically, so a killed
+instance never leaves a corrupt file.
 
 **Resume** after a preemption (auto-detects `latest.pt`):
 
@@ -223,11 +224,14 @@ leaves a corrupt file.
 python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe --resume
 ```
 
-**Retrieve & evaluate**:
+**Retrieve & evaluate**. For the ephemeris-conditioned 5-D characterization model,
+use `latest.pt` as the primary posterior checkpoint unless a calibration sweep
+predeclares another checkpoint. Use `best_detection.pt` only for detector-only
+diagnostics.
 
 ```bash
 scp -r root@<host>:<port>:TransitFlow/runs/fmpe/checkpoints ./        # pull weights
-python scripts/evaluate.py --ckpt runs/fmpe/checkpoints/best.pt --plots --out results/fmpe
+python scripts/evaluate.py --ckpt runs/fmpe/checkpoints/latest.pt --plots --out results/fmpe
 ```
 
 > Throughput: with `--num-workers N` the simulator runs in `N` processes feeding a

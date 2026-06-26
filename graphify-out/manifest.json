@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "scripts/evaluate.py": {
-    "mtime": 1782424099.503025,
-    "ast_hash": "e4e809a199a5dee42903f6d81f76d65c",
+    "mtime": 1782480888.567196,
+    "ast_hash": "05460c34434676509fb5620cdef8d7f9",
     "semantic_hash": ""
   },
   "scripts/evaluate_corrected.py": {
@@ -40,8 +40,8 @@
     "semantic_hash": "f93efaa8e326f643715ad7e486fa0692"
   },
   "scripts/monitor.py": {
-    "mtime": 1782466851.3823395,
-    "ast_hash": "ac1bc02f5f257f7f7e5aa7cdcb1c722d",
+    "mtime": 1782480897.773917,
+    "ast_hash": "6a1c4032aae460952b8821bf14269586",
     "semantic_hash": ""
   },
   "scripts/preflight.py": {
@@ -295,8 +295,8 @@
     "semantic_hash": ""
   },
   "artifacts/tf_real_pipeline.sh": {
-    "mtime": 1782441960.8244047,
-    "ast_hash": "156719125a3159bd57cedff46bc47b63",
+    "mtime": 1782482625.7963395,
+    "ast_hash": "8b65323dcf202bdda266b3c4459263a6",
     "semantic_hash": ""
   },
   "scripts/baseline_detection.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "scripts/validate_real.py": {
-    "mtime": 1782463633.732508,
-    "ast_hash": "7870372d3714a5db18491708d96d616c",
+    "mtime": 1782482542.077053,
+    "ast_hash": "ce8ec265271d38abcdb146c5df887897",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1782305431.1227996,
-    "ast_hash": "0505ec83f5fdf60a9641b78ce44d18aa",
+    "mtime": 1782482572.0316124,
+    "ast_hash": "3e56e3539332d07f102176b0c2ef4a8a",
     "semantic_hash": ""
   },
   "TransitFlow_Implementation_Plan.md": {
@@ -415,8 +415,8 @@
     "semantic_hash": ""
   },
   "artifacts/CHAR5_GATE_AUDIT_2026-06-26.md": {
-    "mtime": 1782465046.724586,
-    "ast_hash": "15b568c5280dde8c0849c5bd27e10eff",
+    "mtime": 1782482614.7660463,
+    "ast_hash": "20428a1e308f9134b6ab6ab13061d807",
     "semantic_hash": ""
   },
   "artifacts/vast_smoke_2026-06-26/logs/vast_smoke_summary.json": {
@@ -432,6 +432,51 @@
   "artifacts/vast_smoke_2026-06-26/logs/char5_fixed_mcmc_plan.md": {
     "mtime": 1782465621.5919611,
     "ast_hash": "0d9527ebddcc435a3c651d72bcdfb4db",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/eval_latest_full/metrics.json": {
+    "mtime": 1782481013.0,
+    "ast_hash": "3a34835c7fd1fe76743e5a446115f89e",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/eval_latest_full/metrics_legacy_raw_gate.json": {
+    "mtime": 1782480827.0,
+    "ast_hash": "a43952028468cf93f6371aa2c47b5644",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/eval_posterior/metrics.json": {
+    "mtime": 1782479827.0,
+    "ast_hash": "622037534c4b636cb545b31d8f420494",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/eval_probe_latest/metrics.json": {
+    "mtime": 1782480306.0,
+    "ast_hash": "2e066d19100e265433e7d8919bc7296b",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/eval_probe_step_00056000/metrics.json": {
+    "mtime": 1782480432.0,
+    "ast_hash": "7b05e914ad55b973172515eb954037d8",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_latest/real_validation.json": {
+    "mtime": 1782481306.0,
+    "ast_hash": "30203c3fcd52ae10ebad7c869a67fce9",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_v2_2026-06-26/results_char5_publishable_v2/real_mcmc_latest/real_validation.json": {
+    "mtime": 1782481507.0,
+    "ast_hash": "7ab7c725fb6dffd8444c8f820a2427fc",
+    "semantic_hash": ""
+  },
+  "tests/test_evaluate_gates.py": {
+    "mtime": 1782482558.4469445,
+    "ast_hash": "63f2ca0c3490001cba8a5981544bdc0c",
+    "semantic_hash": ""
+  },
+  "artifacts/ssh_monitor_command.md": {
+    "mtime": 1782482700.7820978,
+    "ast_hash": "91fd0bb1ed9802f22837588f9bf04ac7",
     "semantic_hash": ""
   }
 }

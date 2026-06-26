@@ -409,8 +409,10 @@ def render_pipeline(args) -> str:
             out.append(f" params   : {post_names}")
         for key in (
             "detection_auc_ge_0.99",
-            "posterior_sbc_p_gt_0.05",
-            "characterization_sbc_p_gt_0.05",
+            "posterior_sbc_familywise_alpha_0.05",
+            "posterior_sbc_all_raw_p_gt_0.05",
+            "characterization_sbc_familywise_alpha_0.05",
+            "characterization_sbc_all_raw_p_gt_0.05",
             "characterization_coverage_error_le_0.03",
         ):
             if key in gates:

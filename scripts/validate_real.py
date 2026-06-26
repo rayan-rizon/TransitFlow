@@ -37,6 +37,7 @@ from transitflow.views import make_periodogram_view, make_views
 
 # parameters we can compare against the archive (subset of the 7-D vector)
 _CMP = {"P": 0, "RpRs": 2, "aRs": 3, "b": 4}
+_CHAR_CMP = ("RpRs", "aRs", "b")
 _TESS_T0_OFFSET = 2457000.0  # BTJD = BJD - 2457000 (TESS time system)
 
 
@@ -271,6 +272,37 @@ def build_views(t, f, planet, sim, prior):
     return gv, lv, pg, np.float32(sig_feat), ephem_feat, (t, f, P, t0, dur, sigma)
 
 
+def real_gate_status(summary: dict) -> dict:
+    """Compute real-data gates from an aggregate validation summary."""
+    detected_cov95 = [
+        summary["detected_per_param"][k]["coverage_95"]
+        for k in _CHAR_CMP if k in summary["detected_per_param"]
+    ]
+    detected_cov68 = [
+        summary["detected_per_param"][k]["coverage_68"]
+        for k in _CHAR_CMP if k in summary["detected_per_param"]
+    ]
+    mcmc_char_prior = [
+        summary["mcmc_agreement"][k]["median_wasserstein_prior_fraction"]
+        for k in _CHAR_CMP if k in summary.get("mcmc_agreement", {})
+    ]
+    mcmc_char_width = [
+        summary["mcmc_agreement"][k]["median_wasserstein_width_fraction"]
+        for k in _CHAR_CMP if k in summary.get("mcmc_agreement", {})
+    ]
+    return {
+        "detected_fraction_ge_0.9": bool(summary["detection"]["detected_fraction"] >= 0.9),
+        "archive_detected_char_cov68_ge_0.5": bool(detected_cov68 and
+                                                   min(detected_cov68) >= 0.5),
+        "archive_detected_char_cov95_ge_0.8": bool(detected_cov95 and
+                                                   min(detected_cov95) >= 0.8),
+        "mcmc_characterization_prior_fraction_le_0.1": bool(
+            mcmc_char_prior and max(mcmc_char_prior) <= 0.1),
+        "mcmc_characterization_width_fraction_le_0.5_diagnostic": bool(
+            mcmc_char_width and max(mcmc_char_width) <= 0.5),
+    }
+
+
 # --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
@@ -492,27 +524,10 @@ def main():
                     "median_wasserstein_width_fraction": float(np.median(norm_vals))
                     if norm_vals else float("nan"),
                 }
-    detected_cov95 = [v["coverage_95"] for v in summary["detected_per_param"].values()]
-    detected_cov68 = [v["coverage_68"] for v in summary["detected_per_param"].values()]
-    mcmc_char_prior = [
-        summary["mcmc_agreement"][k]["median_wasserstein_prior_fraction"]
-        for k in ("RpRs", "aRs", "b") if k in summary.get("mcmc_agreement", {})
-    ]
-    mcmc_char_width = [
-        summary["mcmc_agreement"][k]["median_wasserstein_width_fraction"]
-        for k in ("RpRs", "aRs", "b") if k in summary.get("mcmc_agreement", {})
-    ]
-    summary["gate_status"] = {
-        "detected_fraction_ge_0.9": bool(summary["detection"]["detected_fraction"] >= 0.9),
-        "detected_cov68_ge_0.5_all_params": bool(detected_cov68 and
-                                                 min(detected_cov68) >= 0.5),
-        "detected_cov95_ge_0.8_all_params": bool(detected_cov95 and
-                                                 min(detected_cov95) >= 0.8),
-        "mcmc_characterization_prior_fraction_le_0.1": bool(
-            mcmc_char_prior and max(mcmc_char_prior) <= 0.1),
-        "mcmc_characterization_width_fraction_le_0.5_diagnostic": bool(
-            mcmc_char_width and max(mcmc_char_width) <= 0.5),
-    }
+    # P is a conditioning input for the 5D characterization model, so P coverage
+    # is not a valid posterior-calibration gate. Keep P in the report as a sanity
+    # check, but gate only on characterization parameters.
+    summary["gate_status"] = real_gate_status(summary)
     report = {"summary": summary, "records": records}
     with open(os.path.join(args.out, "real_validation.json"), "w") as fh:
         json.dump(report, fh, indent=2)

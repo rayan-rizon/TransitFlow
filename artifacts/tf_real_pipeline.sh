@@ -11,7 +11,7 @@ NOISE_LIB=/workspace/data/noise_lib.npz
 RUN_DIR=/workspace/TransitFlow/runs/fmpe_pg_real
 RESULT_DIR=/workspace/results_real_v3
 POSTERIOR_CKPT=$RUN_DIR/checkpoints/latest.pt
-DETECTOR_CKPT=$RUN_DIR/checkpoints/best_detection.pt
+DETECTOR_CKPT=$RUN_DIR/checkpoints/latest.pt
 
 mkdir -p /workspace/data
 
@@ -86,10 +86,7 @@ stage TRAIN $LOG_DIR/train_real.log \
         --expect-device cuda \
         --no-preflight
 
-if [ ! -f "$DETECTOR_CKPT" ]; then
-    echo "[pipeline] WARNING: $DETECTOR_CKPT missing; falling back to legacy best.pt"
-    DETECTOR_CKPT=$RUN_DIR/checkpoints/best.pt
-fi
+test -f "$DETECTOR_CKPT"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # STAGE 4: Evaluate (SBC + coverage + detection + speed)
