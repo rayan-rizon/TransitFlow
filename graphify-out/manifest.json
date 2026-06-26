@@ -40,9 +40,9 @@
     "semantic_hash": "f93efaa8e326f643715ad7e486fa0692"
   },
   "scripts/monitor.py": {
-    "mtime": 1782225749.9934077,
-    "ast_hash": "82e145bfaffbe04943242c6f7b9e8132",
-    "semantic_hash": "82e145bfaffbe04943242c6f7b9e8132"
+    "mtime": 1782466851.3823395,
+    "ast_hash": "ac1bc02f5f257f7f7e5aa7cdcb1c722d",
+    "semantic_hash": ""
   },
   "scripts/preflight.py": {
     "mtime": 1782225720.6626487,
@@ -427,6 +427,11 @@
   "artifacts/vast_smoke_2026-06-26/results_char5_smoke_small/metrics.json": {
     "mtime": 1782465022.0,
     "ast_hash": "4c5f9d9baa42b9093e5583166c672205",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_smoke_2026-06-26/logs/char5_fixed_mcmc_plan.md": {
+    "mtime": 1782465621.5919611,
+    "ast_hash": "0d9527ebddcc435a3c651d72bcdfb4db",
     "semantic_hash": ""
   }
 }
