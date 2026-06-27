@@ -12,6 +12,7 @@ import numpy as np
 import torch
 from transitflow.train import load_checkpoint
 from transitflow.inference import TransitFlowInference
+from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.baselines.mcmc import run_mcmc, has_emcee
@@ -19,18 +20,22 @@ from transitflow.baselines.mcmc import run_mcmc, has_emcee
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/best.pt")
+    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/latest.pt")
     ap.add_argument("--n-amortized", type=int, default=256)
     ap.add_argument("--n-post", type=int, default=2000)
     ap.add_argument("--n-mcmc", type=int, default=5)
     ap.add_argument("--mcmc-steps", type=int, default=2000)
     ap.add_argument("--mcmc-walkers", type=int, default=32)
+    ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--out", default="results/speed.json")
     args = ap.parse_args()
 
     model, mc, sc = load_checkpoint(args.ckpt)
     pr = TransitPrior(TransitPrior.default_specs(sc.regime))
-    sim = TransitSimulator(sc, prior=pr)
+    noise_library = NoiseLibrary.load(args.noise_lib)
+    if args.noise_lib and not noise_library.available():
+        raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
+    sim = TransitSimulator(sc, prior=pr, noise_library=noise_library)
     inf = TransitFlowInference(model, pr, sc)
     dev = next(model.parameters()).device
     rng = np.random.default_rng(0)
@@ -69,6 +74,8 @@ def main():
 
     report = {
         "device": dev.type,
+        "noise_lib": args.noise_lib,
+        "noise_lib_available": noise_library.available(),
         "amortized_ms_per_object": round(amort_per_obj * 1e3, 3),
         "amortized_posterior_samples": args.n_post,
         "mcmc_backend": "emcee" if has_emcee() else "native",

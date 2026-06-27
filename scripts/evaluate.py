@@ -5,7 +5,7 @@ Writes a JSON metrics report and (optionally) SBC / coverage / ROC figures.
 
 Example
 -------
-    python scripts/evaluate.py --ckpt checkpoints/transitflow_smoke.pt \
+    python3 scripts/evaluate.py --ckpt checkpoints/transitflow_smoke.pt \
         --n-sbc 300 --n-detection 1000 --out results/smoke
 """
 
@@ -32,6 +32,7 @@ from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
+from transitflow.transit_model import transit_duration
 
 
 def detection_eval(inference, simulator, n: int, rng) -> dict:
@@ -74,6 +75,61 @@ def sbc_gate(pvalues, alpha: float = 0.05) -> dict:
         "pass": bool(p and min(p) > threshold),
         "all_raw_p_gt_0.05": bool(p and min(p) > 0.05),
     }
+
+
+def _label(value: float, edges: tuple[float, float], labels: tuple[str, str, str]) -> str:
+    if not np.isfinite(value):
+        return "unknown"
+    if value < edges[0]:
+        return labels[0]
+    if value < edges[1]:
+        return labels[1]
+    return labels[2]
+
+
+def stratified_characterization_diagnostics(theta_true: np.ndarray,
+                                            posterior_samples: np.ndarray,
+                                            sigma: np.ndarray,
+                                            sim_cfg) -> dict:
+    """Coverage/width diagnostics split by shape and information regime."""
+    theta_true = np.asarray(theta_true)
+    posterior_samples = np.asarray(posterior_samples)
+    sigma = np.asarray(sigma)
+    P, RpRs, aRs, b = (theta_true[:, 0], theta_true[:, 2],
+                       theta_true[:, 3], theta_true[:, 4])
+    dur = transit_duration(P, RpRs, aRs, b)
+    n_transits = np.floor(sim_cfg.baseline_days / np.maximum(P, 1e-9)) + 1
+    cadence_days = sim_cfg.baseline_days / max(sim_cfg.n_raw, 1)
+    n_in = np.maximum(dur / max(cadence_days, 1e-9), 1.0) * n_transits
+    snr = (RpRs ** 2) / np.maximum(sigma, 1e-12) * np.sqrt(n_in)
+    specs = {
+        "impact": [_label(x, (0.35, 0.70), ("low_b", "mid_b", "high_b")) for x in b],
+        "rprs": [_label(x, (0.04, 0.09), ("shallow", "medium", "deep")) for x in RpRs],
+        "a_rs": [_label(x, (10.0, 25.0), ("compact", "mid", "wide")) for x in aRs],
+        "snr": [_label(x, (25.0, 75.0), ("low_snr", "mid_snr", "high_snr")) for x in snr],
+        "n_transits": [_label(x, (3.0, 6.0), ("few", "several", "many")) for x in n_transits],
+    }
+    out = {}
+    char_dims = [2, 3, 4]
+    char_names = ["RpRs", "aRs", "b"]
+    for spec_name, labels in specs.items():
+        out[spec_name] = {}
+        for label in sorted(set(labels)):
+            idx = np.array([lab == label for lab in labels])
+            if not idx.any():
+                continue
+            samples = posterior_samples[idx][:, :, char_dims]
+            truth = theta_true[idx][:, char_dims]
+            lo68 = np.quantile(samples, 0.16, axis=1)
+            hi68 = np.quantile(samples, 0.84, axis=1)
+            inside = (truth >= lo68) & (truth <= hi68)
+            widths = hi68 - lo68
+            entry = {"n": int(idx.sum())}
+            for j, name in enumerate(char_names):
+                entry[f"{name}_cov68"] = float(inside[:, j].mean())
+                entry[f"{name}_median_width"] = float(np.median(widths[:, j]))
+            out[spec_name][label] = entry
+    return out
 
 
 def main() -> None:
@@ -124,7 +180,7 @@ def main() -> None:
 
     print("== coverage ==")
     # reuse SBC posteriors for coverage by re-sampling a fresh set
-    cov_samples, cov_true = [], []
+    cov_samples, cov_true, cov_sigma = [], [], []
     got = 0
     while got < args.n_sbc:
         batch = simulator.simulate_batch(128, rng)
@@ -139,9 +195,11 @@ def main() -> None:
                                         ephem_feat=eph)
         cov_samples.append(s)
         cov_true.append(batch["theta_phys"][mask])
+        cov_sigma.append(batch["sigma"][mask])
         got += int(mask.sum())
     cov_samples = np.concatenate(cov_samples)[:args.n_sbc]
     cov_true = np.concatenate(cov_true)[:args.n_sbc]
+    cov_sigma = np.concatenate(cov_sigma)[:args.n_sbc]
     if model.cfg.param_dim == 5:
         cov = central_interval_coverage(cov_true[:, char_dims],
                                         cov_samples[:, :, char_dims])
@@ -186,6 +244,8 @@ def main() -> None:
         "coverage_levels": cov["levels"].tolist(),
         "coverage_overall": cov["coverage_overall"].tolist(),
         "characterization_coverage_overall": cov_char["coverage_overall"].tolist(),
+        "stratified_characterization": stratified_characterization_diagnostics(
+            cov_true, cov_samples, cov_sigma, scfg),
         "gate_status": {
             "detection_auc_ge_0.99": bool(det["roc_auc"] >= 0.99),
             "posterior_sbc_familywise_alpha_0.05": posterior_sbc_gate["pass"],

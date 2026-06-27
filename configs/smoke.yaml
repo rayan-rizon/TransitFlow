@@ -1,4 +1,6 @@
-# Fast, CPU/MPS-friendly configuration for end-to-end sanity checks and CI.
+# Fast, CPU/MPS-friendly legacy 7D configuration for end-to-end sanity checks and CI.
+# Not a publication config. Use configs/publishable.yaml for the full 5D
+# ephemeris-conditioned gate run.
 # Smaller views, fewer raw cadences, a compact model, and a short training run.
 # Not for science -- it exercises the entire pipeline quickly.
 

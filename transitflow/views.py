@@ -106,6 +106,51 @@ def normalize_view(view: np.ndarray, eps: float = 1e-8,
     return np.clip((view - med) / scale, -clip, clip)
 
 
+def flatten_transit_preserving(
+    times: np.ndarray,
+    flux: np.ndarray,
+    period: float,
+    t0: float,
+    duration: float,
+    min_window_days: float = 1.0,
+    duration_window_factor: float = 8.0,
+) -> np.ndarray:
+    """Remove slow trends without absorbing the transit depth.
+
+    Real validation already uses this operation before constructing views.  The
+    publishable simulator can now apply the same preprocessing during training,
+    reducing train/test mismatch from secular TESS trends while masking the
+    in-transit cadences before estimating the trend.
+    """
+    from scipy.ndimage import median_filter
+
+    t = np.asarray(times, dtype=np.float64)
+    f = np.asarray(flux, dtype=np.float64)
+    if len(t) < 3 or len(f) != len(t):
+        return f
+    dt = float(np.nanmedian(np.diff(t)))
+    if not np.isfinite(dt) or dt <= 0:
+        return f
+    dur = float(duration) if np.isfinite(duration) and duration > 0 else 0.2
+    win_days = max(float(min_window_days), float(duration_window_factor) * dur)
+    win = int(np.clip(round(win_days / dt), 11, max(11, len(f) // 3)))
+    if win % 2 == 0:
+        win += 1
+
+    f_work = np.array(f, dtype=np.float64, copy=True)
+    if np.isfinite(period) and period > 0 and np.isfinite(t0):
+        phase = ((t - t0 + 0.5 * period) % period) - 0.5 * period
+        in_transit = np.abs(phase) < 0.7 * dur
+        oot = ~in_transit
+        if in_transit.any() and oot.sum() > 2:
+            f_work[in_transit] = np.interp(t[in_transit], t[oot], f[oot])
+
+    trend = median_filter(f_work, size=win, mode="nearest")
+    trend = np.where(np.abs(trend) < 1e-6, np.nanmedian(f), trend)
+    out = f / trend
+    return np.where(np.isfinite(out), out, f)
+
+
 def box_periodogram(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
                     n_phase: int = 64) -> np.ndarray:
     """Vectorized box (BLS-lite) periodogram over a trial-period grid.

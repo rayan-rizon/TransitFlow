@@ -20,7 +20,7 @@ from .flow_matching import log_prob as fm_log_prob
 from .flow_matching import sample_ode
 from .priors import TransitPrior, kipping_to_quadratic
 from .simulator import SimConfig
-from .transit_model import transit_duration, transit_flux
+from .transit_model import exposure_integrated_transit_flux, transit_duration
 from .views import make_views
 
 
@@ -171,8 +171,12 @@ class TransitFlowInference:
                                 phys[:, 3], phys[:, 4])
         u1, u2 = kipping_to_quadratic(phys[:, 5], phys[:, 6])
         t0_abs = t0p * P
-        flux = transit_flux(t, P, t0_abs, RpRs, aRs, b, u1, u2,
-                            n_radial=cfg.n_radial, engine=cfg.engine)
+        flux = exposure_integrated_transit_flux(
+            t, P, t0_abs, RpRs, aRs, b, u1, u2,
+            n_radial=cfg.n_radial, engine=cfg.engine,
+            exposure_days=getattr(cfg, "exposure_minutes", 0.0) / (60.0 * 24.0),
+            n_subsamples=getattr(cfg, "n_exposure_subsamples", 1),
+        )
         dur = transit_duration(P, RpRs, aRs, b)
         preds = np.empty((phys.shape[0], cfg.n_local), dtype=np.float64)
         for i in range(phys.shape[0]):

@@ -1,6 +1,6 @@
 # TransitFlow default configuration (single TESS-sector regime, Variant A / FMPE).
-# Full-scale run targets a single RTX 4090; see configs/smoke.yaml for a fast,
-# CPU-friendly sanity configuration.
+# This preserves the historical 5D ephemeris-conditioned setup with shape-realism
+# knobs off. Use configs/publishable.yaml for the canonical full-gate run.
 
 simulator:
   n_global: 2001
@@ -25,6 +25,17 @@ simulator:
   engine: native
   n_radial: 200
   regime: tess
+  exposure_minutes: 0.0     # 0/1 subsample preserves legacy instantaneous model
+  n_exposure_subsamples: 1
+  dilution_fraction: 0.0
+  dilution_low: 0.5
+  dilution_high: 1.0
+  gap_fraction: 0.0
+  gap_duration_range: [0.10, 0.80]
+  a_rs_prior_mode: log_uniform  # log_uniform | stellar_density
+  stellar_density_log10_mean: 0.0
+  stellar_density_log10_std: 0.25
+  flatten_views: false
   use_periodogram: true     # box-periodogram channel -> calibrated period posterior
   n_period_bins: 256
   pg_n_phase: 64

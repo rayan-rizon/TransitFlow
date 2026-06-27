@@ -9,6 +9,7 @@ from scripts.validate_real import (
     real_diagnostic_status,
     real_gate_status,
 )
+from scripts.run_publishable_vast import build_gate_report
 
 
 def test_sbc_gate_controls_familywise_error():
@@ -131,3 +132,38 @@ def test_fold_bin_fixed_ephemeris_reduces_cadences_and_scales_errors():
     assert len(b_e) == 900
     assert np.all(np.diff(b_t) >= 0)
     assert np.nanmax(b_e) < 0.001
+
+
+def test_publishable_gate_report_schema_and_status():
+    synthetic = {
+        "detection": {"roc_auc": 0.995, "average_precision": 0.996},
+        "characterization_sbc_gate": {"pass": True},
+        "characterization_coverage_calibration_error": 0.01,
+        "gate_status": {
+            "detection_auc_ge_0.99": True,
+            "characterization_sbc_familywise_alpha_0.05": True,
+            "characterization_coverage_error_le_0.03": True,
+        },
+    }
+    real = {
+        "summary": {
+            "detection": {"n_detected": 28, "detected_fraction": 28 / 30},
+            "gate_status": {},
+            "mcmc_agreement": {
+                "RpRs": {"n": 16, "median_wasserstein_prior_fraction": 0.05,
+                         "median_wasserstein_width_fraction": 0.4},
+                "aRs": {"n": 16, "median_wasserstein_prior_fraction": 0.06,
+                        "median_wasserstein_width_fraction": 0.3},
+                "b": {"n": 16, "median_wasserstein_prior_fraction": 0.09,
+                      "median_wasserstein_width_fraction": 0.45},
+            },
+        }
+    }
+    bls = {"bls": {"roc_auc": 0.4}, "transitflow": {"roc_auc": 0.99}}
+    speed = {"speedup_x": 1500.0}
+
+    report = build_gate_report(synthetic, real, bls, speed)
+
+    assert set(report) >= {"synthetic", "real", "baselines", "status"}
+    assert report["status"]["real_mcmc_n_ge_16"] is True
+    assert report["status"]["final_pass"] is True

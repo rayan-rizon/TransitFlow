@@ -1,11 +1,14 @@
 """Tests for the box-periodogram channel (the period-calibration fix)."""
 
 import numpy as np
+import pytest
 
 from transitflow.models.transitflow import ModelConfig, TransitFlow
 from transitflow.priors import TransitPrior
 from transitflow.simulator import SimConfig, TransitSimulator
 from transitflow.views import box_periodogram
+
+pytestmark = pytest.mark.slow
 
 
 def test_box_periodogram_peaks_at_true_period_high_snr():

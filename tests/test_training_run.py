@@ -3,9 +3,13 @@
 import json
 import os
 
+import pytest
+
 from transitflow.models.transitflow import ModelConfig
 from transitflow.simulator import SimConfig
 from transitflow.train import TrainConfig, load_checkpoint, train
+
+pytestmark = pytest.mark.slow
 
 
 def _tiny_cfgs():

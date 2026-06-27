@@ -7,7 +7,7 @@ so it can gate a launch in a shell script.
 
 Example
 -------
-    python scripts/preflight.py --config configs/default.yaml --expect cuda \
+    python3 scripts/preflight.py --config configs/publishable.yaml --expect cuda \
         --data-dir data/tess_1M --price 0.40
 """
 

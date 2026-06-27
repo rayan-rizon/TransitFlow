@@ -4,20 +4,30 @@
 detection and parameter posteriors.**
 
 Given a single-sector / single-quarter light curve `x`, TransitFlow returns, in
-one forward pass, a *joint* posterior
+one forward pass, an ephemeris-conditioned *joint* posterior
 
 ```
 p(d, θ | x) = p(d | x) · p(θ | d = 1, x)
 ```
 
 over **(i)** whether a transiting planet is present (`d ∈ {0,1}`) and **(ii)** its
-physical transit parameters `θ = (P, t0, Rp/Rs, a/Rs, b, q1, q2)`, with
+characterization parameters `θ_char = (Rp/Rs, a/Rs, b, q1, q2)` conditioned on the
+candidate ephemeris `(P, t0_phase)` used for folding, with
 *calibrated* uncertainty — validated by simulation-based calibration (SBC),
 expected-coverage tests, and an importance-sampling misspecification diagnostic —
 at ~10³–10⁶× the speed of MCMC / nested sampling.
 
 This repository is a complete, tested implementation of
 [`TransitFlow_Implementation_Plan.md`](TransitFlow_Implementation_Plan.md).
+
+## Current gate baseline
+
+The current audit is [`artifacts/CHAR5_GATE_AUDIT_2026-06-26.md`](artifacts/CHAR5_GATE_AUDIT_2026-06-26.md).
+It supersedes older all-7-parameter summaries. Synthetic 5-D characterization and
+quality-gated real detection pass; full real-planet characterization is still
+open because same-light-curve MCMC agreement fails mainly in `b`. Publication
+claims must use the 5-D ephemeris-conditioned gates unless a new predeclared run
+updates this audit.
 
 ---
 
@@ -37,8 +47,8 @@ studied (AstroNet, ExoMiner, BLS/TLS). TransitFlow combines and calibrates.
 ## Install
 
 ```bash
-python -m pip install -e .            # core
-python -m pip install -e ".[all]"     # + batman, zuko, torchdiffeq, astropy, …
+python3 -m pip install -e .            # core
+python3 -m pip install -e ".[all]"     # + batman, zuko, torchdiffeq, astropy, …
 ```
 
 Everything runs **without** the optional packages: the transit physics, flow
@@ -51,17 +61,17 @@ used as accelerated / ground-truth paths (e.g. `batman`, `zuko`, `torchdiffeq`,
 
 ```bash
 # end-to-end sanity check (CPU/MPS-friendly, a few minutes)
-python scripts/smoke_test.py --steps 600
+python3 scripts/smoke_test.py --steps 600
 
-# full training (Variant A / FMPE) — targets a single RTX 4090
-python scripts/train.py --config configs/default.yaml
+# full publication training (Variant A / FMPE) — targets a single RTX 4090
+python3 scripts/train.py --config configs/publishable.yaml
 
 # NPE ablation (Variant B)
-python scripts/train.py --config configs/default.yaml --head npe \
+python3 scripts/train.py --config configs/publishable.yaml --head npe \
     --ckpt checkpoints/transitflow_npe.pt
 
 # evaluation: SBC, coverage, detection, with figures
-python scripts/evaluate.py --ckpt checkpoints/transitflow_fmpe.pt --plots
+python3 scripts/evaluate.py --ckpt runs/fmpe_pg_publishable/checkpoints/latest.pt --plots
 ```
 
 Library use:
@@ -164,28 +174,28 @@ CPU box or locally — it's free) and **train from disk** so the GPU runs flat-o
 
 ```bash
 # 0. provision; on the box:
-git clone <repo> && cd TransitFlow && python -m pip install -e ".[all]"
-python -m pytest -q                         # 68 tests — confirm the box is healthy
+git clone <repo> && cd TransitFlow && python3 -m pip install -e ".[all]"
+python3 -m pytest -q -m "not slow"           # fast preflight tests
 
 # 1. PRE-GENERATE once (cheap CPU / local). Reused by FMPE + NPE runs.
 #    Set --workers to the box's REAL cpu quota (cgroup cpu.max), not `nproc`.
-python scripts/generate_data.py --config configs/default.yaml \
+python3 scripts/generate_data.py --config configs/publishable.yaml \
     --n 1000000 --workers 16 --out data/tess_1M         # ~4.4 GB fp16 views (+pg)
 # DiskDataset loads every shard into RAM on init: .npz members can't be mmap'd
 # (zip archives), so lazy access re-reads whole shards and starves the GPU ~98%.
 
 # 2. PREFLIGHT — prints throughput, GPU-starvation %, ETA, $ cost, PASS/WARN/FAIL
-python scripts/preflight.py --config configs/default.yaml \
+python3 scripts/preflight.py --config configs/publishable.yaml \
     --expect cuda --data-dir data/tess_1M
 
 # 3. TRAIN from disk in a detached session (survives SSH disconnects)
 tmux new -s tf
-python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe \
+python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe \
     --data-dir data/tess_1M --expect-device cuda
 #   Ctrl-b d to detach.  (preflight runs automatically and ABORTS on FAIL.)
 
 # 3b. NPE ablation (Variant B) — same data, separate run dir
-python scripts/train.py --config configs/default.yaml --head npe \
+python3 scripts/train.py --config configs/publishable.yaml --head npe \
     --run-dir runs/npe --data-dir data/tess_1M --expect-device cuda
 ```
 
@@ -196,7 +206,7 @@ python scripts/train.py --config configs/default.yaml --head npe \
 **Monitor it** — three independent ways, all over SSH:
 
 ```bash
-python scripts/monitor.py --run-dir runs/fmpe --watch   # live dashboard, refresh 5s
+python3 scripts/monitor.py --run-dir runs/fmpe --watch   # live dashboard, refresh 5s
 tail -f runs/fmpe/training_log.jsonl                     # raw per-step JSONL
 cat runs/fmpe/status.json                                # one-shot: step/ETA/AUC/throughput
 # TensorBoard (loss + val curves), tunnel from your laptop:
@@ -218,10 +228,14 @@ validation AUC, and a `health` block — poll it from anywhere. Checkpoints land
 detection AUC), and rotating `step_*.pt`. Each is written atomically, so a killed
 instance never leaves a corrupt file.
 
+For posterior claims, use `latest.pt` unless a calibration sweep is declared
+before testing. `best.pt` is a loss checkpoint, not automatically a calibrated
+posterior checkpoint.
+
 **Resume** after a preemption (auto-detects `latest.pt`):
 
 ```bash
-python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe --resume
+python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe --resume
 ```
 
 **Retrieve & evaluate**. For the ephemeris-conditioned 5-D characterization model,
@@ -231,7 +245,7 @@ diagnostics.
 
 ```bash
 scp -r root@<host>:<port>:TransitFlow/runs/fmpe/checkpoints ./        # pull weights
-python scripts/evaluate.py --ckpt runs/fmpe/checkpoints/latest.pt --plots --out results/fmpe
+python3 scripts/evaluate.py --ckpt runs/fmpe/checkpoints/latest.pt --plots --out results/fmpe
 ```
 
 > Throughput: with `--num-workers N` the simulator runs in `N` processes feeding a
@@ -245,7 +259,7 @@ The pipeline runs fully on synthetic GP + white noise out of the box. To train o
 **real** out-of-transit noise (the §2.2 primary regime), build a noise library:
 
 ```bash
-python scripts/build_noise_library.py --mission TESS \
+python3 scripts/build_noise_library.py --mission TESS \
     --targets TIC307210830 TIC150428135 --out data/noise_lib.npz
 # then point the simulator at it (frac_real > 0)
 ```
@@ -253,7 +267,8 @@ python scripts/build_noise_library.py --mission TESS \
 ## Tests
 
 ```bash
-python -m pytest -q          # 68 tests: physics, flows, calibration, baselines, e2e
+python3 -m pytest -q -m "not slow"   # fast smoke/preflight subset
+python3 -m pytest -q                 # full local suite, including slow tests
 ```
 
 ## Compute
@@ -281,7 +296,7 @@ transitflow/
   evaluation/          SBC, coverage, detection metrics, posterior agreement
   baselines/           BLS detection, transit-fit MCMC
   train.py             training loop: run dirs, periodic checkpoints, resume, logs
-configs/               default.yaml (science) + smoke.yaml (fast)
+configs/               publishable.yaml (full gate), default.yaml, smoke.yaml (fast)
 scripts/               train / evaluate / monitor / smoke_test / build_noise_library
                        generate_data / preflight / benchmark_speed (gate #4)
                        validate_real (gate #3: real KOIs/TOIs vs archive)

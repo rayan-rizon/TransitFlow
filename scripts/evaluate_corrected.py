@@ -21,7 +21,7 @@ from transitflow.correction import importance_weights, weighted_rank_cdf
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/best.pt")
+    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/latest.pt")
     ap.add_argument("--n-obj", type=int, default=400)
     ap.add_argument("--n-post", type=int, default=800)
     ap.add_argument("--logprob-steps", type=int, default=40)

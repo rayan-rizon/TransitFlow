@@ -9,9 +9,9 @@ real/MCMC validation files. Designed to be run over SSH on a Vast.ai box.
 
 Examples
 --------
-    python scripts/monitor.py --run-dir runs/fmpe --watch        # live, refresh 5s
-    python scripts/monitor.py --run-dir runs/fmpe --once         # single snapshot
-    python scripts/monitor.py \
+    python3 scripts/monitor.py --run-dir runs/fmpe --watch        # live, refresh 5s
+    python3 scripts/monitor.py --run-dir runs/fmpe --once         # single snapshot
+    python3 scripts/monitor.py \
         --pid-file /workspace/logs_char5_publishable_v2/pipeline.pid \
         --pipeline-log /workspace/logs_char5_publishable_v2/pipeline.log \
         --data-dir /workspace/data/tess_1M_char5_publishable_v2 \

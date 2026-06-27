@@ -1,7 +1,10 @@
 import numpy as np
+import pytest
 import torch
 
 from transitflow.models.spike_slab import SpikeSlabAdapter, SpikeSlabConfig
+
+pytestmark = pytest.mark.slow
 
 
 def test_make_targets_spikes_negatives(prior):

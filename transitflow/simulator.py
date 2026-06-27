@@ -27,8 +27,8 @@ from .noise import (
     white_noise,
 )
 from .priors import TransitPrior, kipping_to_quadratic
-from .transit_model import transit_duration, transit_flux
-from .views import make_periodogram_view, make_views
+from .transit_model import exposure_integrated_transit_flux, transit_duration
+from .views import flatten_transit_preserving, make_periodogram_view, make_views
 
 
 @dataclass
@@ -66,6 +66,19 @@ class SimConfig:
     n_radial: int = 200
     # prior regime (period range): "tess" (0.5-13 d) suits the 27-d baseline
     regime: str = "tess"
+    # shape-realism knobs for publication-scale training. Defaults preserve the
+    # historical instantaneous, undiluted, complete-cadence simulator.
+    exposure_minutes: float = 0.0
+    n_exposure_subsamples: int = 1
+    dilution_fraction: float = 0.0
+    dilution_low: float = 0.5
+    dilution_high: float = 1.0
+    gap_fraction: float = 0.0
+    gap_duration_range: tuple[float, float] = (0.10, 0.80)
+    a_rs_prior_mode: str = "log_uniform"  # "log_uniform" | "stellar_density"
+    stellar_density_log10_mean: float = 0.0
+    stellar_density_log10_std: float = 0.25
+    flatten_views: bool = False
     # box-periodogram input channel (supplies sharp period information that the
     # binned global view lacks -> calibrated period posterior)
     use_periodogram: bool = True
@@ -102,6 +115,53 @@ class TransitSimulator:
                                        self.cfg.n_period_bins)
 
     # ------------------------------------------------------------------ #
+    def _sample_physical_a_rs(self, P: np.ndarray,
+                              rng: np.random.Generator) -> np.ndarray:
+        """Draw ``a/Rs`` from a stellar-density prior.
+
+        For circular orbits, ``a/Rs = (G rho_star P^2 / 3pi)^(1/3)``.  The
+        density is sampled in solar units and clipped to the canonical support
+        used by :class:`TransitPrior`, so downstream standardization remains
+        valid.
+        """
+        if self.cfg.a_rs_prior_mode == "log_uniform":
+            return np.array([], dtype=np.float64)
+        if self.cfg.a_rs_prior_mode != "stellar_density":
+            raise ValueError(f"unknown a_rs_prior_mode {self.cfg.a_rs_prior_mode!r}")
+        rho_sun_kg_m3 = 1408.0
+        g_si = 6.67430e-11
+        day_s = 86400.0
+        rho = rho_sun_kg_m3 * 10.0 ** rng.normal(
+            self.cfg.stellar_density_log10_mean,
+            self.cfg.stellar_density_log10_std,
+            size=len(P),
+        )
+        ars = (g_si * rho * (np.asarray(P, dtype=np.float64) * day_s) ** 2
+               / (3.0 * np.pi)) ** (1.0 / 3.0)
+        lo, hi = self.prior.specs[3].low, self.prior.specs[3].high
+        return np.clip(ars, lo, hi)
+
+    def _sample_gap_masks(self, B: int, rng: np.random.Generator) -> np.ndarray:
+        """Cadence-availability masks for downlinks/momentum-dump-like gaps."""
+        cfg = self.cfg
+        mask = np.ones((B, cfg.n_raw), dtype=bool)
+        if cfg.gap_fraction <= 0:
+            return mask
+        low, high = cfg.gap_duration_range
+        low = max(float(low), self.dt)
+        high = max(float(high), low)
+        target = max(0.0, min(float(cfg.gap_fraction), 0.95)) * cfg.baseline_days
+        for i in range(B):
+            remaining = target
+            while remaining > 0:
+                dur = min(rng.uniform(low, high), remaining)
+                start = rng.uniform(0.0, max(cfg.baseline_days - dur, self.dt))
+                gap = (self.times >= start) & (self.times <= start + dur)
+                mask[i, gap] = False
+                remaining -= dur
+        return mask
+
+    # ------------------------------------------------------------------ #
     def simulate_batch(self, B: int, rng: np.random.Generator | None = None,
                        return_raw: bool = False) -> dict:
         rng = np.random.default_rng() if rng is None else rng
@@ -119,6 +179,8 @@ class TransitSimulator:
         P = theta_phys[:, 0]
         t0_phase = theta_phys[:, 1]
         RpRs = theta_phys[:, 2]
+        if cfg.a_rs_prior_mode != "log_uniform":
+            theta_phys[:, 3] = self._sample_physical_a_rs(P, rng)
         aRs = theta_phys[:, 3]
         b = theta_phys[:, 4]
         u1, u2 = kipping_to_quadratic(theta_phys[:, 5], theta_phys[:, 6])
@@ -135,9 +197,11 @@ class TransitSimulator:
         # planets: inject the physical transit
         if is_planet.any():
             idx = np.where(is_planet)[0]
-            flux[idx] = transit_flux(
+            flux[idx] = exposure_integrated_transit_flux(
                 t, P[idx], t0_abs[idx], RpRs[idx], aRs[idx], b[idx],
                 u1[idx], u2[idx], n_radial=cfg.n_radial, engine=cfg.engine,
+                exposure_days=cfg.exposure_minutes / (60.0 * 24.0),
+                n_subsamples=cfg.n_exposure_subsamples,
             )
 
         # non-planets: spurious candidate ephemeris (+ optional hard negative)
@@ -171,6 +235,18 @@ class TransitSimulator:
                     amp = rng.uniform(cfg.eb_depth_low, cfg.eb_depth_high)
                     per = rng.uniform(0.5, 5.0)
                     flux[j] *= sinusoid_signal(t, amp, per, rng.uniform(0, 2 * np.pi))
+
+        # Third-light/crowding dilution attenuates transit-like depth without
+        # changing the normalized out-of-transit baseline.
+        dilution = np.ones(B, dtype=np.float64)
+        if cfg.dilution_fraction > 0:
+            use_dilution = rng.random(B) < cfg.dilution_fraction
+            if use_dilution.any():
+                lo = min(cfg.dilution_low, cfg.dilution_high)
+                hi = max(cfg.dilution_low, cfg.dilution_high)
+                dilution[use_dilution] = rng.uniform(lo, hi, use_dilution.sum())
+                flux[use_dilution] = 1.0 + (flux[use_dilution] - 1.0) * \
+                    dilution[use_dilution, None]
 
         # ---- noise ---------------------------------------------------
         sigma_white = 10.0 ** rng.uniform(
@@ -211,9 +287,18 @@ class TransitSimulator:
         lv = np.empty((B, cfg.n_local), dtype=np.float32)
         use_pg = cfg.use_periodogram
         pg = np.empty((B, cfg.n_period_bins), dtype=np.float32) if use_pg else None
+        gap_mask = self._sample_gap_masks(B, rng)
+        raw_for_views = flux.copy()
         for i in range(B):
+            valid_cad = gap_mask[i]
+            ti = t[valid_cad]
+            fi = flux[i][valid_cad]
+            if cfg.flatten_views:
+                fi = flatten_transit_preserving(
+                    ti, fi, fold_P[i], fold_t0[i], duration[i])
+                raw_for_views[i, valid_cad] = fi
             gv[i], lv[i] = make_views(
-                t, flux[i], fold_P[i], fold_t0[i], duration[i],
+                ti, fi, fold_P[i], fold_t0[i], duration[i],
                 n_global=cfg.n_global, n_local=cfg.n_local,
                 n_durations=cfg.n_durations, normalize=True,
             )
@@ -222,12 +307,12 @@ class TransitSimulator:
                 # BLS matrix stays small; 4096 pts over 27 d gives 151 pts/day,
                 # ample for periods ≥ 0.5 d with 64 phase bins
                 n_pg = cfg.pg_n_raw
-                if n_pg < len(t):
-                    step = max(1, len(t) // n_pg)
-                    t_pg = t[::step][:n_pg]
-                    f_pg = flux[i][::step][:n_pg]
+                if n_pg < len(ti):
+                    step = max(1, len(ti) // n_pg)
+                    t_pg = ti[::step][:n_pg]
+                    f_pg = fi[::step][:n_pg]
                 else:
-                    t_pg, f_pg = t, flux[i]
+                    t_pg, f_pg = ti, fi
                 pg[i] = make_periodogram_view(t_pg, f_pg, self.period_grid,
                                               n_phase=cfg.pg_n_phase, normalize=True)
 
@@ -239,8 +324,9 @@ class TransitSimulator:
         # noise-level conditioning feature: standardized log10 sigma
         sig_feat = (np.log10(sigma_white) - 0.5 *
                     (cfg.sigma_white_log10_low + cfg.sigma_white_log10_high))
-        sig_feat = sig_feat / (0.5 * (cfg.sigma_white_log10_high -
-                                      cfg.sigma_white_log10_low))
+        sig_scale = 0.5 * (cfg.sigma_white_log10_high -
+                           cfg.sigma_white_log10_low)
+        sig_feat = sig_feat / max(sig_scale, 1e-6)
 
         # Explicit candidate ephemeris conditioning.  The local view is folded on
         # this candidate, so P/t0 are not purely image-derived quantities; making
@@ -265,12 +351,14 @@ class TransitSimulator:
             "fold_t0": fold_t0.astype(np.float32),
             "duration": duration.astype(np.float32),
             "regime": regime.astype(np.int8),  # 0 real, 1 gp, 2 white
+            "dilution": dilution.astype(np.float32),
+            "cadence_mask": gap_mask,
         }
         if use_pg:
             out["periodogram"] = pg
         if return_raw:
             # raw light curve + cadence grid, for the exact importance-sampling
             # likelihood (the views are a lossy, period-blurred reduction)
-            out["raw_flux"] = flux.astype(np.float32)
+            out["raw_flux"] = raw_for_views.astype(np.float32)
             out["times"] = self.times.astype(np.float32)
         return out

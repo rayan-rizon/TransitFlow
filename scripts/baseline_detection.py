@@ -10,7 +10,7 @@ This quantifies how much the learned detector beats the classical baseline.
 
 Example
 -------
-    python scripts/baseline_detection.py --ckpt runs/fmpe_pg_real/checkpoints/best.pt \
+    python3 scripts/baseline_detection.py --ckpt runs/fmpe_pg_publishable/checkpoints/latest.pt \
         --n 3000 --out results/baseline_detection.json
 """
 from __future__ import annotations
@@ -28,6 +28,7 @@ import numpy as np
 from transitflow.baselines.bls import bls_detect, has_astropy
 from transitflow.evaluation import detection_metrics
 from transitflow.inference import TransitFlowInference
+from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
@@ -35,19 +36,24 @@ from transitflow.train import load_checkpoint
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/fmpe_pg_real/checkpoints/best.pt")
+    ap.add_argument("--ckpt", default="runs/fmpe_pg_publishable/checkpoints/latest.pt")
     ap.add_argument("--n", type=int, default=3000, help="labelled test light curves")
     ap.add_argument("--batch", type=int, default=128)
     ap.add_argument("--bls-subsample", type=int, default=3000,
                     help="downsample raw LC to this many points for BLS speed")
     ap.add_argument("--n-periods", type=int, default=200)
+    ap.add_argument("--noise-lib", default=None,
+                    help="optional real-noise .npz for the same held-out regime")
     ap.add_argument("--out", default="results/baseline_detection.json")
     args = ap.parse_args()
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     model, mc, sc = load_checkpoint(args.ckpt)
     prior = TransitPrior(TransitPrior.default_specs(sc.regime))
-    sim = TransitSimulator(sc, prior=prior)
+    noise_library = NoiseLibrary.load(args.noise_lib)
+    if args.noise_lib and not noise_library.available():
+        raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
+    sim = TransitSimulator(sc, prior=prior, noise_library=noise_library)
     inf = TransitFlowInference(model, prior, sc)
     rng = np.random.default_rng(7)
 
@@ -93,6 +99,8 @@ def main() -> None:
     tf_m = detection_metrics(labels, tf_scores)
     report = {
         "checkpoint": args.ckpt, "n": int(len(labels)),
+        "noise_lib": args.noise_lib,
+        "noise_lib_available": noise_library.available(),
         "n_planets": int(labels.sum()), "n_negatives": int((labels == 0).sum()),
         "bls": {"roc_auc": bls_m["roc_auc"], "average_precision": bls_m["average_precision"]},
         "transitflow": {"roc_auc": tf_m["roc_auc"], "average_precision": tf_m["average_precision"]},

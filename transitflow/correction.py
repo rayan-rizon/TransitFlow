@@ -25,11 +25,12 @@ from __future__ import annotations
 import numpy as np
 
 from .priors import kipping_to_quadratic
-from .transit_model import transit_flux
+from .transit_model import exposure_integrated_transit_flux
 
 
 def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 200,
-                    engine: str = "native") -> np.ndarray:
+                    engine: str = "native", exposure_minutes: float = 0.0,
+                    n_exposure_subsamples: int = 1) -> np.ndarray:
     """Render noiseless raw light curves for a batch of parameter vectors.
 
     ``theta_phys`` is ``(N, 7)`` = (P, t0_phase, Rp/Rs, a/Rs, b, q1, q2).
@@ -39,8 +40,12 @@ def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 2
     t0 = theta_phys[:, 1] * P
     RpRs, aRs, b = theta_phys[:, 2], theta_phys[:, 3], theta_phys[:, 4]
     u1, u2 = kipping_to_quadratic(theta_phys[:, 5], theta_phys[:, 6])
-    return transit_flux(times, P, t0, RpRs, aRs, b, u1, u2,
-                        n_radial=n_radial, engine=engine)
+    return exposure_integrated_transit_flux(
+        times, P, t0, RpRs, aRs, b, u1, u2,
+        n_radial=n_radial, engine=engine,
+        exposure_days=exposure_minutes / (60.0 * 24.0),
+        n_subsamples=n_exposure_subsamples,
+    )
 
 
 def importance_weights(inference, global_view, local_view, sigma_feat,
@@ -63,7 +68,10 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     logq = inf.log_prob_std(std, e.repeat(std.shape[0], 1), )       # (N,)
     logprior = inf.prior.log_prob_std(std)                         # (N,) const in box
     pred = render_raw_flux(phys, times, n_radial=inf.sim_cfg.n_radial,
-                           engine=inf.sim_cfg.engine)               # (N, n_raw)
+                           engine=inf.sim_cfg.engine,
+                           exposure_minutes=getattr(inf.sim_cfg, "exposure_minutes", 0.0),
+                           n_exposure_subsamples=getattr(
+                               inf.sim_cfg, "n_exposure_subsamples", 1))  # (N, n_raw)
     resid = raw_flux[None, :] - pred
     sigma = np.asarray(sigma, dtype=np.float64)
     loglik = -0.5 * np.sum(resid * resid / (sigma[None, :] * sigma[None, :])

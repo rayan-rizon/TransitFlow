@@ -150,6 +150,43 @@ def transit_flux(
     return flux
 
 
+def exposure_integrated_transit_flux(
+    times: np.ndarray,
+    P: np.ndarray,
+    t0: np.ndarray,
+    RpRs: np.ndarray,
+    aRs: np.ndarray,
+    b: np.ndarray,
+    u1: np.ndarray,
+    u2: np.ndarray,
+    exposure_days: float = 0.0,
+    n_subsamples: int = 1,
+    n_radial: int = 200,
+    engine: str = "native",
+) -> np.ndarray:
+    """Transit flux averaged over a finite cadence exposure.
+
+    ``transit_flux`` evaluates the instantaneous model at each timestamp.  TESS
+    and Kepler cadences are exposure averages, which slightly round ingress and
+    egress; that rounding matters most for shape parameters such as ``b`` and
+    ``a/Rs``.  With one subsample, or a non-positive exposure, this is exactly the
+    instantaneous model.
+    """
+    n_subsamples = int(n_subsamples)
+    if n_subsamples <= 1 or exposure_days <= 0:
+        return transit_flux(times, P, t0, RpRs, aRs, b, u1, u2,
+                            n_radial=n_radial, engine=engine)
+
+    times = np.asarray(times, dtype=np.float64)
+    offsets = np.linspace(-0.5, 0.5, n_subsamples, endpoint=True) * float(exposure_days)
+    acc = None
+    for off in offsets:
+        fi = transit_flux(times + off, P, t0, RpRs, aRs, b, u1, u2,
+                          n_radial=n_radial, engine=engine)
+        acc = fi if acc is None else acc + fi
+    return acc / float(n_subsamples)
+
+
 def _transit_flux_batman(times, P, t0, RpRs, aRs, b, u1, u2) -> np.ndarray:
     if not _HAS_BATMAN:  # pragma: no cover
         raise RuntimeError("batman is not installed; use engine='native'")

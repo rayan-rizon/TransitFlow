@@ -9,7 +9,7 @@ noise is used instead).
 
 Example
 -------
-    python scripts/build_noise_library.py --mission TESS \
+    python3 scripts/build_noise_library.py --mission TESS \
         --targets TIC307210830 TIC150428135 --n-raw 18000 --out data/noise_lib.npz
 """
 

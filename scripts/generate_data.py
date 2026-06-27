@@ -9,10 +9,10 @@ reused for the FMPE and NPE runs.
 Examples
 --------
     # 1M light curves, 8 worker processes, into data/tess_1M/
-    python scripts/generate_data.py --config configs/default.yaml \
+    python3 scripts/generate_data.py --config configs/publishable.yaml \
         --n 1000000 --workers 8 --out data/tess_1M
     # then train from disk (GPU stays saturated):
-    python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe \
+    python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe \
         --data-dir data/tess_1M
 """
 

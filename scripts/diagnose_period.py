@@ -19,7 +19,7 @@ from transitflow.evaluation.sbc import sbc_uniformity
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/best.pt")
+    ap.add_argument("--ckpt", default="runs/fmpe/checkpoints/latest.pt")
     ap.add_argument("--n", type=int, default=3000)
     ap.add_argument("--n-post", type=int, default=500)
     ap.add_argument("--out", default="results/period_diag.json")

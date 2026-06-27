@@ -1,6 +1,8 @@
 """Tests for the disk dataset pipeline and the preflight cost/health check."""
 
 import numpy as np
+import json
+import os
 
 from transitflow.data import DiskDataset, DiskIterator, generate_to_disk
 from transitflow.models.transitflow import ModelConfig
@@ -38,6 +40,14 @@ def test_generate_and_load_disk_dataset(tmp_path):
     d = batch["d"].numpy()
     if (d == 0).any():
         assert np.allclose(batch["theta_std"].numpy()[d == 0], 0.0)
+    meta_path = os.path.join(out, "dataset_meta.json")
+    assert os.path.exists(meta_path)
+    with open(meta_path) as f:
+        meta = json.load(f)
+    assert meta["n_total"] == 600
+    assert meta["n_shards"] == 3
+    assert "config_hash" in meta
+    assert meta["realism_flags"]["finite_exposure"] is False
 
 
 def test_resumable_generation_skips_existing(tmp_path):

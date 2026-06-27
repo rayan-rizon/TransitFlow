@@ -10,7 +10,7 @@ then evaluates SBC + coverage (calibration) and spike-slab detection AUC.
 
 Example
 -------
-    python scripts/train_spike_slab.py --config configs/default.yaml \
+    python3 scripts/train_spike_slab.py --config configs/default.yaml \
         --run-dir runs/spikeslab_pg --data-dir data/tess_1M_pg --steps 60000
 """
 from __future__ import annotations

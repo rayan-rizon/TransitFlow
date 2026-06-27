@@ -1,4 +1,6 @@
-# Mac-local "proper" research run (M1 Pro, 8 cores, MPS).
+# Mac-local legacy 7D diagnostic run (M1 Pro, 8 cores, MPS).
+# Not a publication config. Use configs/publishable.yaml for the full 5D
+# ephemeris-conditioned gate run.
 # Full-resolution dual views and the real science model architecture, with the
 # raw cadence trimmed (n_raw 12000) so 6 CPU sim workers can keep the MPS GPU
 # fed.  On-the-fly simulation = infinite fresh data (no overfitting).

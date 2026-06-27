@@ -1,4 +1,10 @@
 # TransitFlow — Real-Noise Retrain Results (Gate #3 campaign)
+> Partially superseded for publication gating by
+> `artifacts/CHAR5_GATE_AUDIT_2026-06-26.md` and the 5D
+> ephemeris-conditioned `configs/publishable.yaml` protocol. Treat older
+> all-parameter/cov@68 gates below as historical diagnostics unless explicitly
+> restated in the audit.
+
 **Box 2:** Vast.ai RTX 3060 (12 GB), 80 cores | `root@70.30.158.46:48234` | Jun 24–25, 2026
 
 ## Superseding update — ephemeris-aware run (Jun 26, 2026)

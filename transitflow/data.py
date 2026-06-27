@@ -16,7 +16,12 @@ so 1M curves ~ 4.4 GB.
 from __future__ import annotations
 
 import glob
+import hashlib
+import json
 import os
+import subprocess
+import time
+from dataclasses import asdict
 
 import numpy as np
 import torch
@@ -86,10 +91,11 @@ def generate_to_disk(sim_cfg: SimConfig, n_total: int, out_dir: str,
         tasks.append((sim_cfg, noise_lib_path, out_dir, i, n, seed + 1009 * i,
                       gen_batch))
 
-    from dataclasses import asdict
     np.savez(os.path.join(out_dir, "meta.npz"),
              config=np.array([str(asdict(sim_cfg))], dtype=object),
              n_total=n_total, n_shards=n_shards)
+    _write_dataset_metadata(out_dir, sim_cfg, n_total, n_shards, shard_size,
+                            seed, noise_lib_path)
 
     if num_workers and num_workers > 1:
         import multiprocessing as mp
@@ -107,6 +113,63 @@ def generate_to_disk(sim_cfg: SimConfig, n_total: int, out_dir: str,
     if verbose:
         print(f"generated {n_total} light curves in {n_shards} shards -> {out_dir}")
     return out_dir
+
+
+def _sha256_file(path: str | None) -> str | None:
+    if not path or not os.path.exists(path):
+        return None
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _git_sha() -> str | None:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=os.getcwd(),
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        return None
+
+
+def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
+                            n_shards: int, shard_size: int, seed: int,
+                            noise_lib_path: str | None) -> None:
+    cfg = asdict(sim_cfg)
+    cfg_json = json.dumps(cfg, sort_keys=True)
+    metadata = {
+        "created_unix": time.time(),
+        "git_sha": _git_sha(),
+        "config_hash": hashlib.sha256(cfg_json.encode("utf-8")).hexdigest(),
+        "simulator_config": cfg,
+        "n_total": int(n_total),
+        "n_shards": int(n_shards),
+        "shard_size": int(shard_size),
+        "seed": int(seed),
+        "train_seed": int(seed),
+        "eval_seed": int(seed + 99991),
+        "noise_lib_path": noise_lib_path,
+        "noise_lib_sha256": _sha256_file(noise_lib_path),
+        "realism_flags": {
+            "finite_exposure": bool(
+                cfg.get("exposure_minutes", 0.0) > 0
+                and cfg.get("n_exposure_subsamples", 1) > 1),
+            "dilution": bool(cfg.get("dilution_fraction", 0.0) > 0),
+            "cadence_gaps": bool(cfg.get("gap_fraction", 0.0) > 0),
+            "physical_a_rs": cfg.get("a_rs_prior_mode") == "stellar_density",
+            "flatten_views": bool(cfg.get("flatten_views", False)),
+        },
+    }
+    path = os.path.join(out_dir, "dataset_meta.json")
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(metadata, f, indent=2, sort_keys=True)
+    os.replace(tmp, path)
 
 
 class DiskDataset:

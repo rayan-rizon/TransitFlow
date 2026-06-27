@@ -82,8 +82,9 @@ def main() -> None:
     n_post = cfg["inference"].get("n_posterior", 1000)
     sbc = run_sbc(inference, simulator, n_sims=200, n_posterior=n_post, rng=rng)
     pvals = sbc["uniformity"]["pvalue"]
+    sbc_names = sbc.get("param_names", list(prior.names))
     print("SBC uniformity p-values:",
-          {n: round(p, 3) for n, p in zip(prior.names, pvals)})
+          {n: round(p, 3) for n, p in zip(sbc_names, pvals)})
 
     cov_s, cov_t, got = [], [], 0
     while got < 200:
@@ -98,10 +99,15 @@ def main() -> None:
                                                  periodogram=pg, ephem_feat=eph))
         cov_t.append(b["theta_phys"][m])
         got += int(m.sum())
-    cov = central_interval_coverage(np.concatenate(cov_t)[:200],
-                                    np.concatenate(cov_s)[:200])
+    cov_t = np.concatenate(cov_t)[:200]
+    cov_s = np.concatenate(cov_s)[:200]
+    if model.cfg.param_dim == 5:
+        cov = central_interval_coverage(cov_t[:, 2:], cov_s[:, :, 2:])
+    else:
+        cov = central_interval_coverage(cov_t, cov_s)
     cce = coverage_calibration_error(cov["levels"], cov["coverage_overall"])
-    print(f"Coverage calibration error: {cce:.4f} (lower is better)")
+    label = "characterization " if model.cfg.param_dim == 5 else ""
+    print(f"{label}Coverage calibration error: {cce:.4f} (lower is better)")
 
     # --- single-object posterior + IS diagnostic ---
     one = simulator.simulate_batch(1, np.random.default_rng(99))

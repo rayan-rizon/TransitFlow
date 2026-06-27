@@ -3,13 +3,13 @@
 
 Examples
 --------
-    python scripts/train.py --config configs/smoke.yaml
-    python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe \
+    python3 scripts/train.py --config configs/smoke.yaml
+    python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe \
         --num-workers 4
-    python scripts/train.py --config configs/default.yaml --head npe \
+    python3 scripts/train.py --config configs/publishable.yaml --head npe \
         --run-dir runs/npe
     # resume an interrupted run (auto-detects runs/fmpe/checkpoints/latest.pt):
-    python scripts/train.py --config configs/default.yaml --run-dir runs/fmpe --resume
+    python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe --resume
 """
 
 from __future__ import annotations

@@ -40,3 +40,6 @@ include = ["transitflow*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "slow: CPU/GPU-heavy training, MCMC, or periodogram tests excluded from preflight smoke",
+]

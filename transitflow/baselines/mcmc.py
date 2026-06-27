@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 
 from ..priors import TransitPrior, kipping_to_quadratic
-from ..transit_model import transit_flux
+from ..transit_model import exposure_integrated_transit_flux
 
 try:
     import emcee  # type: ignore
@@ -23,28 +23,36 @@ except Exception:  # pragma: no cover
 
 
 def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
-                    n_radial: int = 100) -> float:
+                    n_radial: int = 100, exposure_minutes: float = 0.0,
+                    n_exposure_subsamples: int = 1) -> float:
     P, t0_phase, RpRs, aRs, b, q1, q2 = theta_phys
     u1, u2 = kipping_to_quadratic(q1, q2)
-    model = transit_flux(times, P, t0_phase * P, RpRs, aRs, b, u1, u2,
-                         n_radial=n_radial, engine="native")[0]
+    model = exposure_integrated_transit_flux(
+        times, P, t0_phase * P, RpRs, aRs, b, u1, u2,
+        n_radial=n_radial, engine="native",
+        exposure_days=exposure_minutes / (60.0 * 24.0),
+        n_subsamples=n_exposure_subsamples,
+    )[0]
     resid = (flux - model) / flux_err
     return -0.5 * np.sum(resid ** 2)
 
 
 def _log_prob(theta_phys: np.ndarray, times, flux, flux_err,
-              prior: TransitPrior, n_radial: int) -> float:
+              prior: TransitPrior, n_radial: int, exposure_minutes: float,
+              n_exposure_subsamples: int) -> float:
     lp = float(prior.log_prob_physical(theta_phys[None, :])[0])
     if not np.isfinite(lp):
         return -np.inf
-    return lp + _log_likelihood(theta_phys, times, flux, flux_err, n_radial)
+    return lp + _log_likelihood(theta_phys, times, flux, flux_err, n_radial,
+                                exposure_minutes, n_exposure_subsamples)
 
 
 def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              init: np.ndarray | None = None, n_walkers: int = 32,
              n_steps: int = 2000, burn_frac: float = 0.5, n_radial: int = 100,
              seed: int = 0, fixed: dict[int, float] | None = None,
-             init_std_jitter: float = 0.05) -> dict:
+             init_std_jitter: float = 0.05, exposure_minutes: float = 0.0,
+             n_exposure_subsamples: int = 1) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
@@ -90,7 +98,9 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
                 "fixed": fixed}
 
     p0 = p0_full[:, free_idx]
-    logp = lambda th: _log_prob(expand(th), times, flux, flux_err, prior, n_radial)  # noqa
+    logp = lambda th: _log_prob(  # noqa: E731
+        expand(th), times, flux, flux_err, prior, n_radial,
+        exposure_minutes, n_exposure_subsamples)
 
     if _HAS_EMCEE:
         sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)

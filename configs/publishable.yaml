@@ -1,0 +1,101 @@
+# Canonical full-gate publication run.
+# This is the ephemeris-conditioned 5D characterization model:
+# posterior targets are RpRs, aRs, b, q1, q2; P/t0_phase are conditioning inputs.
+
+simulator:
+  n_global: 2001
+  n_local: 201
+  n_durations: 4.0
+  baseline_days: 27.0
+  n_raw: 18000
+  planet_fraction: 0.5
+  hard_negative_fraction: 0.5
+  frac_real: 0.70
+  frac_gp: 0.20
+  frac_white: 0.10
+  sigma_white_log10_low: -3.7
+  sigma_white_log10_high: -2.3
+  gp_amp_log10_low: -3.5
+  gp_amp_log10_high: -2.0
+  gp_tau_frac_low: 0.02
+  gp_tau_frac_high: 0.30
+  gp_kernel: matern32
+  eb_depth_low: 0.01
+  eb_depth_high: 0.10
+  engine: native
+  n_radial: 200
+  regime: tess
+
+  # Real-shape remediation for the b/aRs MCMC disagreement.
+  exposure_minutes: 2.0
+  n_exposure_subsamples: 5
+  dilution_fraction: 0.35
+  dilution_low: 0.50
+  dilution_high: 1.00
+  gap_fraction: 0.03
+  gap_duration_range: [0.10, 0.80]
+  a_rs_prior_mode: stellar_density
+  stellar_density_log10_mean: 0.0
+  stellar_density_log10_std: 0.25
+  flatten_views: true
+
+  use_periodogram: true
+  n_period_bins: 256
+  pg_n_phase: 64
+  pg_n_raw: 4096
+
+model:
+  param_dim: 5
+  embed_dim: 256
+  head: fmpe
+  use_noise_feature: true
+  use_periodogram: true
+  use_ephemeris_feature: true
+  global_channels: [32, 64, 128, 128, 256, 256]
+  local_channels: [32, 64, 128, 128]
+  pg_channels: [32, 64, 128, 128]
+  global_dim: 256
+  local_dim: 128
+  pg_dim: 128
+  blocks_per_stage: 2
+  det_hidden: 128
+  det_dropout: 0.1
+  fm_hidden: 256
+  fm_blocks: 4
+  fm_time_dim: 64
+  npe_hidden: 128
+  npe_transforms: 6
+  npe_backend: auto
+
+train:
+  n_steps: 60000
+  batch_size: 256
+  lr: 3.0e-4
+  weight_decay: 1.0e-5
+  lambda_det: 1.0
+  grad_clip: 5.0
+  warmup_steps: 500
+  eval_every: 2000
+  eval_batches: 8
+  log_every: 100
+  device: auto
+  seed: 0
+  amp: true
+  run_dir: runs/fmpe_pg_publishable
+  ckpt_every: 2000
+  keep_last: 3
+  resume: null
+  tensorboard: true
+  tf32: true
+  expect_device: cuda
+  nan_patience: 20
+  data_source: simulate
+  data_dir: null
+  num_workers: 4
+  prefetch: 8
+  noise_lib_path: null
+
+inference:
+  ode_steps: 50
+  ode_method: rk4
+  n_posterior: 2000

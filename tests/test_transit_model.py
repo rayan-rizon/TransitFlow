@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from transitflow.transit_model import (
+    exposure_integrated_transit_flux,
     has_batman,
     transit_duration,
     transit_flux,
@@ -45,6 +46,16 @@ def test_vectorized_matches_loop():
         single = transit_flux(t, P[i], t0[i], RpRs[i], aRs[i], b[i], u1[i], u2[i],
                               engine="native")[0]
         assert np.allclose(batch[i], single, atol=1e-9)
+
+
+def test_exposure_integration_one_subsample_matches_instantaneous():
+    t = np.linspace(-0.2, 0.2, 700)
+    args = (t, 3.0, 0.0, 0.08, 12.0, 0.2, 0.3, 0.2)
+    f0 = transit_flux(*args, engine="native")
+    f1 = exposure_integrated_transit_flux(
+        *args, exposure_days=2.0 / (60.0 * 24.0), n_subsamples=1,
+        engine="native")
+    assert np.allclose(f0, f1)
 
 
 def test_duration_physical():

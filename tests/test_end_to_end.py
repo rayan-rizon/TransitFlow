@@ -1,10 +1,13 @@
 import numpy as np
+import pytest
 import torch
 
 from transitflow.evaluation import detection_metrics
 from transitflow.inference import TransitFlowInference
 from transitflow.simulator import SimConfig, TransitSimulator
 from transitflow.train import TrainConfig, train
+
+pytestmark = pytest.mark.slow
 
 
 def test_short_training_runs_and_learns(prior):

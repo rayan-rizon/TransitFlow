@@ -1,4 +1,8 @@
 # TransitFlow — Experiment Results Summary
+> Superseded for publication gating by `artifacts/CHAR5_GATE_AUDIT_2026-06-26.md`
+> and the 5D ephemeris-conditioned `configs/publishable.yaml` protocol. This file
+> is historical provenance for the older synthetic-noise/all-parameter campaign.
+
 **Run date:** Jun 24–25, 2026 | **Hardware:** Vast.ai RTX 4090 (24 GB) | **Instance:** 142.171.48.138:25616
 
 ---

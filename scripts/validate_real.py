@@ -14,7 +14,7 @@ valid.
 
 Example
 -------
-    python scripts/validate_real.py --ckpt runs/fmpe_pg/best.pt \
+    python3 scripts/validate_real.py --ckpt runs/fmpe_pg/checkpoints/latest.pt \
         --n-planets 30 --out results/real --with-mcmc 5
 """
 from __future__ import annotations
@@ -33,7 +33,11 @@ from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
 from transitflow.transit_model import transit_duration
-from transitflow.views import make_periodogram_view, make_views
+from transitflow.views import (
+    flatten_transit_preserving,
+    make_periodogram_view,
+    make_views,
+)
 
 # parameters we can compare against the archive (subset of the 7-D vector)
 _CMP = {"P": 0, "RpRs": 2, "aRs": 3, "b": 4}
@@ -198,27 +202,7 @@ def _flatten_lc(t, f, P, t0, dur):
     the transit itself — otherwise dividing by it attenuates the depth and biases
     the Rp/Rs posterior. This is the standard transit-preserving flatten.
     """
-    from scipy.ndimage import median_filter
-
-    dt = float(np.median(np.diff(t)))
-    if not np.isfinite(dt) or dt <= 0:
-        return f
-    # window ≈ max(1 day, 8 × transit duration), in cadences, capped below n
-    win_days = max(1.0, 8.0 * (dur if np.isfinite(dur) else 0.2))
-    win = int(np.clip(round(win_days / dt), 11, max(11, len(f) // 3)))
-    if win % 2 == 0:
-        win += 1
-    f_work = np.array(f, dtype=np.float64, copy=True)
-    if np.isfinite(P) and np.isfinite(t0) and np.isfinite(dur) and dur > 0:
-        # phase distance from transit center, in days; mask a bit wider than dur
-        phase = ((t - t0 + 0.5 * P) % P) - 0.5 * P
-        in_transit = np.abs(phase) < 0.7 * dur
-        oot = ~in_transit
-        if in_transit.any() and oot.sum() > 2:
-            f_work[in_transit] = np.interp(t[in_transit], t[oot], f[oot])
-    trend = median_filter(f_work, size=win, mode="nearest")
-    trend = np.where(np.abs(trend) < 1e-6, np.median(f), trend)
-    return f / trend
+    return flatten_transit_preserving(t, f, P, t0, dur)
 
 
 # --------------------------------------------------------------------------- #
@@ -405,12 +389,68 @@ def real_diagnostic_status(summary: dict) -> dict:
     }
 
 
+def _bin_label(value: float, edges: tuple[float, float], labels: tuple[str, str, str]) -> str:
+    if not np.isfinite(value):
+        return "unknown"
+    if value < edges[0]:
+        return labels[0]
+    if value < edges[1]:
+        return labels[1]
+    return labels[2]
+
+
+def mcmc_stratified_summary(rows: list[dict]) -> dict:
+    """MCMC Wasserstein summaries by data-only and geometry strata."""
+    specs = {
+        "impact": lambda r: _bin_label(
+            r.get("quality", {}).get("impact_parameter", float("nan")),
+            (0.35, 0.70), ("low_b", "mid_b", "high_b")),
+        "observed_snr": lambda r: _bin_label(
+            r.get("quality", {}).get("observed_snr", float("nan")),
+            (25.0, 75.0), ("low_snr", "mid_snr", "high_snr")),
+        "rprs": lambda r: _bin_label(
+            r.get("params", {}).get("RpRs", {}).get("published", float("nan")),
+            (0.04, 0.09), ("shallow", "medium", "deep")),
+        "a_rs": lambda r: _bin_label(
+            r.get("params", {}).get("aRs", {}).get("published", float("nan")),
+            (10.0, 25.0), ("compact", "mid", "wide")),
+        "n_transits": lambda r: _bin_label(
+            r.get("quality", {}).get("n_transits", float("nan")),
+            (3.0, 6.0), ("few", "several", "many")),
+    }
+    out = {}
+    for spec_name, label_fn in specs.items():
+        grouped: dict[str, list[dict]] = {}
+        for row in rows:
+            grouped.setdefault(label_fn(row), []).append(row)
+        out[spec_name] = {}
+        for label, group in sorted(grouped.items()):
+            entry = {"n": len(group)}
+            for param in _CHAR_CMP:
+                prior_vals = [
+                    g["mcmc_wasserstein_prior_fraction"][param]
+                    for g in group
+                    if param in g.get("mcmc_wasserstein_prior_fraction", {})
+                ]
+                width_vals = [
+                    g["mcmc_wasserstein_width_fraction"][param]
+                    for g in group
+                    if param in g.get("mcmc_wasserstein_width_fraction", {})
+                ]
+                if prior_vals:
+                    entry[f"{param}_median_prior_fraction"] = float(np.median(prior_vals))
+                if width_vals:
+                    entry[f"{param}_median_width_fraction"] = float(np.median(width_vals))
+            out[spec_name][label] = entry
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ckpt", default="runs/fmpe_pg/best.pt")
+    ap.add_argument("--ckpt", default="runs/fmpe_pg/checkpoints/latest.pt")
     ap.add_argument("--detector-ckpt", default=None,
                     help="optional checkpoint used only for p_detect")
     ap.add_argument("--n-planets", type=int, default=30)
@@ -552,7 +592,10 @@ def main():
                 mc_out = run_mcmc(mcmc_t, mcmc_f, mcmc_err, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60,
                                   fixed=fixed,
-                                  init_std_jitter=args.mcmc_init_jitter)
+                                  init_std_jitter=args.mcmc_init_jitter,
+                                  exposure_minutes=getattr(sc, "exposure_minutes", 0.0),
+                                  n_exposure_subsamples=getattr(
+                                      sc, "n_exposure_subsamples", 1))
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:
@@ -654,6 +697,12 @@ def main():
                     "median_wasserstein_width_fraction": float(np.median(norm_vals))
                     if norm_vals else float("nan"),
                 }
+        for r in mcmc_rows:
+            r["mcmc_wasserstein_prior_fraction"] = {
+                k: float(r["mcmc_wasserstein"][k] / ranges[k])
+                for k in r["mcmc_wasserstein"] if k in ranges
+            }
+        summary["mcmc_stratified"] = mcmc_stratified_summary(mcmc_rows)
     # P is a conditioning input for the 5D characterization model, so P coverage
     # is not a valid posterior-calibration gate. Keep P in the report as a sanity
     # check, but gate only on characterization parameters.

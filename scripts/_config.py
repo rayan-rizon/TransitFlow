@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 
-# allow running the scripts directly: `python scripts/train.py`
+# allow running the scripts directly: `python3 scripts/train.py`
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from transitflow.models.transitflow import ModelConfig  # noqa: E402
