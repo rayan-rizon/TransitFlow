@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "scripts/run_publishable_vast.py": {
-    "mtime": 1782628737.05681,
-    "ast_hash": "9e9bf60b32ab934cc432657df961d1e9",
+    "mtime": 1782631172.4875455,
+    "ast_hash": "23bea6cb327ff09c965f3676d87c1c32",
     "semantic_hash": ""
   },
   "configs/publishable.yaml": {
