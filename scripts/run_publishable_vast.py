@@ -208,6 +208,10 @@ def main() -> None:
         n_real_planets = min(args.n_real_planets, 8)
         with_mcmc = 0
         mcmc_steps = args.mcmc_steps
+        speed_n_amortized = 32
+        speed_n_mcmc = 1
+        speed_mcmc_steps = 80
+        speed_mcmc_walkers = 16
     elif args.fast_check:
         n_data = min(args.n_data, 20000)
         steps = args.steps or 3000
@@ -217,6 +221,10 @@ def main() -> None:
         n_real_planets = min(args.n_real_planets, 12)
         with_mcmc = min(args.with_mcmc, 4)
         mcmc_steps = min(args.mcmc_steps, 400)
+        speed_n_amortized = min(n_detection, 64)
+        speed_n_mcmc = max(1, min(with_mcmc, 2))
+        speed_mcmc_steps = mcmc_steps
+        speed_mcmc_walkers = 16
     else:
         n_data = args.n_data
         steps = args.steps
@@ -226,6 +234,10 @@ def main() -> None:
         n_real_planets = args.n_real_planets
         with_mcmc = args.with_mcmc
         mcmc_steps = args.mcmc_steps
+        speed_n_amortized = 256
+        speed_n_mcmc = 5
+        speed_mcmc_steps = args.mcmc_steps
+        speed_mcmc_walkers = 32
     train_steps = ["--steps", str(steps)] if steps else []
 
     write_environment(out_dir / "environment.json", repo)
@@ -268,7 +280,10 @@ def main() -> None:
          "--out", str(results / "bls_vs_transitflow.json")],
         repo, logs / "baseline_detection.log")
     run([args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
-         "--noise-lib", str(noise_lib), "--out", str(results / "speed.json")],
+         "--noise-lib", str(noise_lib), "--n-amortized", str(speed_n_amortized),
+         "--n-post", str(n_posterior), "--n-mcmc", str(speed_n_mcmc),
+         "--mcmc-steps", str(speed_mcmc_steps), "--mcmc-walkers",
+         str(speed_mcmc_walkers), "--out", str(results / "speed.json")],
         repo, logs / "speed.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
@@ -299,6 +314,10 @@ def main() -> None:
         "n_real_planets": int(n_real_planets),
         "with_mcmc": int(with_mcmc),
         "mcmc_steps": int(mcmc_steps),
+        "speed_n_amortized": int(speed_n_amortized),
+        "speed_n_mcmc": int(speed_n_mcmc),
+        "speed_mcmc_steps": int(speed_mcmc_steps),
+        "speed_mcmc_walkers": int(speed_mcmc_walkers),
     }
     (out_dir / "gate_report.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report["status"], indent=2))
