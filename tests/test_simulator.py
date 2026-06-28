@@ -103,9 +103,10 @@ def test_gap_masks_keep_views_finite(prior):
                     regime="tess", use_periodogram=True, n_period_bins=32,
                     pg_n_raw=512)
     b = TransitSimulator(cfg, prior=prior).simulate_batch(
-        16, np.random.default_rng(22))
+        16, np.random.default_rng(22), return_raw=True)
     assert b["cadence_mask"].shape == (16, cfg.n_raw)
     assert b["cadence_mask"].mean() < 1.0
+    assert np.array_equal(np.isfinite(b["raw_flux"]), b["cadence_mask"])
     assert np.isfinite(b["global"]).all()
     assert np.isfinite(b["local"]).all()
     assert np.isfinite(b["periodogram"]).all()

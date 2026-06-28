@@ -589,13 +589,17 @@ def main():
                 if fixed is not None:
                     mcmc_t, mcmc_f, mcmc_err = fold_bin_fixed_ephemeris(
                         t_rel, _f, sigma, P, fixed[1], args.mcmc_max_cadences)
+                fit_dilution = bool(getattr(sc, "dilution_fraction", 0.0) > 0)
                 mc_out = run_mcmc(mcmc_t, mcmc_f, mcmc_err, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60,
                                   fixed=fixed,
                                   init_std_jitter=args.mcmc_init_jitter,
                                   exposure_minutes=getattr(sc, "exposure_minutes", 0.0),
                                   n_exposure_subsamples=getattr(
-                                      sc, "n_exposure_subsamples", 1))
+                                      sc, "n_exposure_subsamples", 1),
+                                  fit_dilution=fit_dilution,
+                                  dilution_low=getattr(sc, "dilution_low", 0.5),
+                                  dilution_high=getattr(sc, "dilution_high", 1.0))
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:
@@ -620,6 +624,10 @@ def main():
                 by_name[pl["name"]]["mcmc_acceptance_fraction"] = \
                     mc_out.get("acceptance_fraction")
                 by_name[pl["name"]]["mcmc_fixed"] = mc_out.get("fixed", {})
+                by_name[pl["name"]]["mcmc_fit_dilution"] = fit_dilution
+                if mc_out.get("dilution_samples") is not None:
+                    by_name[pl["name"]]["mcmc_dilution_median"] = float(
+                        np.median(mc_out["dilution_samples"]))
                 by_name[pl["name"]]["mcmc_cadences"] = int(len(mcmc_t))
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)

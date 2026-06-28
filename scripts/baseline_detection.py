@@ -79,8 +79,9 @@ def main() -> None:
                            periodogram=pg, ephem_feat=eph)
         for i in range(len(raw)):
             f_i = raw[i][::step]
+            ok = np.isfinite(t_bls) & np.isfinite(f_i)
             try:
-                res = bls_detect(t_bls, f_i,
+                res = bls_detect(t_bls[ok], f_i[ok],
                                  period_min=float(p_lo), period_max=float(p_hi),
                                  n_periods=args.n_periods, durations=bls_durations)
                 bls_scores.append(float(res["score"]))

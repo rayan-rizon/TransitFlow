@@ -64,3 +64,23 @@ def test_mcmc_fixed_ephemeris_metadata_all_fixed():
     assert out["fixed"][0] == P
     assert out["fixed"][1] == t0p
     assert np.allclose(out["samples"][:, :2], np.array([P, t0p]))
+
+
+def test_mcmc_fit_dilution_keeps_physical_samples_7d():
+    P, t0p, RpRs, aRs, b = 3.0, 0.33, 0.1, 12.0, 0.2
+    prior = TransitPrior()
+    t = np.linspace(0, 9, 80)
+    u1, u2 = kipping_to_quadratic(0.4, 0.3)
+    f0 = transit_flux(t, P, t0p * P, RpRs, aRs, b, u1, u2,
+                      engine="native")[0]
+    f = 1.0 + (f0 - 1.0) * 0.6
+    init = np.array([P, t0p, RpRs, aRs, b, 0.4, 0.3])
+    fixed = {i: float(v) for i, v in enumerate(init)}
+    out = run_mcmc(t, f, 0.0006, prior=prior, init=init, n_walkers=8,
+                   n_steps=3, n_radial=8, seed=2, fixed=fixed,
+                   fit_dilution=True, dilution_low=0.5, dilution_high=1.0,
+                   init_dilution=0.6)
+    assert out["samples"].shape[1] == 7
+    assert out["dilution_samples"] is not None
+    assert out["dilution_samples"].min() >= 0.5
+    assert out["dilution_samples"].max() <= 1.0

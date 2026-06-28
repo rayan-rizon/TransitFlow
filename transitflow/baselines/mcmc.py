@@ -24,7 +24,8 @@ except Exception:  # pragma: no cover
 
 def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
                     n_radial: int = 100, exposure_minutes: float = 0.0,
-                    n_exposure_subsamples: int = 1) -> float:
+                    n_exposure_subsamples: int = 1,
+                    dilution: float = 1.0) -> float:
     P, t0_phase, RpRs, aRs, b, q1, q2 = theta_phys
     u1, u2 = kipping_to_quadratic(q1, q2)
     model = exposure_integrated_transit_flux(
@@ -33,18 +34,24 @@ def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
         exposure_days=exposure_minutes / (60.0 * 24.0),
         n_subsamples=n_exposure_subsamples,
     )[0]
+    model = 1.0 + (model - 1.0) * float(dilution)
     resid = (flux - model) / flux_err
     return -0.5 * np.sum(resid ** 2)
 
 
 def _log_prob(theta_phys: np.ndarray, times, flux, flux_err,
               prior: TransitPrior, n_radial: int, exposure_minutes: float,
-              n_exposure_subsamples: int) -> float:
+              n_exposure_subsamples: int, dilution: float = 1.0,
+              dilution_low: float = 0.5, dilution_high: float = 1.0,
+              fit_dilution: bool = False) -> float:
+    if fit_dilution and not (dilution_low <= dilution <= dilution_high):
+        return -np.inf
     lp = float(prior.log_prob_physical(theta_phys[None, :])[0])
     if not np.isfinite(lp):
         return -np.inf
     return lp + _log_likelihood(theta_phys, times, flux, flux_err, n_radial,
-                                exposure_minutes, n_exposure_subsamples)
+                                exposure_minutes, n_exposure_subsamples,
+                                dilution=dilution)
 
 
 def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
@@ -52,7 +59,9 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              n_steps: int = 2000, burn_frac: float = 0.5, n_radial: int = 100,
              seed: int = 0, fixed: dict[int, float] | None = None,
              init_std_jitter: float = 0.05, exposure_minutes: float = 0.0,
-             n_exposure_subsamples: int = 1) -> dict:
+             n_exposure_subsamples: int = 1, fit_dilution: bool = False,
+             dilution_low: float = 0.5, dilution_high: float = 1.0,
+             init_dilution: float = 1.0) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
@@ -62,6 +71,13 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
     fixed = dict(fixed or {})
     fixed_idx = sorted(fixed)
     free_idx = [i for i in range(dim) if i not in fixed]
+    if fit_dilution:
+        lo = float(min(dilution_low, dilution_high))
+        hi = float(max(dilution_low, dilution_high))
+        dilution_low, dilution_high = lo, hi
+        if not np.isfinite(dilution_low) or not np.isfinite(dilution_high) \
+                or dilution_high <= dilution_low:
+            raise ValueError("invalid dilution bounds")
 
     if init is None:
         init = prior.sample(1, rng)[0]
@@ -83,9 +99,17 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
     p0_full = prior.std_to_physical(p0_std)
     for i, v in fixed.items():
         p0_full[:, i] = v
+    if fit_dilution:
+        init_dilution = float(np.clip(init_dilution, dilution_low, dilution_high))
+        p0_dilution = init_dilution + (dilution_high - dilution_low) * \
+            init_std_jitter * rng.standard_normal((n_walkers, 1))
+        p0_dilution = np.clip(p0_dilution, dilution_low, dilution_high)
+        p0_full = np.concatenate([p0_full, p0_dilution], axis=1)
+        free_idx.append(dim)
 
     def expand(theta_free: np.ndarray) -> np.ndarray:
-        theta = init.copy()
+        theta = np.concatenate([init.copy(), np.array([init_dilution])]) \
+            if fit_dilution else init.copy()
         if free_idx:
             theta[free_idx] = theta_free
         for i, v in fixed.items():
@@ -95,12 +119,15 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
     if not free_idx:
         return {"samples": np.tile(init[None, :], (max(n_walkers, 1), 1)),
                 "backend": "fixed", "acceptance_fraction": float("nan"),
-                "fixed": fixed}
+                "fixed": fixed, "dilution_samples": None}
 
     p0 = p0_full[:, free_idx]
     logp = lambda th: _log_prob(  # noqa: E731
-        expand(th), times, flux, flux_err, prior, n_radial,
-        exposure_minutes, n_exposure_subsamples)
+        expand(th)[:dim], times, flux, flux_err, prior, n_radial,
+        exposure_minutes, n_exposure_subsamples,
+        dilution=expand(th)[dim] if fit_dilution else 1.0,
+        dilution_low=dilution_low, dilution_high=dilution_high,
+        fit_dilution=fit_dilution)
 
     if _HAS_EMCEE:
         sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
@@ -109,12 +136,18 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
         acceptance = float(np.mean(sampler.acceptance_fraction))
     else:
         free_chain, acceptance = _native_ensemble(logp, p0, n_steps, burn_frac, rng)
-    chain = np.tile(init[None, :], (free_chain.shape[0], 1))
-    chain[:, free_idx] = free_chain
+    sample_chain = np.tile(
+        np.concatenate([init, np.array([init_dilution])])[None, :]
+        if fit_dilution else init[None, :],
+        (free_chain.shape[0], 1))
+    sample_chain[:, free_idx] = free_chain
+    chain = sample_chain[:, :dim].copy()
     for i, v in fixed.items():
         chain[:, i] = v
+    dilution_samples = sample_chain[:, dim].copy() if fit_dilution else None
     return {"samples": chain, "backend": "emcee" if _HAS_EMCEE else "native",
-            "acceptance_fraction": acceptance, "fixed": fixed}
+            "acceptance_fraction": acceptance, "fixed": fixed,
+            "dilution_samples": dilution_samples}
 
 
 def _native_ensemble(logp, p0, n_steps, burn_frac, rng,

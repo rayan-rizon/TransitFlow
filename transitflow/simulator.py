@@ -293,6 +293,7 @@ class TransitSimulator:
             valid_cad = gap_mask[i]
             ti = t[valid_cad]
             fi = flux[i][valid_cad]
+            raw_for_views[i, ~valid_cad] = np.nan
             if cfg.flatten_views:
                 fi = flatten_transit_preserving(
                     ti, fi, fold_P[i], fold_t0[i], duration[i])

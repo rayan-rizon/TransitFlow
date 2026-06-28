@@ -30,7 +30,8 @@ from .transit_model import exposure_integrated_transit_flux
 
 def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 200,
                     engine: str = "native", exposure_minutes: float = 0.0,
-                    n_exposure_subsamples: int = 1) -> np.ndarray:
+                    n_exposure_subsamples: int = 1,
+                    dilution: float | np.ndarray = 1.0) -> np.ndarray:
     """Render noiseless raw light curves for a batch of parameter vectors.
 
     ``theta_phys`` is ``(N, 7)`` = (P, t0_phase, Rp/Rs, a/Rs, b, q1, q2).
@@ -40,18 +41,23 @@ def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 2
     t0 = theta_phys[:, 1] * P
     RpRs, aRs, b = theta_phys[:, 2], theta_phys[:, 3], theta_phys[:, 4]
     u1, u2 = kipping_to_quadratic(theta_phys[:, 5], theta_phys[:, 6])
-    return exposure_integrated_transit_flux(
+    flux = exposure_integrated_transit_flux(
         times, P, t0, RpRs, aRs, b, u1, u2,
         n_radial=n_radial, engine=engine,
         exposure_days=exposure_minutes / (60.0 * 24.0),
         n_subsamples=n_exposure_subsamples,
     )
+    dilution = np.asarray(dilution, dtype=np.float64)
+    if dilution.ndim == 0:
+        return 1.0 + (flux - 1.0) * float(dilution)
+    return 1.0 + (flux - 1.0) * dilution[:, None]
 
 
 def importance_weights(inference, global_view, local_view, sigma_feat,
                        raw_flux: np.ndarray, times: np.ndarray, sigma: float,
                        n_samples: int = 1000, logprob_steps: int = 40,
-                       periodogram=None, ephem_feat=None) -> dict:
+                       periodogram=None, ephem_feat=None,
+                       dilution_grid_size: int = 9) -> dict:
     """Importance-sampling weights for one object's amortized posterior.
 
     Returns physical + standardized proposal samples, normalized weights ``w``,
@@ -67,16 +73,49 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     phys, std = phys[0], std[0]                                     # (N, 7)
     logq = inf.log_prob_std(std, e.repeat(std.shape[0], 1), )       # (N,)
     logprior = inf.prior.log_prob_std(std)                         # (N,) const in box
-    pred = render_raw_flux(phys, times, n_radial=inf.sim_cfg.n_radial,
-                           engine=inf.sim_cfg.engine,
-                           exposure_minutes=getattr(inf.sim_cfg, "exposure_minutes", 0.0),
-                           n_exposure_subsamples=getattr(
-                               inf.sim_cfg, "n_exposure_subsamples", 1))  # (N, n_raw)
-    resid = raw_flux[None, :] - pred
+    raw_flux = np.asarray(raw_flux, dtype=np.float64)
+    times = np.asarray(times, dtype=np.float64)
     sigma = np.asarray(sigma, dtype=np.float64)
-    loglik = -0.5 * np.sum(resid * resid / (sigma[None, :] * sigma[None, :])
-                           if sigma.ndim else resid * resid / float(sigma * sigma),
-                           axis=1)
+    observed = np.isfinite(raw_flux) & np.isfinite(times)
+    raw_flux = raw_flux[observed]
+    times = times[observed]
+    if sigma.ndim:
+        sigma = sigma[observed]
+    base_pred = render_raw_flux(
+        phys, times, n_radial=inf.sim_cfg.n_radial, engine=inf.sim_cfg.engine,
+        exposure_minutes=getattr(inf.sim_cfg, "exposure_minutes", 0.0),
+        n_exposure_subsamples=getattr(inf.sim_cfg, "n_exposure_subsamples", 1))
+
+    def _loglik(pred):
+        resid = raw_flux[None, :] - pred
+        return -0.5 * np.sum(
+            resid * resid / (sigma[None, :] * sigma[None, :])
+            if sigma.ndim else resid * resid / float(sigma * sigma),
+            axis=1)
+
+    dilution_fraction = float(np.clip(
+        getattr(inf.sim_cfg, "dilution_fraction", 0.0), 0.0, 1.0))
+    if dilution_fraction > 0 and dilution_grid_size > 1:
+        lo = min(float(getattr(inf.sim_cfg, "dilution_low", 0.5)),
+                 float(getattr(inf.sim_cfg, "dilution_high", 1.0)))
+        hi = max(float(getattr(inf.sim_cfg, "dilution_low", 0.5)),
+                 float(getattr(inf.sim_cfg, "dilution_high", 1.0)))
+        grid = np.linspace(lo, hi, int(dilution_grid_size))
+        log_terms = []
+        weights = []
+        if dilution_fraction < 1.0:
+            log_terms.append(_loglik(base_pred))
+            weights.append(1.0 - dilution_fraction)
+        for d in grid:
+            log_terms.append(_loglik(1.0 + (base_pred - 1.0) * d))
+            weights.append(dilution_fraction / len(grid))
+        log_terms = np.stack(log_terms, axis=0)
+        log_weights = np.log(np.asarray(weights, dtype=np.float64))[:, None]
+        z = np.max(log_terms + log_weights, axis=0)
+        loglik = z + np.log(np.sum(np.exp(log_terms + log_weights - z[None, :]),
+                                   axis=0))
+    else:
+        loglik = _loglik(base_pred)
     logw = loglik + logprior - logq
     logw = np.where(np.isfinite(logw), logw, -np.inf)
     logw -= np.max(logw)

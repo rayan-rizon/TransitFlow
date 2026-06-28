@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "scripts/benchmark_speed.py": {
-    "mtime": 1782562308.6910398,
-    "ast_hash": "d62a17bd22938048bf0f658f2b390cad",
+    "mtime": 1782628118.0959656,
+    "ast_hash": "b92809e8b085b53f6c182b4a66cd4829",
     "semantic_hash": ""
   },
   "scripts/build_noise_library.py": {
@@ -65,13 +65,13 @@
     "semantic_hash": "3b836ba8ef87d192143aa76852391f20"
   },
   "tests/test_baselines.py": {
-    "mtime": 1782464322.3274786,
-    "ast_hash": "9ae0ff512dd329dc45ab39f8f2299a2e",
+    "mtime": 1782628165.757434,
+    "ast_hash": "b77bed00a8de8feadabd019e0f58b6c3",
     "semantic_hash": ""
   },
   "tests/test_correction.py": {
-    "mtime": 1782390284.5550892,
-    "ast_hash": "60661641617187eefbca7642370e9900",
+    "mtime": 1782628165.7578242,
+    "ast_hash": "09b043780317f89e8df517bcbd215271",
     "semantic_hash": ""
   },
   "tests/test_data.py": {
@@ -125,8 +125,8 @@
     "semantic_hash": "6f7d9bc647e582712bf0fe2ae88a2e4f"
   },
   "tests/test_simulator.py": {
-    "mtime": 1782562097.6232948,
-    "ast_hash": "5c2a7f292950f836451871ac4fbae8cb",
+    "mtime": 1782627089.8845346,
+    "ast_hash": "3f80c1b1d24ae7528acc8c7b64a147a8",
     "semantic_hash": ""
   },
   "tests/test_spike_slab.py": {
@@ -165,13 +165,13 @@
     "semantic_hash": "8e56774cd3f5e6ac9ceddf60b487697e"
   },
   "transitflow/baselines/mcmc.py": {
-    "mtime": 1782561947.0239406,
-    "ast_hash": "bc04e68397a150959580a6bb32fdcc8b",
+    "mtime": 1782628064.9457428,
+    "ast_hash": "20311e7154ca54f1d3d047bbe0f09bd2",
     "semantic_hash": ""
   },
   "transitflow/correction.py": {
-    "mtime": 1782561925.0761218,
-    "ast_hash": "ef9c59a2bbe51cda4f1ad0ced7b32e74",
+    "mtime": 1782628322.6335015,
+    "ast_hash": "6177567c40ec347f5a7475d80591154c",
     "semantic_hash": ""
   },
   "transitflow/data.py": {
@@ -255,8 +255,8 @@
     "semantic_hash": "6bdceea4c0f0d86bd10095d0835cdb34"
   },
   "transitflow/simulator.py": {
-    "mtime": 1782562573.905513,
-    "ast_hash": "b7f54b418094eae317ebaac76e124493",
+    "mtime": 1782626989.6442597,
+    "ast_hash": "3ed83bbc497cd1bfb8a38b9ec434f7ee",
     "semantic_hash": ""
   },
   "transitflow/train.py": {
@@ -300,8 +300,8 @@
     "semantic_hash": ""
   },
   "scripts/baseline_detection.py": {
-    "mtime": 1782562303.3222756,
-    "ast_hash": "ad43fa32e446b06f84bca5199ecb6305",
+    "mtime": 1782627089.8841326,
+    "ast_hash": "33174e7f150a80d3480e854bea58ccf4",
     "semantic_hash": ""
   },
   "scripts/train_spike_slab.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "scripts/validate_real.py": {
-    "mtime": 1782562295.6588416,
-    "ast_hash": "d3669645040862c14171855811fa3066",
+    "mtime": 1782628100.0795016,
+    "ast_hash": "220c31fc2df55465367c6ff7072b5373",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1782562374.9538493,
-    "ast_hash": "958f775949436aa75da7b30547ebe324",
+    "mtime": 1782628778.8134506,
+    "ast_hash": "6f61e78cc1f52bb9b4cc89fb46e0247c",
     "semantic_hash": ""
   },
   "TransitFlow_Implementation_Plan.md": {
@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "scripts/run_publishable_vast.py": {
-    "mtime": 1782562227.70163,
-    "ast_hash": "e7b6397c819fc2999cf1bac704f795e8",
+    "mtime": 1782628737.05681,
+    "ast_hash": "9e9bf60b32ab934cc432657df961d1e9",
     "semantic_hash": ""
   },
   "configs/publishable.yaml": {

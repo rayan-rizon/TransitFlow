@@ -180,6 +180,10 @@ def main() -> None:
     ap.add_argument("--n-real-planets", type=int, default=30)
     ap.add_argument("--with-mcmc", type=int, default=16)
     ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--steps", type=int, default=None,
+                    help="override training steps; useful for fast metric checks")
+    ap.add_argument("--fast-check", action="store_true",
+                    help="short metric-oriented run: smaller data/eval/MCMC, same report schema")
     ap.add_argument("--smoke", action="store_true",
                     help="small structural run; not a metrics claim")
     args = ap.parse_args()
@@ -195,12 +199,34 @@ def main() -> None:
     noise_lib = (repo / args.noise_lib).resolve()
     data_dir = Path(args.data_dir).resolve() if args.data_dir else out_dir / "data"
     run_dir = Path(args.run_dir).resolve() if args.run_dir else out_dir / "run"
-    n_data = 2048 if args.smoke else args.n_data
-    train_steps = ["--steps", "120"] if args.smoke else []
-    n_sbc = 50 if args.smoke else args.n_sbc
-    n_detection = 200 if args.smoke else args.n_detection
-    n_posterior = 128 if args.smoke else args.n_posterior
-    with_mcmc = 0 if args.smoke else args.with_mcmc
+    if args.smoke:
+        n_data = 2048
+        steps = 120
+        n_sbc = 50
+        n_detection = 200
+        n_posterior = 128
+        n_real_planets = min(args.n_real_planets, 8)
+        with_mcmc = 0
+        mcmc_steps = args.mcmc_steps
+    elif args.fast_check:
+        n_data = min(args.n_data, 20000)
+        steps = args.steps or 3000
+        n_sbc = min(args.n_sbc, 200)
+        n_detection = min(args.n_detection, 1000)
+        n_posterior = min(args.n_posterior, 512)
+        n_real_planets = min(args.n_real_planets, 12)
+        with_mcmc = min(args.with_mcmc, 4)
+        mcmc_steps = min(args.mcmc_steps, 400)
+    else:
+        n_data = args.n_data
+        steps = args.steps
+        n_sbc = args.n_sbc
+        n_detection = args.n_detection
+        n_posterior = args.n_posterior
+        n_real_planets = args.n_real_planets
+        with_mcmc = args.with_mcmc
+        mcmc_steps = args.mcmc_steps
+    train_steps = ["--steps", str(steps)] if steps else []
 
     write_environment(out_dir / "environment.json", repo)
 
@@ -246,9 +272,9 @@ def main() -> None:
         repo, logs / "speed.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
-           "--detector-ckpt", str(ckpt), "--n-planets", str(args.n_real_planets),
+           "--detector-ckpt", str(ckpt), "--n-planets", str(n_real_planets),
            "--n-post", str(n_posterior), "--with-mcmc", str(with_mcmc),
-           "--mcmc-steps", str(args.mcmc_steps), "--out", str(real_dir)]
+           "--mcmc-steps", str(mcmc_steps), "--out", str(real_dir)]
     run(cmd, repo, logs / "validate_real.log")
 
     report = build_gate_report(
@@ -264,10 +290,19 @@ def main() -> None:
         "data_dir": str(data_dir),
         "noise_lib": str(noise_lib),
         "smoke": bool(args.smoke),
+        "fast_check": bool(args.fast_check),
+        "n_data": int(n_data),
+        "steps": None if steps is None else int(steps),
+        "n_sbc": int(n_sbc),
+        "n_detection": int(n_detection),
+        "n_posterior": int(n_posterior),
+        "n_real_planets": int(n_real_planets),
+        "with_mcmc": int(with_mcmc),
+        "mcmc_steps": int(mcmc_steps),
     }
     (out_dir / "gate_report.json").write_text(json.dumps(report, indent=2))
     print(json.dumps(report["status"], indent=2))
-    if not args.smoke and not report["status"]["final_pass"]:
+    if not args.smoke and not args.fast_check and not report["status"]["final_pass"]:
         raise SystemExit("publishable gate suite completed but final_pass=false")
 
 

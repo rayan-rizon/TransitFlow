@@ -161,6 +161,29 @@ as an approximate simulator-misspecification flag.
 
 ## Running on Vast.ai (or any remote GPU)
 
+Use the fast gate runner before spending hours on the final publishable run:
+
+```bash
+python3 scripts/run_publishable_vast.py --config configs/publishable.yaml \
+  --build-noise-lib --fast-check
+```
+
+`--fast-check` writes the same `gate_report.json` schema as the full run, but
+uses smaller training/evaluation/MCMC counts. Treat it as an early warning
+check, not a publishable claim. For a structural check only:
+
+```bash
+python3 scripts/run_publishable_vast.py --config configs/publishable.yaml \
+  --build-noise-lib --smoke
+```
+
+Only the full runner is publication-gating:
+
+```bash
+python3 scripts/run_publishable_vast.py --config configs/publishable.yaml \
+  --build-noise-lib
+```
+
 The default config (`configs/default.yaml`) is built for an unattended GPU run:
 it writes everything to a **run directory**, checkpoints periodically so a
 preempted instance resumes cleanly, and gates the launch behind a **preflight**

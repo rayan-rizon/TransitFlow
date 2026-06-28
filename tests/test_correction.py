@@ -46,6 +46,18 @@ def test_render_raw_flux_matches_simulator_shape():
     assert rf.max() <= 1.0 + 1e-6           # transit only dims the star
 
 
+def test_render_raw_flux_dilution_attenuates_depth():
+    sc, pr, sim, inf = _setup()
+    theta = pr.sample(5, np.random.default_rng(12))
+    plain = render_raw_flux(theta, sim.times, n_radial=sc.n_radial)
+    diluted = render_raw_flux(theta, sim.times, n_radial=sc.n_radial,
+                              dilution=np.full(len(theta), 0.5))
+    plain_depth = 1.0 - plain.min(axis=1)
+    diluted_depth = 1.0 - diluted.min(axis=1)
+    ratio = np.median(diluted_depth / np.maximum(plain_depth, 1e-12))
+    assert 0.45 < ratio < 0.55
+
+
 def test_importance_weights_and_correction():
     sc, pr, sim, inf = _setup()
     b = sim.simulate_batch(8, np.random.default_rng(2), return_raw=True)

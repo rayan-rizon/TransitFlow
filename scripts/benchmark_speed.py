@@ -66,9 +66,16 @@ def main():
         t = b["times"].astype(np.float64)
         flux = b["raw_flux"][i].astype(np.float64)
         init = b["theta_phys"][i].astype(np.float64)
+        observed = np.isfinite(t) & np.isfinite(flux)
+        t = t[observed]
+        flux = flux[observed]
         t0 = time.time()
         run_mcmc(t, flux, float(b["sigma"][i]), prior=pr, init=init,
-                 n_walkers=args.mcmc_walkers, n_steps=args.mcmc_steps, n_radial=60)
+                 n_walkers=args.mcmc_walkers, n_steps=args.mcmc_steps, n_radial=60,
+                 fit_dilution=bool(getattr(sc, "dilution_fraction", 0.0) > 0),
+                 dilution_low=getattr(sc, "dilution_low", 0.5),
+                 dilution_high=getattr(sc, "dilution_high", 1.0),
+                 init_dilution=float(b["dilution"][i]) if "dilution" in b else 1.0)
         mcmc_times.append(time.time() - t0)
     mcmc_per_obj = float(np.mean(mcmc_times)) if mcmc_times else float("nan")
 
