@@ -213,14 +213,14 @@ def main() -> None:
         speed_mcmc_steps = 80
         speed_mcmc_walkers = 16
     elif args.fast_check:
-        n_data = min(args.n_data, 20000)
+        n_data = 20000 if args.n_data == 1_000_000 else args.n_data
         steps = args.steps or 3000
-        n_sbc = min(args.n_sbc, 200)
-        n_detection = min(args.n_detection, 1000)
-        n_posterior = min(args.n_posterior, 512)
-        n_real_planets = min(args.n_real_planets, 12)
-        with_mcmc = min(args.with_mcmc, 4)
-        mcmc_steps = min(args.mcmc_steps, 400)
+        n_sbc = 200 if args.n_sbc == 1000 else args.n_sbc
+        n_detection = 1000 if args.n_detection == 5000 else args.n_detection
+        n_posterior = 512 if args.n_posterior == 2000 else args.n_posterior
+        n_real_planets = 12 if args.n_real_planets == 30 else args.n_real_planets
+        with_mcmc = 4 if args.with_mcmc == 16 else args.with_mcmc
+        mcmc_steps = 400 if args.mcmc_steps == 1500 else args.mcmc_steps
         speed_n_amortized = min(n_detection, 64)
         speed_n_mcmc = max(1, min(with_mcmc, 2))
         speed_mcmc_steps = mcmc_steps
