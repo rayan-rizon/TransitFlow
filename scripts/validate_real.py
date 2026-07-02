@@ -152,6 +152,28 @@ def _download_lc_impl(planet: dict, baseline_days: float):
     return t, f
 
 
+def safe_print(*args, **kwargs):
+    """print() that can never crash the caller.
+
+    A prior run showed sys.stdout can become unusable mid-process (a
+    ValueError: I/O operation on closed file was observed from a background
+    thread interaction), and an uncaught exception from a *logging* print
+    inside a per-candidate try/except was enough to crash the entire
+    30-planet validation loop. Every status print in the per-candidate loop
+    goes through this so a broken stdout degrades to silent (or stderr) logging
+    instead of aborting the run.
+    """
+    try:
+        print(*args, **kwargs)
+    except Exception:
+        try:
+            import sys as _sys
+            _sys.stderr.write(" ".join(str(a) for a in args) + "\n")
+            _sys.stderr.flush()
+        except Exception:
+            pass
+
+
 def download_lc(planet: dict, baseline_days: float, timeout_s: float = 120.0):
     """Download + clean one TESS single-sector PDCSAP light curve.
 
@@ -161,30 +183,42 @@ def download_lc(planet: dict, baseline_days: float, timeout_s: float = 120.0):
     have no built-in timeout and have been observed to hang indefinitely on a
     single target's socket, e.g. sitting in CLOSE-WAIT).
 
-    IMPORTANT: we do NOT use ``ThreadPoolExecutor`` as a context manager --
-    its ``__exit__`` calls ``shutdown(wait=True)``, which blocks until the
-    abandoned worker thread finishes, silently defeating the timeout. Instead
-    we create the executor directly and call ``shutdown(wait=False)`` on the
-    timeout path so the caller returns immediately; the orphaned thread (and
-    its dangling socket) is simply leaked for the life of the process, which
-    is an acceptable trade for a one-shot validation script.
+    IMPORTANT: this must NOT use ``concurrent.futures.ThreadPoolExecutor``.
+    Its worker threads register in a module-level registry that ``atexit``
+    joins on interpreter shutdown; ``shutdown(wait=False)`` does not
+    unregister a still-running thread, so once *any* download has ever timed
+    out, a later uncaught exception (or normal script exit) hangs the whole
+    process forever waiting for that abandoned thread's blocking network
+    call to return (observed live: process sat alive with an active thread
+    count long after main() had raised past ``if __name__ == "__main__"``).
+    A plain ``threading.Thread(daemon=True)`` is not tracked by that atexit
+    hook and is killed automatically when the process exits, so we use that
+    instead. The thread (and its dangling socket) is simply abandoned on
+    timeout -- acceptable for a one-shot validation script.
     """
-    import concurrent.futures
+    import threading
 
-    ex = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    fut = ex.submit(_download_lc_impl, planet, baseline_days)
-    try:
-        result = fut.result(timeout=timeout_s)
-        ex.shutdown(wait=False)
-        return result
-    except concurrent.futures.TimeoutError:
-        print(f"   [timeout] MAST download stalled >{timeout_s:.0f}s for "
+    result_box: list = []
+
+    def _worker():
+        try:
+            result_box.append(_download_lc_impl(planet, baseline_days))
+        except Exception as e:
+            result_box.append(e)
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+    t.join(timeout=timeout_s)
+    if t.is_alive():
+        safe_print(f"   [timeout] MAST download stalled >{timeout_s:.0f}s for "
               f"{planet.get('name', '?')} ({planet.get('host', '?')}) -- skipping")
-        ex.shutdown(wait=False)
         return None
-    except Exception:
-        ex.shutdown(wait=False)
-        raise
+    if not result_box:
+        return None
+    out = result_box[0]
+    if isinstance(out, Exception):
+        raise out
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -553,7 +587,7 @@ def main():
             gv, lv, pg, sf, eph, raw = build_views(t, f, pl, sim, prior)
             quality = real_quality_metrics(t, pl, raw, sc)
             if not passes_real_quality(quality, args):
-                print(f"   skip {pl['name']}: quality {quality}")
+                safe_print(f"   skip {pl['name']}: quality {quality}")
                 continue
             out = inf.detect_and_characterize(gv, lv, np.array([sf]),
                                               n_samples=args.n_post,
@@ -582,10 +616,10 @@ def main():
                     "in_95": bool(q025 <= v <= q975),
                 }
             records.append(rec)
-            print(f"   [{len(records):2d}] {pl['name']:<18} p_det={rec['p_detect']:.3f} "
+            safe_print(f"   [{len(records):2d}] {pl['name']:<18} p_det={rec['p_detect']:.3f} "
                   f"P_err={rec['params'].get('P', {}).get('frac_err', float('nan')):.3f}")
         except Exception as e:
-            print(f"   skip {pl.get('name','?')}: {e}")
+            safe_print(f"   skip {pl.get('name','?')}: {e}")
             continue
 
     # ---- optional MCMC shape agreement on the first K -------------------
