@@ -97,7 +97,10 @@ class TransitPrior:
     they can sit inside a training loop without host transfers.
     """
 
-    def __init__(self, specs: Sequence[ParamSpec] | None = None) -> None:
+    def __init__(self, specs: Sequence[ParamSpec] | None = None,
+                 a_rs_prior_mode: str = "log_uniform",
+                 stellar_density_log10_mean: float = 0.0,
+                 stellar_density_log10_std: float = 0.25) -> None:
         if specs is None:
             specs = self.default_specs()
         specs = list(specs)
@@ -106,7 +109,20 @@ class TransitPrior:
             raise ValueError(
                 f"specs must be in canonical order {PARAM_NAMES}, got {tuple(names)}"
             )
+        if a_rs_prior_mode not in ("log_uniform", "stellar_density"):
+            raise ValueError(f"unknown a_rs_prior_mode {a_rs_prior_mode!r}")
         self.specs = specs
+        # a/Rs prior mode. ``log_uniform`` is the box prior consistent with the
+        # affine standardization. ``stellar_density`` makes the a/Rs *density*
+        # match the forward simulator's draw a/Rs = (G rho P^2 / 3pi)^(1/3) with
+        # log10(rho/rho_sun) ~ N(mean, std), so the MCMC reference and the
+        # amortized posterior share an identical prior -- required for a fair
+        # amortized-vs-MCMC agreement comparison and for breaking the b-a/Rs
+        # degeneracy consistently. Standardization (u-space, mean, std) is
+        # unchanged; only the density in :meth:`log_prob_physical` differs.
+        self.a_rs_prior_mode = a_rs_prior_mode
+        self.stellar_density_log10_mean = float(stellar_density_log10_mean)
+        self.stellar_density_log10_std = float(stellar_density_log10_std)
         self._log = np.array([s.log for s in specs])
         self._u_low = np.array([s._u_low() for s in specs])
         self._u_high = np.array([s._u_high() for s in specs])
@@ -134,6 +150,28 @@ class TransitPrior:
             ParamSpec("q1", 0.0, 1.0, log=False),
             ParamSpec("q2", 0.0, 1.0, log=False),
         ]
+
+    @classmethod
+    def from_sim_config(cls, cfg, specs: Sequence[ParamSpec] | None = None):
+        """Build a prior whose *density* matches a simulator ``SimConfig``.
+
+        The forward simulator may draw a/Rs either log-uniformly or from a
+        stellar-density relation. Any consumer that evaluates the prior density
+        (MCMC reference, importance-sampling diagnostic, coverage on physical
+        intervals) must use the *same* density, otherwise the amortized-vs-MCMC
+        comparison and the b-a/Rs degeneracy handling are inconsistent. This
+        reads the a/Rs prior settings off the SimConfig so the training
+        simulator, the evaluation prior, and the MCMC reference share one prior.
+        """
+        regime = getattr(cfg, "regime", "kepler")
+        if specs is None:
+            specs = cls.default_specs(regime)
+        return cls(
+            specs,
+            a_rs_prior_mode=getattr(cfg, "a_rs_prior_mode", "log_uniform"),
+            stellar_density_log10_mean=getattr(cfg, "stellar_density_log10_mean", 0.0),
+            stellar_density_log10_std=getattr(cfg, "stellar_density_log10_std", 0.25),
+        )
 
     @property
     def dim(self) -> int:
@@ -207,6 +245,35 @@ class TransitPrior:
     # ------------------------------------------------------------------ #
     # densities
     # ------------------------------------------------------------------ #
+    def _stellar_density_logpdf_a_rs(self, P: np.ndarray,
+                                     a_rs: np.ndarray) -> np.ndarray:
+        """Log density of a/Rs given P under the stellar-density prior.
+
+        Inverts a/Rs = (G rho (P day)^2 / 3pi)^(1/3) to recover the implied
+        log10(rho/rho_sun), which is Normal(mean, std). The change of variables
+        from rho to a/Rs contributes the Jacobian ``|d log10(rho) / d a_rs|``.
+        Normalization constants in a/Rs are kept (so the density integrates to
+        the Gaussian mass on its support); MCMC only needs it up to a constant,
+        but keeping the full term makes the value a proper density for tests.
+        """
+        rho_sun_kg_m3 = 1408.0
+        g_si = 6.67430e-11
+        day_s = 86400.0
+        ln10 = math.log(10.0)
+        a_rs = np.maximum(np.asarray(a_rs, dtype=np.float64), 1e-300)
+        P = np.asarray(P, dtype=np.float64)
+        # 10**x = 3pi a_rs^3 / (G rho_sun (P day)^2)  ->  x = log10(C) + 3 log10(a_rs)
+        log10_C = np.log10(3.0 * np.pi /
+                           (g_si * rho_sun_kg_m3 * (P * day_s) ** 2))
+        x = log10_C + 3.0 * np.log10(a_rs)
+        mu = self.stellar_density_log10_mean
+        sd = max(self.stellar_density_log10_std, 1e-12)
+        log_normal = (-0.5 * ((x - mu) / sd) ** 2
+                      - math.log(sd) - 0.5 * math.log(2.0 * math.pi))
+        # |dx / d a_rs| = 3 / (ln10 * a_rs)
+        log_jac = math.log(3.0) - math.log(ln10) - np.log(a_rs)
+        return log_normal + log_jac
+
     def log_prob_physical(self, phys: np.ndarray) -> np.ndarray:
         """Log prior density in physical space; ``-inf`` outside support."""
         phys = np.asarray(phys, dtype=np.float64)
@@ -215,7 +282,13 @@ class TransitPrior:
         # uniform density in u-space + Jacobian d u / d phys (= 1/phys for log)
         log_u_density = -np.log(self._u_high - self._u_low)  # per-dim
         jac = np.where(self._log, -np.log(np.maximum(phys, 1e-300)), 0.0)
-        lp = np.sum(log_u_density + jac, axis=-1)
+        per_dim = np.broadcast_to(log_u_density + jac, phys.shape).copy()
+        if self.a_rs_prior_mode == "stellar_density":
+            # Replace the log-uniform a/Rs term (index 3) with the
+            # simulator-matched stellar-density density p(a/Rs | P).
+            per_dim[..., 3] = self._stellar_density_logpdf_a_rs(
+                phys[..., 0], phys[..., 3])
+        lp = np.sum(per_dim, axis=-1)
         return np.where(inside, lp, -np.inf)
 
     def log_prob_std(self, z: np.ndarray) -> np.ndarray:

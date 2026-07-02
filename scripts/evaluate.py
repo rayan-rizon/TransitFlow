@@ -42,8 +42,9 @@ def detection_eval(inference, simulator, n: int, rng) -> dict:
         batch = simulator.simulate_batch(256, rng)
         pg = batch.get("periodogram")
         eph = batch.get("ephem_feat")
+        dil = batch.get("dil_feat")
         p = inference.detect(batch["global"], batch["local"], batch["sigma_feat"],
-                             periodogram=pg, ephem_feat=eph)
+                             periodogram=pg, ephem_feat=eph, dil_feat=dil)
         labels.append(batch["d"])
         scores.append(p)
         periods.append(batch["theta_phys"][:, 0])
@@ -147,7 +148,7 @@ def main() -> None:
     os.makedirs(args.out, exist_ok=True)
 
     model, mcfg, scfg = load_checkpoint(args.ckpt)
-    prior = TransitPrior(TransitPrior.default_specs(scfg.regime))
+    prior = TransitPrior.from_sim_config(scfg)
     noise_library = NoiseLibrary.load(args.noise_lib)
     simulator = TransitSimulator(scfg, prior=prior, noise_library=noise_library)
     inference = TransitFlowInference(model, prior, scfg)
@@ -189,10 +190,11 @@ def main() -> None:
             continue
         pg = batch["periodogram"][mask] if "periodogram" in batch else None
         eph = batch["ephem_feat"][mask] if "ephem_feat" in batch else None
+        dil = batch["dil_feat"][mask] if "dil_feat" in batch else None
         s = inference.posterior_samples(batch["global"][mask], batch["local"][mask],
                                         batch["sigma_feat"][mask],
                                         n_samples=args.n_posterior, periodogram=pg,
-                                        ephem_feat=eph)
+                                        ephem_feat=eph, dil_feat=dil)
         cov_samples.append(s)
         cov_true.append(batch["theta_phys"][mask])
         cov_sigma.append(batch["sigma"][mask])

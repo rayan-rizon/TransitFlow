@@ -83,11 +83,13 @@ class DualBranchEmbedding(nn.Module):
         pg_dim: int = 128,
         use_ephemeris_feature: bool = False,
         ephemeris_dim: int = 2,
+        use_dilution_feature: bool = False,
     ) -> None:
         super().__init__()
         self.use_noise_feature = use_noise_feature
         self.use_periodogram = use_periodogram
         self.use_ephemeris_feature = use_ephemeris_feature
+        self.use_dilution_feature = use_dilution_feature
         self.global_branch = CNNBranch(list(global_channels), global_dim,
                                        blocks_per_stage)
         self.local_branch = CNNBranch(list(local_channels), local_dim,
@@ -98,6 +100,8 @@ class DualBranchEmbedding(nn.Module):
             fuse_in += pg_dim
         if use_ephemeris_feature:
             fuse_in += ephemeris_dim
+        if use_dilution_feature:
+            fuse_in += 1
         self.fuse = nn.Sequential(
             nn.Linear(fuse_in, embed_dim),
             nn.LayerNorm(embed_dim),
@@ -109,7 +113,8 @@ class DualBranchEmbedding(nn.Module):
     def forward(self, global_view: torch.Tensor, local_view: torch.Tensor,
                 noise_feature: torch.Tensor | None = None,
                 periodogram: torch.Tensor | None = None,
-                ephemeris_feature: torch.Tensor | None = None) -> torch.Tensor:
+                ephemeris_feature: torch.Tensor | None = None,
+                dilution_feature: torch.Tensor | None = None) -> torch.Tensor:
         g = self.global_branch(global_view)
         l = self.local_branch(local_view)
         feats = [g, l]
@@ -126,4 +131,13 @@ class DualBranchEmbedding(nn.Module):
             if ephemeris_feature is None:
                 raise ValueError("model expects ephemeris_feature input")
             feats.append(ephemeris_feature.reshape(global_view.shape[0], -1))
+        if self.use_dilution_feature:
+            if dilution_feature is None:
+                # No-dilution default. The feature is anchored so that
+                # dilution == 1.0 maps to 0.0 (see simulator.dil_feat), so a
+                # zero vector is exactly "no attenuation known" -- the correct
+                # fall-back for real undiluted targets and missing CROWDSAP.
+                dilution_feature = torch.zeros(global_view.shape[0], device=g.device,
+                                               dtype=g.dtype)
+            feats.append(dilution_feature.reshape(-1, 1))
         return self.fuse(torch.cat(feats, dim=-1))

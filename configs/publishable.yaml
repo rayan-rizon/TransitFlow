@@ -51,6 +51,7 @@ model:
   use_noise_feature: true
   use_periodogram: true
   use_ephemeris_feature: true
+  use_dilution_feature: true
   global_channels: [32, 64, 128, 128, 256, 256]
   local_channels: [32, 64, 128, 128]
   pg_channels: [32, 64, 128, 128]

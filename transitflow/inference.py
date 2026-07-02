@@ -53,7 +53,7 @@ class TransitFlowInference:
 
     @torch.no_grad()
     def embed(self, global_view, local_view, sigma_feat=None,
-              periodogram=None, ephem_feat=None) -> torch.Tensor:
+              periodogram=None, ephem_feat=None, dil_feat=None) -> torch.Tensor:
         g = self._to_t(global_view)
         l = self._to_t(local_view)
         if g.ndim == 1:
@@ -76,20 +76,29 @@ class TransitFlowInference:
             eph = self._to_t(ephem_feat)
             if eph.ndim == 1:
                 eph = eph[None]
-        return self.model.embed(g, l, nf, pg, eph)
+        dil = None
+        if getattr(self.model.cfg, "use_dilution_feature", False):
+            # Missing dilution_feature -> 0.0 (standardized "no attenuation known"),
+            # matching the embedding's default. Real targets pass measured CROWDSAP.
+            dil = self._to_t(dil_feat) if dil_feat is not None else \
+                torch.zeros(g.shape[0], device=self.device)
+            dil = dil.reshape(-1)
+        return self.model.embed(g, l, nf, pg, eph, dil)
 
     @torch.no_grad()
     def detect(self, global_view, local_view, sigma_feat=None,
-               periodogram=None, ephem_feat=None) -> np.ndarray:
-        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
+               periodogram=None, ephem_feat=None, dil_feat=None) -> np.ndarray:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat,
+                       dil_feat)
         return torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
 
     @torch.no_grad()
     def posterior_samples(self, global_view, local_view, sigma_feat=None,
                           n_samples: int = 2000, return_std: bool = False,
-                          periodogram=None, ephem_feat=None):
+                          periodogram=None, ephem_feat=None, dil_feat=None):
         """Return physical posterior samples ``(B, n_samples, 7)``."""
-        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat,
+                       dil_feat)
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,
                              n_steps=self.ode_steps, method=self.ode_method)
@@ -106,8 +115,9 @@ class TransitFlowInference:
     @torch.no_grad()
     def detect_and_characterize(self, global_view, local_view, sigma_feat=None,
                                 n_samples: int = 2000, periodogram=None,
-                                ephem_feat=None) -> dict:
-        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
+                                ephem_feat=None, dil_feat=None) -> dict:
+        e = self.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat,
+                       dil_feat)
         p_det = torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
         if self.model.head_type == "fmpe":
             std = sample_ode(self.model.velocity_fn(), e, n_samples,

@@ -81,11 +81,12 @@ def run_sbc(inference, simulator, n_sims: int = 500, n_posterior: int = 1000,
         sf = batch["sigma_feat"][mask]
         pg = batch["periodogram"][mask] if "periodogram" in batch else None
         eph = batch["ephem_feat"][mask] if "ephem_feat" in batch else None
+        dil = batch["dil_feat"][mask] if "dil_feat" in batch else None
         tp = batch["theta_phys"][mask]
         # unclipped standardized samples + standardized truth -> proper ranks
         _, samples_std = inference.posterior_samples(
             g, l, sf, n_samples=n_posterior, return_std=True, periodogram=pg,
-            ephem_feat=eph)
+            ephem_feat=eph, dil_feat=dil)
         t_std = prior.physical_to_std(tp)
         r = sbc_ranks(t_std[:, target_slice], samples_std[:, :, target_slice])
         trues_phys.append(tp[:, target_slice])

@@ -105,7 +105,7 @@ class TransitSimulator:
                  prior: TransitPrior | None = None,
                  noise_library: NoiseLibrary | None = None) -> None:
         self.cfg = config or SimConfig()
-        self.prior = prior or TransitPrior(TransitPrior.default_specs(self.cfg.regime))
+        self.prior = prior or TransitPrior.from_sim_config(self.cfg)
         self.noise_library = noise_library or NoiseLibrary(None)
         self.times = np.linspace(0.0, self.cfg.baseline_days, self.cfg.n_raw)
         self.dt = self.times[1] - self.times[0]
@@ -337,6 +337,22 @@ class TransitSimulator:
         ephem_phys[:, 1] = (fold_t0 / np.maximum(fold_P, 1e-12)) % 1.0
         ephem_feat = self.prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)
 
+        # Dilution/crowding conditioning feature.  Third-light contamination
+        # scales the observed transit depth by ``dilution in (0, 1]`` (1.0 = no
+        # dilution).  Because this attenuation is *not recoverable* from a single
+        # normalized light curve, an amortized posterior over the true (undiluted)
+        # Rp/Rs is only well specified when the network is told the dilution
+        # factor -- exactly as CROWDSAP is supplied for real TESS targets.  We
+        # We anchor the feature at the *no-dilution* reference (dilution == 1.0
+        # -> 0.0) and scale by the applied range, so an undiluted or
+        # unknown-crowding target maps to 0.0.  This is both the majority class
+        # in training (dilution_fraction < 1) and the correct fall-back at
+        # inference when CROWDSAP is unavailable, matching the zero default used
+        # in the embedding/inference paths.  Diluted curves map to negatives.
+        dil_lo = min(cfg.dilution_low, cfg.dilution_high)
+        dil_scale = max(1.0 - dil_lo, 1e-6)
+        dil_feat = ((dilution - 1.0) / dil_scale).astype(np.float32)
+
         out = {
             "global": gv,
             "local": lv,
@@ -353,6 +369,7 @@ class TransitSimulator:
             "duration": duration.astype(np.float32),
             "regime": regime.astype(np.int8),  # 0 real, 1 gp, 2 white
             "dilution": dilution.astype(np.float32),
+            "dil_feat": dil_feat,
             "cadence_mask": gap_mask,
         }
         if use_pg:

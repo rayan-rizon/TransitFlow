@@ -485,7 +485,16 @@ def main():
     os.makedirs(args.out, exist_ok=True)
 
     model, mc, sc = load_checkpoint(args.ckpt)
-    prior = TransitPrior(TransitPrior.default_specs(sc.regime))
+    # Build the prior with the same a/Rs prior the simulator used for training,
+    # so the same-light-curve MCMC reference and the amortized posterior share
+    # an identical prior. Standardization is unchanged; only the MCMC a/Rs
+    # density differs, which consistently breaks the b-a/Rs degeneracy.
+    prior = TransitPrior(
+        TransitPrior.default_specs(sc.regime),
+        a_rs_prior_mode=getattr(sc, "a_rs_prior_mode", "log_uniform"),
+        stellar_density_log10_mean=getattr(sc, "stellar_density_log10_mean", 0.0),
+        stellar_density_log10_std=getattr(sc, "stellar_density_log10_std", 0.25),
+    )
     sim = TransitSimulator(sc, prior=prior)
     inf = TransitFlowInference(model, prior, sc)
     detector_inf = inf
@@ -589,7 +598,18 @@ def main():
                 if fixed is not None:
                     mcmc_t, mcmc_f, mcmc_err = fold_bin_fixed_ephemeris(
                         t_rel, _f, sigma, P, fixed[1], args.mcmc_max_cadences)
-                fit_dilution = bool(getattr(sc, "dilution_fraction", 0.0) > 0)
+                # If the amortized model *conditions* on dilution, the posterior
+                # is defined at a fixed (assumed) dilution rather than marginal
+                # over it. For a like-for-like MCMC reference we then FIX the
+                # dilution too (here 1.0 = "no dilution known", matching the
+                # dil_feat=0 default supplied to the amortized model on real
+                # targets without CROWDSAP). Only when the model does NOT
+                # condition on dilution do we let the MCMC marginalize it as a
+                # nuisance, which was the prior behavior.
+                conditions_on_dilution = bool(
+                    getattr(inf.model.cfg, "use_dilution_feature", False))
+                fit_dilution = (bool(getattr(sc, "dilution_fraction", 0.0) > 0)
+                                and not conditions_on_dilution)
                 mc_out = run_mcmc(mcmc_t, mcmc_f, mcmc_err, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60,
                                   fixed=fixed,
