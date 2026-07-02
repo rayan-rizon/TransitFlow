@@ -159,20 +159,32 @@ def download_lc(planet: dict, baseline_days: float, timeout_s: float = 120.0):
     around a transit, or ``None`` on any failure (including a MAST query or
     download that stalls past ``timeout_s``: astroquery/lightkurve HTTP calls
     have no built-in timeout and have been observed to hang indefinitely on a
-    single target's socket, e.g. sitting in CLOSE-WAIT). The worker thread is
-    abandoned, not killed, on timeout -- fine here since the goal is only to
-    skip the stuck target and move on to the next candidate.
+    single target's socket, e.g. sitting in CLOSE-WAIT).
+
+    IMPORTANT: we do NOT use ``ThreadPoolExecutor`` as a context manager --
+    its ``__exit__`` calls ``shutdown(wait=True)``, which blocks until the
+    abandoned worker thread finishes, silently defeating the timeout. Instead
+    we create the executor directly and call ``shutdown(wait=False)`` on the
+    timeout path so the caller returns immediately; the orphaned thread (and
+    its dangling socket) is simply leaked for the life of the process, which
+    is an acceptable trade for a one-shot validation script.
     """
     import concurrent.futures
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-        fut = ex.submit(_download_lc_impl, planet, baseline_days)
-        try:
-            return fut.result(timeout=timeout_s)
-        except concurrent.futures.TimeoutError:
-            print(f"   [timeout] MAST download stalled >{timeout_s:.0f}s for "
-                  f"{planet.get('name', '?')} ({planet.get('host', '?')}) -- skipping")
-            return None
+    ex = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    fut = ex.submit(_download_lc_impl, planet, baseline_days)
+    try:
+        result = fut.result(timeout=timeout_s)
+        ex.shutdown(wait=False)
+        return result
+    except concurrent.futures.TimeoutError:
+        print(f"   [timeout] MAST download stalled >{timeout_s:.0f}s for "
+              f"{planet.get('name', '?')} ({planet.get('host', '?')}) -- skipping")
+        ex.shutdown(wait=False)
+        return None
+    except Exception:
+        ex.shutdown(wait=False)
+        raise
 
 
 # --------------------------------------------------------------------------- #
