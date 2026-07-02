@@ -18,3 +18,5 @@ artifacts/ssh_monitor_command.md
 .DS_Store
 .venv/
 venv/
+graphify-out/cache/
+
