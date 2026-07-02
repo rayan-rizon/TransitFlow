@@ -560,6 +560,12 @@ def main():
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
                     help="proposal samples for likelihood correction")
+    ap.add_argument("--resume-records", default=None,
+                    help="skip the detection loop and load detection records "
+                         "from this JSON checkpoint (e.g. a prior "
+                         "records_checkpoint.json); only the MCMC-agreement "
+                         "stage is (re-)run. The archive query still runs to "
+                         "rebuild the candidate pool.")
     ap.add_argument("--quality-gate", dest="quality_gate", action="store_true",
                     default=True,
                     help="require real light curves to match the trained TESS regime")
@@ -602,7 +608,13 @@ def main():
     print(f"   {len(pool)} candidate planets")
 
     records = []
-    for pl in pool:
+    if args.resume_records:
+        import json as _json
+        with open(args.resume_records) as _rf:
+            records = _json.load(_rf)
+        print(f"== resumed {len(records)} detection records from "
+              f"{args.resume_records}; skipping detection loop ==")
+    for pl in (() if args.resume_records else pool):
         if len(records) >= args.n_planets:
             break
         try:
@@ -652,16 +664,19 @@ def main():
     # (much slower, more failure-prone) MCMC comparison stage: each record
     # here cost a real MAST download + amortized inference, so losing them
     # to a later crash would mean re-running the whole detection loop.
-    try:
-        import json as _json
-        import os as _os
-        _os.makedirs(args.out, exist_ok=True)
-        with open(_os.path.join(args.out, "records_checkpoint.json"), "w") as _f:
-            _json.dump(records, _f, indent=2, default=str)
-        safe_print(f"   [checkpoint] saved {len(records)} detection records to "
-                    f"{_os.path.join(args.out, 'records_checkpoint.json')}")
-    except Exception as _e:
-        safe_print(f"   [checkpoint] failed to save records checkpoint: {_e}")
+    # On --resume-records the records came from an existing checkpoint, so
+    # there is nothing new to persist.
+    if not args.resume_records:
+        try:
+            import json as _json
+            import os as _os
+            _os.makedirs(args.out, exist_ok=True)
+            with open(_os.path.join(args.out, "records_checkpoint.json"), "w") as _f:
+                _json.dump(records, _f, indent=2, default=str)
+            safe_print(f"   [checkpoint] saved {len(records)} detection records to "
+                        f"{_os.path.join(args.out, 'records_checkpoint.json')}")
+        except Exception as _e:
+            safe_print(f"   [checkpoint] failed to save records checkpoint: {_e}")
 
     # ---- optional MCMC shape agreement on the first K -------------------
     if args.with_mcmc > 0:
