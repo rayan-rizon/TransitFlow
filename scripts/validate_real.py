@@ -174,6 +174,32 @@ def safe_print(*args, **kwargs):
             pass
 
 
+# Belt-and-suspenders: over a multi-hour run against a flaky external service
+# (MAST), sys.stdout has been observed to become unusable mid-process (a bare
+# ``ValueError: I/O operation on closed file`` from plain ``print()`` calls
+# scattered throughout main(), well outside download_lc/safe_print's reach --
+# e.g. inside the MCMC-comparison loop). Rather than hunting down every call
+# site, monkeypatch the builtin so *no* print() anywhere in this process can
+# ever raise and abort a 30-planet / multi-hour validation run.
+import builtins as _builtins
+_orig_builtin_print = _builtins.print
+
+
+def _crash_proof_print(*args, **kwargs):
+    try:
+        _orig_builtin_print(*args, **kwargs)
+    except Exception:
+        try:
+            import sys as _sys
+            _sys.stderr.write(" ".join(str(a) for a in args) + "\n")
+            _sys.stderr.flush()
+        except Exception:
+            pass
+
+
+_builtins.print = _crash_proof_print
+
+
 def download_lc(planet: dict, baseline_days: float, timeout_s: float = 120.0):
     """Download + clean one TESS single-sector PDCSAP light curve.
 
@@ -621,6 +647,21 @@ def main():
         except Exception as e:
             safe_print(f"   skip {pl.get('name','?')}: {e}")
             continue
+
+    # Checkpoint the detection-loop records to disk before starting the
+    # (much slower, more failure-prone) MCMC comparison stage: each record
+    # here cost a real MAST download + amortized inference, so losing them
+    # to a later crash would mean re-running the whole detection loop.
+    try:
+        import json as _json
+        import os as _os
+        _os.makedirs(args.out, exist_ok=True)
+        with open(_os.path.join(args.out, "records_checkpoint.json"), "w") as _f:
+            _json.dump(records, _f, indent=2, default=str)
+        safe_print(f"   [checkpoint] saved {len(records)} detection records to "
+                    f"{_os.path.join(args.out, 'records_checkpoint.json')}")
+    except Exception as _e:
+        safe_print(f"   [checkpoint] failed to save records checkpoint: {_e}")
 
     # ---- optional MCMC shape agreement on the first K -------------------
     if args.with_mcmc > 0:
