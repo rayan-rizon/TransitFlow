@@ -1,0 +1,7 @@
+{
+  "path": "/workspace/TransitFlow/data/noise_lib.npz",
+  "n_segments": 71,
+  "segment_length": 18000,
+  "median": 1.0,
+  "std": 0.0002725077405811721
+}

@@ -1,0 +1,41 @@
+{
+  "run_dir": "/dev/shm/pub/char5_remediated/run",
+  "head": "fmpe",
+  "device": "cuda",
+  "params": 4176166,
+  "status": "done",
+  "step": 60000,
+  "total_steps": 60000,
+  "progress": 1.0,
+  "elapsed_s": 10044.5,
+  "eta_s": 0.0,
+  "eta": "0m00s",
+  "throughput_lc_per_s": 0.0,
+  "data_wait_frac": 0.0,
+  "loss": {
+    "total": 0.5080724954605103,
+    "posterior": 0.5080718994140625,
+    "detection": 5.991615807943163e-07
+  },
+  "lr": 0.0,
+  "best": {
+    "step": 15999,
+    "posterior": 0.7683822512626648,
+    "detection": 0.12277109641581774,
+    "det_acc": 0.96337890625,
+    "roc_auc": 0.9943185235033862
+  },
+  "best_detection": {
+    "step": 9999,
+    "posterior": 0.7897683382034302,
+    "detection": 0.09322620928287506,
+    "det_acc": 0.96533203125,
+    "roc_auc": 0.9955985336076858
+  },
+  "health": {
+    "healthy": true,
+    "device": "cuda",
+    "warnings": []
+  },
+  "updated_unix": 1782853386.7799351
+}
