@@ -125,12 +125,7 @@ def query_planets(n: int, p_lo: float, p_hi: float,
     return pool
 
 
-def download_lc(planet: dict, baseline_days: float):
-    """Download + clean one TESS single-sector PDCSAP light curve.
-
-    Returns (times_btjd, rel_flux) trimmed to ~one ``baseline_days`` window
-    around a transit, or ``None`` on any failure.
-    """
+def _download_lc_impl(planet: dict, baseline_days: float):
     import lightkurve as lk
 
     host = planet["host"]
@@ -155,6 +150,29 @@ def download_lc(planet: dict, baseline_days: float):
         sel = t <= t0 + baseline_days
         t, f = t[sel], f[sel]
     return t, f
+
+
+def download_lc(planet: dict, baseline_days: float, timeout_s: float = 120.0):
+    """Download + clean one TESS single-sector PDCSAP light curve.
+
+    Returns (times_btjd, rel_flux) trimmed to ~one ``baseline_days`` window
+    around a transit, or ``None`` on any failure (including a MAST query or
+    download that stalls past ``timeout_s``: astroquery/lightkurve HTTP calls
+    have no built-in timeout and have been observed to hang indefinitely on a
+    single target's socket, e.g. sitting in CLOSE-WAIT). The worker thread is
+    abandoned, not killed, on timeout -- fine here since the goal is only to
+    skip the stuck target and move on to the next candidate.
+    """
+    import concurrent.futures
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        fut = ex.submit(_download_lc_impl, planet, baseline_days)
+        try:
+            return fut.result(timeout=timeout_s)
+        except concurrent.futures.TimeoutError:
+            print(f"   [timeout] MAST download stalled >{timeout_s:.0f}s for "
+                  f"{planet.get('name', '?')} ({planet.get('host', '?')}) -- skipping")
+            return None
 
 
 # --------------------------------------------------------------------------- #
