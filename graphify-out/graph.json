@@ -65,7 +65,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_config",
-      "community": 22,
+      "community": 0,
       "norm_label": "_config.py"
     },
     {
@@ -75,7 +75,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "scripts_config_build_configs",
-      "community": 22,
+      "community": 0,
       "norm_label": "build_configs()"
     },
     {
@@ -85,7 +85,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_config_rationale_1",
-      "community": 22,
+      "community": 0,
       "norm_label": "helpers to turn a yaml config into the project's dataclasses."
     },
     {
@@ -95,7 +95,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_baseline_detection",
-      "community": 3,
+      "community": 14,
       "norm_label": "baseline_detection.py"
     },
     {
@@ -105,7 +105,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "scripts_baseline_detection_main",
-      "community": 3,
+      "community": 14,
       "norm_label": "main()"
     },
     {
@@ -135,17 +135,37 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_build_noise_library",
-      "community": 11,
+      "community": 4,
       "norm_label": "build_noise_library.py"
+    },
+    {
+      "label": "_collect_target_segments()",
+      "file_type": "code",
+      "source_file": "scripts/build_noise_library.py",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "scripts_build_noise_library_collect_target_segments",
+      "community": 4,
+      "norm_label": "_collect_target_segments()"
+    },
+    {
+      "label": "ndarray",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast",
+      "id": "ndarray",
+      "community": 4,
+      "norm_label": "ndarray"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/build_noise_library.py",
-      "source_location": "L27",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "scripts_build_noise_library_main",
-      "community": 11,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -195,7 +215,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "scripts_evaluate_sbc_gate",
-      "community": 6,
+      "community": 2,
       "norm_label": "sbc_gate()"
     },
     {
@@ -217,16 +237,6 @@
       "id": "scripts_evaluate_stratified_characterization_diagnostics",
       "community": 4,
       "norm_label": "stratified_characterization_diagnostics()"
-    },
-    {
-      "label": "ndarray",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "ndarray",
-      "community": 2,
-      "norm_label": "ndarray"
     },
     {
       "label": "main()",
@@ -255,7 +265,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "scripts_evaluate_rationale_60",
-      "community": 6,
+      "community": 2,
       "norm_label": "multiple-comparison aware sbc gate.      a d-dimensional sbc report contains d p"
     },
     {
@@ -275,7 +285,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_evaluate_corrected",
-      "community": 1,
+      "community": 3,
       "norm_label": "evaluate_corrected.py"
     },
     {
@@ -285,7 +295,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "scripts_evaluate_corrected_main",
-      "community": 1,
+      "community": 3,
       "norm_label": "main()"
     },
     {
@@ -525,7 +535,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast",
-      "community": 6,
+      "community": 10,
       "norm_label": "run_publishable_vast.py"
     },
     {
@@ -535,7 +545,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_run",
-      "community": 6,
+      "community": 10,
       "norm_label": "run()"
     },
     {
@@ -545,7 +555,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "path",
-      "community": 6,
+      "community": 10,
       "norm_label": "path"
     },
     {
@@ -555,7 +565,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_read_json",
-      "community": 6,
+      "community": 10,
       "norm_label": "read_json()"
     },
     {
@@ -565,7 +575,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_git_sha",
-      "community": 6,
+      "community": 10,
       "norm_label": "git_sha()"
     },
     {
@@ -575,7 +585,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_validate_noise_lib",
-      "community": 6,
+      "community": 10,
       "norm_label": "validate_noise_lib()"
     },
     {
@@ -585,7 +595,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_gate_value",
-      "community": 6,
+      "community": 10,
       "norm_label": "_gate_value()"
     },
     {
@@ -595,7 +605,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_build_gate_report",
-      "community": 6,
+      "community": 10,
       "norm_label": "build_gate_report()"
     },
     {
@@ -605,7 +615,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_write_environment",
-      "community": 6,
+      "community": 10,
       "norm_label": "write_environment()"
     },
     {
@@ -615,7 +625,7 @@
       "source_location": "L165",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_main",
-      "community": 6,
+      "community": 10,
       "norm_label": "main()"
     },
     {
@@ -665,7 +675,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_train_spike_slab",
-      "community": 4,
+      "community": 8,
       "norm_label": "train_spike_slab.py"
     },
     {
@@ -675,7 +685,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "scripts_train_spike_slab_write_json",
-      "community": 4,
+      "community": 8,
       "norm_label": "_write_json()"
     },
     {
@@ -685,7 +695,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "scripts_train_spike_slab_main",
-      "community": 4,
+      "community": 8,
       "norm_label": "main()"
     },
     {
@@ -735,7 +745,7 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "scripts_validate_real_safe_print",
-      "community": 1,
+      "community": 2,
       "norm_label": "safe_print()"
     },
     {
@@ -755,7 +765,7 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "scripts_validate_real_download_lc",
-      "community": 1,
+      "community": 2,
       "norm_label": "download_lc()"
     },
     {
@@ -795,7 +805,7 @@
       "source_location": "L349",
       "_origin": "ast",
       "id": "scripts_validate_real_real_quality_metrics",
-      "community": 1,
+      "community": 2,
       "norm_label": "real_quality_metrics()"
     },
     {
@@ -805,7 +815,7 @@
       "source_location": "L390",
       "_origin": "ast",
       "id": "scripts_validate_real_passes_real_quality",
-      "community": 6,
+      "community": 2,
       "norm_label": "passes_real_quality()"
     },
     {
@@ -815,7 +825,7 @@
       "source_location": "L404",
       "_origin": "ast",
       "id": "scripts_validate_real_fold_bin_fixed_ephemeris",
-      "community": 6,
+      "community": 2,
       "norm_label": "fold_bin_fixed_ephemeris()"
     },
     {
@@ -825,7 +835,7 @@
       "source_location": "L436",
       "_origin": "ast",
       "id": "scripts_validate_real_real_gate_status",
-      "community": 6,
+      "community": 2,
       "norm_label": "real_gate_status()"
     },
     {
@@ -835,7 +845,7 @@
       "source_location": "L459",
       "_origin": "ast",
       "id": "scripts_validate_real_real_diagnostic_status",
-      "community": 6,
+      "community": 2,
       "norm_label": "real_diagnostic_status()"
     },
     {
@@ -865,7 +875,7 @@
       "source_location": "L541",
       "_origin": "ast",
       "id": "scripts_validate_real_main",
-      "community": 1,
+      "community": 2,
       "norm_label": "main()"
     },
     {
@@ -895,7 +905,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_156",
-      "community": 1,
+      "community": 2,
       "norm_label": "print() that can never crash the caller.      a prior run showed sys.stdout can"
     },
     {
@@ -905,7 +915,7 @@
       "source_location": "L204",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_204",
-      "community": 1,
+      "community": 2,
       "norm_label": "download + clean one tess single-sector pdcsap light curve.      returns (times_"
     },
     {
@@ -935,7 +945,7 @@
       "source_location": "L350",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_350",
-      "community": 1,
+      "community": 2,
       "norm_label": "data-only quality checks for real-light-curve validation.      these cuts avoid"
     },
     {
@@ -945,7 +955,7 @@
       "source_location": "L407",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_407",
-      "community": 6,
+      "community": 2,
       "norm_label": "compress fixed-ephemeris mcmc data by phase-binning.      with p and t0 fixed, t"
     },
     {
@@ -955,7 +965,7 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_437",
-      "community": 6,
+      "community": 2,
       "norm_label": "compute real-data pass/fail gates from an aggregate validation summary."
     },
     {
@@ -965,7 +975,7 @@
       "source_location": "L460",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_460",
-      "community": 6,
+      "community": 2,
       "norm_label": "report non-gating real-data diagnostics.      archive catalog parameters are lit"
     },
     {
@@ -1125,7 +1135,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_correction",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_correction.py"
     },
     {
@@ -1135,7 +1145,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "tests_test_correction_setup",
-      "community": 1,
+      "community": 3,
       "norm_label": "_setup()"
     },
     {
@@ -1145,7 +1155,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "tests_test_correction_test_simulate_batch_return_raw",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_simulate_batch_return_raw()"
     },
     {
@@ -1155,7 +1165,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "tests_test_correction_test_render_raw_flux_matches_simulator_shape",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_render_raw_flux_matches_simulator_shape()"
     },
     {
@@ -1165,7 +1175,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "tests_test_correction_test_render_raw_flux_dilution_attenuates_depth",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_render_raw_flux_dilution_attenuates_depth()"
     },
     {
@@ -1175,7 +1185,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "tests_test_correction_test_importance_weights_and_correction",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_importance_weights_and_correction()"
     },
     {
@@ -1185,7 +1195,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "tests_test_correction_test_importance_weights_accepts_periodogram_model",
-      "community": 1,
+      "community": 14,
       "norm_label": "test_importance_weights_accepts_periodogram_model()"
     },
     {
@@ -1195,7 +1205,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "tests_test_correction_test_importance_weights_recover_true_posterior_synthetic",
-      "community": 1,
+      "community": 3,
       "norm_label": "test_importance_weights_recover_true_posterior_synthetic()"
     },
     {
@@ -1205,7 +1215,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_correction_rationale_1",
-      "community": 1,
+      "community": 3,
       "norm_label": "tests for the importance-sampling posterior correction."
     },
     {
@@ -1215,7 +1225,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "tests_test_correction_rationale_105",
-      "community": 1,
+      "community": 3,
       "norm_label": "on a high-snr object the is weights concentrate near the truth."
     },
     {
@@ -1315,7 +1325,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_end_to_end",
-      "community": 14,
+      "community": 0,
       "norm_label": "test_end_to_end.py"
     },
     {
@@ -1325,7 +1335,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_test_end_to_end_test_short_training_runs_and_learns",
-      "community": 14,
+      "community": 0,
       "norm_label": "test_short_training_runs_and_learns()"
     },
     {
@@ -1335,7 +1345,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_test_end_to_end_rationale_14",
-      "community": 14,
+      "community": 0,
       "norm_label": "a short training run reduces loss and learns better-than-chance detection."
     },
     {
@@ -1345,7 +1355,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_evaluate_gates.py"
     },
     {
@@ -1355,7 +1365,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_sbc_gate_controls_familywise_error",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_sbc_gate_controls_familywise_error()"
     },
     {
@@ -1365,7 +1375,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_sbc_gate_rejects_clear_miscalibration",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_sbc_gate_rejects_clear_miscalibration()"
     },
     {
@@ -1375,7 +1385,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_real_gate_ignores_fixed_ephemeris_coverage",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_real_gate_ignores_fixed_ephemeris_coverage()"
     },
     {
@@ -1385,7 +1395,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_real_gate_rejects_degenerate_importance_correction",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_real_gate_rejects_degenerate_importance_correction()"
     },
     {
@@ -1395,7 +1405,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_real_quality_gate_rejects_weak_or_missing_geometry_rows",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_real_quality_gate_rejects_weak_or_missing_geometry_rows()"
     },
     {
@@ -1405,7 +1415,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_fold_bin_fixed_ephemeris_reduces_cadences_and_scales_errors",
-      "community": 6,
+      "community": 2,
       "norm_label": "test_fold_bin_fixed_ephemeris_reduces_cadences_and_scales_errors()"
     },
     {
@@ -1415,7 +1425,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_publishable_gate_report_schema_and_status",
-      "community": 6,
+      "community": 10,
       "norm_label": "test_publishable_gate_report_schema_and_status()"
     },
     {
@@ -1615,7 +1625,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_inference",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_inference.py"
     },
     {
@@ -1625,7 +1635,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tests_test_inference_inference",
-      "community": 7,
+      "community": 1,
       "norm_label": "_inference()"
     },
     {
@@ -1635,7 +1645,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_inference_test_detect_returns_probabilities",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_detect_returns_probabilities()"
     },
     {
@@ -1645,7 +1655,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_test_inference_test_posterior_samples_shape_and_range",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_posterior_samples_shape_and_range()"
     },
     {
@@ -1655,7 +1665,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_test_inference_test_log_prob_finite",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_log_prob_finite()"
     },
     {
@@ -1665,7 +1675,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "tests_test_inference_test_importance_diagnostic_runs",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_importance_diagnostic_runs()"
     },
     {
@@ -1675,7 +1685,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "tests_test_inference_test_ephemeris_conditioned_inference",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_ephemeris_conditioned_inference()"
     },
     {
@@ -1685,7 +1695,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "tests_test_inference_test_log_prob_slices_characterization_target",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_log_prob_slices_characterization_target()"
     },
     {
@@ -1695,7 +1705,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model",
-      "community": 7,
+      "community": 1,
       "norm_label": "test_sbc_uses_characterization_dims_for_5d_ephemeris_model()"
     },
     {
@@ -1705,7 +1715,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_models",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_models.py"
     },
     {
@@ -1715,7 +1725,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "tests_test_models_batch_t",
-      "community": 15,
+      "community": 0,
       "norm_label": "_batch_t()"
     },
     {
@@ -1725,7 +1735,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_test_models_test_embedding_and_heads_shapes",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_embedding_and_heads_shapes()"
     },
     {
@@ -1735,7 +1745,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "tests_test_models_test_fmpe_loss_backward",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_fmpe_loss_backward()"
     },
     {
@@ -1745,7 +1755,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_models_test_npe_head_loss_backward",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_npe_head_loss_backward()"
     },
     {
@@ -1755,7 +1765,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "tests_test_models_test_num_parameters",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_num_parameters()"
     },
     {
@@ -1765,7 +1775,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_noise",
-      "community": 2,
+      "community": 14,
       "norm_label": "test_noise.py"
     },
     {
@@ -1775,7 +1785,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_test_noise_test_white_noise_std",
-      "community": 2,
+      "community": 14,
       "norm_label": "test_white_noise_std()"
     },
     {
@@ -1785,7 +1795,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "tests_test_noise_test_correlated_noise_amplitude_and_correlation",
-      "community": 2,
+      "community": 14,
       "norm_label": "test_correlated_noise_amplitude_and_correlation()"
     },
     {
@@ -1795,7 +1805,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "tests_test_noise_test_hard_negative_signals",
-      "community": 2,
+      "community": 14,
       "norm_label": "test_hard_negative_signals()"
     },
     {
@@ -1815,7 +1825,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "tests_test_noise_test_estimate_white_sigma_ignores_slow_trend",
-      "community": 2,
+      "community": 14,
       "norm_label": "test_estimate_white_sigma_ignores_slow_trend()"
     },
     {
@@ -1825,7 +1835,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_npe",
-      "community": 8,
+      "community": 17,
       "norm_label": "test_npe.py"
     },
     {
@@ -1835,7 +1845,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_test_npe_test_realnvp_fallback_logprob_and_sample",
-      "community": 8,
+      "community": 17,
       "norm_label": "test_realnvp_fallback_logprob_and_sample()"
     },
     {
@@ -1845,7 +1855,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "tests_test_npe_test_realnvp_density_normalizes_roughly",
-      "community": 8,
+      "community": 17,
       "norm_label": "test_realnvp_density_normalizes_roughly()"
     },
     {
@@ -1855,7 +1865,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_npe_test_zuko_backend_if_available",
-      "community": 8,
+      "community": 17,
       "norm_label": "test_zuko_backend_if_available()"
     },
     {
@@ -1865,7 +1875,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_npe_rationale_19",
-      "community": 8,
+      "community": 17,
       "norm_label": "a trained realnvp should assign higher density to in-distribution points."
     },
     {
@@ -1875,7 +1885,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_periodogram",
-      "community": 15,
+      "community": 14,
       "norm_label": "test_periodogram.py"
     },
     {
@@ -1895,7 +1905,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_periodogram_test_periodogram_model_forward_and_train",
-      "community": 15,
+      "community": 14,
       "norm_label": "test_periodogram_model_forward_and_train()"
     },
     {
@@ -1905,7 +1915,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "tests_test_periodogram_test_periodogram_model_requires_input",
-      "community": 15,
+      "community": 0,
       "norm_label": "test_periodogram_model_requires_input()"
     },
     {
@@ -1915,7 +1925,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_periodogram_rationale_1",
-      "community": 15,
+      "community": 14,
       "norm_label": "tests for the box-periodogram channel (the period-calibration fix)."
     },
     {
@@ -1935,7 +1945,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "tests_test_periodogram_rationale_60",
-      "community": 15,
+      "community": 0,
       "norm_label": "a periodogram-enabled model errors if the channel is missing."
     },
     {
@@ -2215,7 +2225,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_spike_slab_training_detects",
-      "community": 15,
+      "community": 8,
       "norm_label": "test_spike_slab_training_detects()"
     },
     {
@@ -2225,7 +2235,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "tests_test_spike_slab_rationale_41",
-      "community": 15,
+      "community": 8,
       "norm_label": "variant c: a short unified-flow run reads detection from the posterior."
     },
     {
@@ -2285,7 +2295,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_transit_model",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_transit_model.py"
     },
     {
@@ -2295,7 +2305,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_out_of_transit_is_unity",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_out_of_transit_is_unity()"
     },
     {
@@ -2305,7 +2315,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_depth_scales_with_radius_ratio",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_depth_scales_with_radius_ratio()"
     },
     {
@@ -2315,7 +2325,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_secondary_eclipse_flat",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_secondary_eclipse_flat()"
     },
     {
@@ -2325,7 +2335,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_vectorized_matches_loop",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_vectorized_matches_loop()"
     },
     {
@@ -2335,7 +2345,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_exposure_integration_one_subsample_matches_instantaneous",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_exposure_integration_one_subsample_matches_instantaneous()"
     },
     {
@@ -2345,7 +2355,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_duration_physical",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_duration_physical()"
     },
     {
@@ -2355,7 +2365,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_native_matches_batman",
-      "community": 2,
+      "community": 3,
       "norm_label": "test_native_matches_batman()"
     },
     {
@@ -2415,7 +2425,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_init",
-      "community": 32,
+      "community": 0,
       "norm_label": "__init__.py"
     },
     {
@@ -2425,7 +2435,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_init_rationale_1",
-      "community": 32,
+      "community": 0,
       "norm_label": "transitflow: amortized flow-matching sbi for joint exoplanet transit detection a"
     },
     {
@@ -2615,7 +2625,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "baselines_tls",
-      "community": 3,
+      "community": 14,
       "norm_label": "tls.py"
     },
     {
@@ -2625,7 +2635,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "baselines_tls_has_tls",
-      "community": 3,
+      "community": 14,
       "norm_label": "has_tls()"
     },
     {
@@ -2635,7 +2645,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "baselines_tls_tls_detect",
-      "community": 3,
+      "community": 14,
       "norm_label": "tls_detect()"
     },
     {
@@ -2645,7 +2655,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "baselines_tls_rationale_1",
-      "community": 3,
+      "community": 14,
       "norm_label": "transit least squares detection baseline."
     },
     {
@@ -2655,7 +2665,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "baselines_tls_rationale_19",
-      "community": 3,
+      "community": 14,
       "norm_label": "run transit least squares and return the peak detection score."
     },
     {
@@ -2665,7 +2675,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_correction",
-      "community": 1,
+      "community": 3,
       "norm_label": "correction.py"
     },
     {
@@ -2675,7 +2685,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "transitflow_correction_render_raw_flux",
-      "community": 1,
+      "community": 3,
       "norm_label": "render_raw_flux()"
     },
     {
@@ -2685,7 +2695,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "transitflow_correction_importance_weights",
-      "community": 1,
+      "community": 3,
       "norm_label": "importance_weights()"
     },
     {
@@ -2695,7 +2705,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "transitflow_correction_weighted_rank_cdf",
-      "community": 1,
+      "community": 3,
       "norm_label": "weighted_rank_cdf()"
     },
     {
@@ -2705,7 +2715,7 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "transitflow_correction_sir_resample",
-      "community": 1,
+      "community": 3,
       "norm_label": "sir_resample()"
     },
     {
@@ -2715,7 +2725,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_correction_rationale_1",
-      "community": 1,
+      "community": 3,
       "norm_label": "importance-sampling correction of the amortized fmpe posterior.  the flow learns"
     },
     {
@@ -2725,7 +2735,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "transitflow_correction_rationale_35",
-      "community": 1,
+      "community": 3,
       "norm_label": "render noiseless raw light curves for a batch of parameter vectors.      ``theta"
     },
     {
@@ -2735,7 +2745,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "transitflow_correction_rationale_61",
-      "community": 1,
+      "community": 3,
       "norm_label": "importance-sampling weights for one object's amortized posterior.      returns p"
     },
     {
@@ -2745,7 +2755,7 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "transitflow_correction_rationale_134",
-      "community": 1,
+      "community": 3,
       "norm_label": "per-dimension weighted cdf of the truth under the corrected posterior.      retu"
     },
     {
@@ -2755,7 +2765,7 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "transitflow_correction_rationale_145",
-      "community": 1,
+      "community": 3,
       "norm_label": "sampling-importance-resampling: draw ``n_out`` corrected posterior samples."
     },
     {
@@ -2825,7 +2835,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset",
-      "community": 32,
+      "community": 5,
       "norm_label": "diskdataset"
     },
     {
@@ -2835,7 +2845,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_init",
-      "community": 32,
+      "community": 5,
       "norm_label": ".__init__()"
     },
     {
@@ -2845,7 +2855,7 @@
       "source_location": "L220",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_len",
-      "community": 32,
+      "community": 5,
       "norm_label": ".__len__()"
     },
     {
@@ -2855,7 +2865,7 @@
       "source_location": "L223",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_gather",
-      "community": 32,
+      "community": 5,
       "norm_label": "._gather()"
     },
     {
@@ -2865,7 +2875,7 @@
       "source_location": "L237",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator",
-      "community": 32,
+      "community": 5,
       "norm_label": "diskiterator"
     },
     {
@@ -2875,7 +2885,7 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_init",
-      "community": 32,
+      "community": 5,
       "norm_label": ".__init__()"
     },
     {
@@ -2885,7 +2895,7 @@
       "source_location": "L250",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_new_perm",
-      "community": 32,
+      "community": 5,
       "norm_label": "._new_perm()"
     },
     {
@@ -2895,7 +2905,7 @@
       "source_location": "L256",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_iter",
-      "community": 32,
+      "community": 5,
       "norm_label": ".__iter__()"
     },
     {
@@ -2905,7 +2915,7 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_next",
-      "community": 32,
+      "community": 5,
       "norm_label": ".__next__()"
     },
     {
@@ -2915,7 +2925,7 @@
       "source_location": "L277",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_close",
-      "community": 32,
+      "community": 5,
       "norm_label": ".close()"
     },
     {
@@ -2955,7 +2965,7 @@
       "source_location": "L180",
       "_origin": "ast",
       "id": "transitflow_data_rationale_180",
-      "community": 32,
+      "community": 5,
       "norm_label": "loads sharded light-curve data; serves shuffled batches as torch tensors.      d"
     },
     {
@@ -2965,7 +2975,7 @@
       "source_location": "L238",
       "_origin": "ast",
       "id": "transitflow_data_rationale_238",
-      "community": 32,
+      "community": 5,
       "norm_label": "infinite shuffled iterator over a :class:`diskdataset` for training."
     },
     {
@@ -3325,7 +3335,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tensor",
-      "community": 8,
+      "community": 17,
       "norm_label": "tensor"
     },
     {
@@ -3445,7 +3455,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference",
-      "community": 2,
+      "community": 3,
       "norm_label": "inference.py"
     },
     {
@@ -3465,7 +3475,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".__init__()"
     },
     {
@@ -3555,7 +3565,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_1",
-      "community": 2,
+      "community": 3,
       "norm_label": "amortized inference: detection probability, posterior samples, densities.  wraps"
     },
     {
@@ -3595,7 +3605,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_init",
-      "community": 17,
+      "community": 0,
       "norm_label": "__init__.py"
     },
     {
@@ -3605,7 +3615,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_init_rationale_1",
-      "community": 17,
+      "community": 0,
       "norm_label": "neural network components for transitflow."
     },
     {
@@ -3615,7 +3625,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_embedding",
-      "community": 17,
+      "community": 0,
       "norm_label": "embedding.py"
     },
     {
@@ -3685,7 +3695,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "models_embedding_dualbranchembedding",
-      "community": 17,
+      "community": 0,
       "norm_label": "dualbranchembedding"
     },
     {
@@ -3715,7 +3725,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_embedding_rationale_1",
-      "community": 17,
+      "community": 0,
       "norm_label": "dual-branch 1-d cnn embedding network ``e(x) -> e``.  a resnet-1d style global b"
     },
     {
@@ -3745,7 +3755,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "models_embedding_rationale_70",
-      "community": 17,
+      "community": 0,
       "norm_label": "fuse global + local cnn branches (+ optional noise feature) into ``e``."
     },
     {
@@ -3755,7 +3765,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_heads",
-      "community": 17,
+      "community": 0,
       "norm_label": "heads.py"
     },
     {
@@ -3795,7 +3805,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "models_heads_detectionhead",
-      "community": 17,
+      "community": 0,
       "norm_label": "detectionhead"
     },
     {
@@ -3855,7 +3865,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "models_heads_flowmatchinghead",
-      "community": 17,
+      "community": 0,
       "norm_label": "flowmatchinghead"
     },
     {
@@ -3885,7 +3895,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_heads_rationale_1",
-      "community": 17,
+      "community": 0,
       "norm_label": "prediction heads: detection classifier + flow-matching velocity field."
     },
     {
@@ -3905,7 +3915,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "models_heads_rationale_32",
-      "community": 17,
+      "community": 0,
       "norm_label": "2-layer mlp on the shared embedding -> detection logit ``p(d=1 | x)``."
     },
     {
@@ -3925,7 +3935,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "models_heads_rationale_66",
-      "community": 17,
+      "community": 0,
       "norm_label": "velocity field ``v_psi(tau, theta_tau | e)`` for the parameter-space cnf.      p"
     },
     {
@@ -3935,7 +3945,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_npe",
-      "community": 8,
+      "community": 0,
       "norm_label": "npe.py"
     },
     {
@@ -3945,7 +3955,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "models_npe_couplinglayer",
-      "community": 8,
+      "community": 17,
       "norm_label": "_couplinglayer"
     },
     {
@@ -3955,7 +3965,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_init",
-      "community": 8,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -3965,7 +3975,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_forward",
-      "community": 8,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3975,7 +3985,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_inverse",
-      "community": 8,
+      "community": 17,
       "norm_label": ".inverse()"
     },
     {
@@ -3985,7 +3995,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "models_npe_realnvp",
-      "community": 8,
+      "community": 17,
       "norm_label": "_realnvp"
     },
     {
@@ -3995,7 +4005,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "models_npe_realnvp_init",
-      "community": 8,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -4005,7 +4015,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "models_npe_realnvp_log_prob",
-      "community": 8,
+      "community": 17,
       "norm_label": ".log_prob()"
     },
     {
@@ -4015,7 +4025,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "models_npe_realnvp_sample",
-      "community": 8,
+      "community": 17,
       "norm_label": ".sample()"
     },
     {
@@ -4025,7 +4035,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "models_npe_npehead",
-      "community": 8,
+      "community": 17,
       "norm_label": "npehead"
     },
     {
@@ -4035,7 +4045,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "models_npe_npehead_init",
-      "community": 8,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -4045,7 +4055,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_npe_npehead_log_prob",
-      "community": 8,
+      "community": 17,
       "norm_label": ".log_prob()"
     },
     {
@@ -4055,7 +4065,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "models_npe_npehead_sample",
-      "community": 8,
+      "community": 17,
       "norm_label": ".sample()"
     },
     {
@@ -4065,7 +4075,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "models_npe_npehead_nll",
-      "community": 8,
+      "community": 17,
       "norm_label": ".nll()"
     },
     {
@@ -4075,7 +4085,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_npe_rationale_1",
-      "community": 8,
+      "community": 0,
       "norm_label": "neural posterior estimation head (variant b baseline).  a conditional neural spl"
     },
     {
@@ -4085,7 +4095,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "models_npe_rationale_24",
-      "community": 8,
+      "community": 17,
       "norm_label": "conditional affine coupling (realnvp) with a fixed binary mask."
     },
     {
@@ -4095,7 +4105,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "models_npe_rationale_56",
-      "community": 8,
+      "community": 17,
       "norm_label": "fallback conditional realnvp over a standard-normal base."
     },
     {
@@ -4105,7 +4115,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "models_npe_rationale_89",
-      "community": 8,
+      "community": 17,
       "norm_label": "conditional normalizing flow posterior head ``q(theta | e)``."
     },
     {
@@ -4115,7 +4125,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "models_npe_rationale_112",
-      "community": 8,
+      "community": 17,
       "norm_label": "return ``(b, n, param_dim)`` posterior samples."
     },
     {
@@ -4175,7 +4185,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_detect_prob",
-      "community": 8,
+      "community": 17,
       "norm_label": ".detect_prob()"
     },
     {
@@ -4225,7 +4235,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_62",
-      "community": 8,
+      "community": 17,
       "norm_label": "posterior detection probability = p(depth dim above threshold).          ``sampl"
     },
     {
@@ -4245,7 +4255,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_transitflow",
-      "community": 15,
+      "community": 0,
       "norm_label": "transitflow.py"
     },
     {
@@ -4255,7 +4265,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "models_transitflow_modelconfig",
-      "community": 15,
+      "community": 0,
       "norm_label": "modelconfig"
     },
     {
@@ -4265,7 +4275,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "models_transitflow_transitflow",
-      "community": 15,
+      "community": 0,
       "norm_label": "transitflow"
     },
     {
@@ -4275,7 +4285,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_init",
-      "community": 17,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -4285,7 +4295,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_embed",
-      "community": 15,
+      "community": 17,
       "norm_label": ".embed()"
     },
     {
@@ -4295,7 +4305,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_detect_logits",
-      "community": 15,
+      "community": 17,
       "norm_label": ".detect_logits()"
     },
     {
@@ -4305,7 +4315,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_velocity",
-      "community": 15,
+      "community": 17,
       "norm_label": ".velocity()"
     },
     {
@@ -4315,7 +4325,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_param_dim",
-      "community": 15,
+      "community": 0,
       "norm_label": ".param_dim()"
     },
     {
@@ -4335,7 +4345,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_num_parameters",
-      "community": 15,
+      "community": 0,
       "norm_label": ".num_parameters()"
     },
     {
@@ -4345,7 +4355,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_transitflow_rationale_1",
-      "community": 15,
+      "community": 0,
       "norm_label": "the full transitflow model: shared embedding + detection + posterior head.  the"
     },
     {
@@ -4355,7 +4365,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "models_transitflow_rationale_58",
-      "community": 15,
+      "community": 0,
       "norm_label": "shared-embedding joint detection + characterization model."
     },
     {
@@ -4375,7 +4385,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_noise",
-      "community": 2,
+      "community": 14,
       "norm_label": "noise.py"
     },
     {
@@ -4385,7 +4395,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "transitflow_noise_autocovariance",
-      "community": 2,
+      "community": 14,
       "norm_label": "_autocovariance()"
     },
     {
@@ -4395,7 +4405,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "transitflow_noise_sample_correlated_noise",
-      "community": 2,
+      "community": 14,
       "norm_label": "sample_correlated_noise()"
     },
     {
@@ -4405,7 +4415,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "transitflow_noise_white_noise",
-      "community": 2,
+      "community": 14,
       "norm_label": "white_noise()"
     },
     {
@@ -4415,7 +4425,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "transitflow_noise_estimate_white_sigma",
-      "community": 2,
+      "community": 14,
       "norm_label": "estimate_white_sigma()"
     },
     {
@@ -4425,7 +4435,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "transitflow_noise_eclipsing_binary_signal",
-      "community": 2,
+      "community": 14,
       "norm_label": "eclipsing_binary_signal()"
     },
     {
@@ -4435,7 +4445,7 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "transitflow_noise_single_event_signal",
-      "community": 2,
+      "community": 14,
       "norm_label": "single_event_signal()"
     },
     {
@@ -4445,7 +4455,7 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "transitflow_noise_sinusoid_signal",
-      "community": 2,
+      "community": 14,
       "norm_label": "sinusoid_signal()"
     },
     {
@@ -4495,7 +4505,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_1",
-      "community": 2,
+      "community": 14,
       "norm_label": "noise models for the sbi forward simulator.  three regimes are mixed per batch ("
     },
     {
@@ -4505,7 +4515,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_32",
-      "community": 2,
+      "community": 14,
       "norm_label": "autocovariance ``k(\u03c4)`` for the supported stationary kernels.      ``lags`` has"
     },
     {
@@ -4515,7 +4525,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_58",
-      "community": 2,
+      "community": 14,
       "norm_label": "draw stationary gaussian noise via circulant embedding.      parameters     ----"
     },
     {
@@ -4525,7 +4535,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_99",
-      "community": 2,
+      "community": 14,
       "norm_label": "``(b, n)`` white gaussian noise with per-sample std ``sigma`` (``(b,)``)."
     },
     {
@@ -4535,7 +4545,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_106",
-      "community": 2,
+      "community": 14,
       "norm_label": "estimate per-cadence white scatter from point-to-point differences.      real ou"
     },
     {
@@ -4545,7 +4555,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_128",
-      "community": 2,
+      "community": 14,
       "norm_label": "v-shaped periodic eclipse: a sharp triangular dip (cf. u-shaped transit).      r"
     },
     {
@@ -4555,7 +4565,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_141",
-      "community": 2,
+      "community": 14,
       "norm_label": "one isolated (non-periodic) u-shaped dip -- a systematic / single transit."
     },
     {
@@ -4565,7 +4575,7 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "transitflow_noise_rationale_149",
-      "community": 2,
+      "community": 14,
       "norm_label": "coherent sinusoidal stellar variability (a pulsation-like hard negative)."
     },
     {
@@ -4595,7 +4605,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors",
-      "community": 4,
+      "community": 3,
       "norm_label": "priors.py"
     },
     {
@@ -4665,7 +4675,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior",
-      "community": 3,
+      "community": 4,
       "norm_label": "transitprior"
     },
     {
@@ -4705,7 +4715,7 @@
       "source_location": "L177",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_dim",
-      "community": 3,
+      "community": 4,
       "norm_label": ".dim()"
     },
     {
@@ -4715,7 +4725,7 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_names",
-      "community": 3,
+      "community": 4,
       "norm_label": ".names()"
     },
     {
@@ -4725,7 +4735,7 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_sample",
-      "community": 3,
+      "community": 4,
       "norm_label": ".sample()"
     },
     {
@@ -4735,7 +4745,7 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_u_to_physical",
-      "community": 3,
+      "community": 4,
       "norm_label": "._u_to_physical()"
     },
     {
@@ -4745,7 +4755,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_u",
-      "community": 3,
+      "community": 4,
       "norm_label": "._physical_to_u()"
     },
     {
@@ -4755,7 +4765,7 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std",
-      "community": 3,
+      "community": 4,
       "norm_label": ".physical_to_std()"
     },
     {
@@ -4765,7 +4775,7 @@
       "source_location": "L212",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_to_physical",
-      "community": 3,
+      "community": 4,
       "norm_label": ".std_to_physical()"
     },
     {
@@ -4775,7 +4785,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_torch_buffers",
-      "community": 3,
+      "community": 4,
       "norm_label": ".torch_buffers()"
     },
     {
@@ -4785,7 +4795,7 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_to_physical_torch",
-      "community": 3,
+      "community": 4,
       "norm_label": ".std_to_physical_torch()"
     },
     {
@@ -4795,7 +4805,7 @@
       "source_location": "L239",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std_torch",
-      "community": 3,
+      "community": 4,
       "norm_label": ".physical_to_std_torch()"
     },
     {
@@ -4805,7 +4815,7 @@
       "source_location": "L248",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
-      "community": 3,
+      "community": 4,
       "norm_label": "._stellar_density_logpdf_a_rs()"
     },
     {
@@ -4815,7 +4825,7 @@
       "source_location": "L277",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_physical",
-      "community": 3,
+      "community": 4,
       "norm_label": ".log_prob_physical()"
     },
     {
@@ -4825,7 +4835,7 @@
       "source_location": "L294",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_std",
-      "community": 3,
+      "community": 4,
       "norm_label": ".log_prob_std()"
     },
     {
@@ -4835,7 +4845,7 @@
       "source_location": "L309",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_bounds",
-      "community": 3,
+      "community": 4,
       "norm_label": ".std_bounds()"
     },
     {
@@ -4865,7 +4875,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_1",
-      "community": 4,
+      "community": 3,
       "norm_label": "parameter priors and bijective transforms for transitflow.  the inference target"
     },
     {
@@ -4885,7 +4895,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_92",
-      "community": 3,
+      "community": 4,
       "norm_label": "joint prior over the 7-d transit parameter vector with standardization.      the"
     },
     {
@@ -4915,7 +4925,7 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_188",
-      "community": 3,
+      "community": 4,
       "norm_label": "draw ``n`` parameter vectors from the prior. returns ``(n, 7)``."
     },
     {
@@ -4925,7 +4935,7 @@
       "source_location": "L222",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_222",
-      "community": 3,
+      "community": 4,
       "norm_label": "return (log_mask, u_mean, u_std, u_low, u_high) as tensors."
     },
     {
@@ -4935,7 +4945,7 @@
       "source_location": "L250",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_250",
-      "community": 3,
+      "community": 4,
       "norm_label": "log density of a/rs given p under the stellar-density prior.          inverts a/"
     },
     {
@@ -4945,7 +4955,7 @@
       "source_location": "L278",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_278",
-      "community": 3,
+      "community": 4,
       "norm_label": "log prior density in physical space; ``-inf`` outside support."
     },
     {
@@ -4955,7 +4965,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_295",
-      "community": 3,
+      "community": 4,
       "norm_label": "log prior density in standardized space; ``-inf`` outside support.          in `"
     },
     {
@@ -4985,7 +4995,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_simulator",
-      "community": 2,
+      "community": 14,
       "norm_label": "simulator.py"
     },
     {
@@ -5035,7 +5045,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator_sample_physical_a_rs",
-      "community": 2,
+      "community": 14,
       "norm_label": "._sample_physical_a_rs()"
     },
     {
@@ -5045,7 +5055,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator_sample_gap_masks",
-      "community": 2,
+      "community": 14,
       "norm_label": "._sample_gap_masks()"
     },
     {
@@ -5055,7 +5065,7 @@
       "source_location": "L165",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator_simulate_batch",
-      "community": 2,
+      "community": 14,
       "norm_label": ".simulate_batch()"
     },
     {
@@ -5065,7 +5075,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_1",
-      "community": 2,
+      "community": 14,
       "norm_label": "the sbi forward simulator: parameters + physics + noise -> dual-view data.  for"
     },
     {
@@ -5095,7 +5105,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_120",
-      "community": 2,
+      "community": 14,
       "norm_label": "draw ``a/rs`` from a stellar-density prior.          for circular orbits, ``a/rs"
     },
     {
@@ -5105,7 +5115,7 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_145",
-      "community": 2,
+      "community": 14,
       "norm_label": "cadence-availability masks for downlinks/momentum-dump-like gaps."
     },
     {
@@ -5365,7 +5375,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_transit_model",
-      "community": 2,
+      "community": 3,
       "norm_label": "transit_model.py"
     },
     {
@@ -5375,7 +5385,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "transitflow_transit_model_occulted_fraction",
-      "community": 2,
+      "community": 3,
       "norm_label": "_occulted_fraction()"
     },
     {
@@ -5385,7 +5395,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_flux",
-      "community": 2,
+      "community": 3,
       "norm_label": "transit_flux()"
     },
     {
@@ -5395,7 +5405,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "transitflow_transit_model_exposure_integrated_transit_flux",
-      "community": 2,
+      "community": 3,
       "norm_label": "exposure_integrated_transit_flux()"
     },
     {
@@ -5405,7 +5415,7 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_flux_batman",
-      "community": 2,
+      "community": 3,
       "norm_label": "_transit_flux_batman()"
     },
     {
@@ -5415,7 +5425,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_duration",
-      "community": 2,
+      "community": 3,
       "norm_label": "transit_duration()"
     },
     {
@@ -5425,7 +5435,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "transitflow_transit_model_has_batman",
-      "community": 2,
+      "community": 3,
       "norm_label": "has_batman()"
     },
     {
@@ -5435,7 +5445,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_1",
-      "community": 2,
+      "community": 3,
       "norm_label": "quadratic limb-darkened transit light-curve model.  two engines are provided:  *"
     },
     {
@@ -5445,7 +5455,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_38",
-      "community": 2,
+      "community": 3,
       "norm_label": "fraction of the total stellar flux blocked by the planet.      parameters are 1-"
     },
     {
@@ -5455,7 +5465,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_94",
-      "community": 2,
+      "community": 3,
       "norm_label": "compute normalized transit flux.      parameters     ----------     times:"
     },
     {
@@ -5465,7 +5475,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_167",
-      "community": 2,
+      "community": 3,
       "norm_label": "transit flux averaged over a finite cadence exposure.      ``transit_flux`` eval"
     },
     {
@@ -5475,7 +5485,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_216",
-      "community": 2,
+      "community": 3,
       "norm_label": "approximate total (t14) transit duration in days.      uses the standard small-a"
     },
     {
@@ -5485,7 +5495,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_utils",
-      "community": 22,
+      "community": 0,
       "norm_label": "utils.py"
     },
     {
@@ -5505,7 +5515,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "transitflow_utils_get_device",
-      "community": 0,
+      "community": 8,
       "norm_label": "get_device()"
     },
     {
@@ -5515,7 +5525,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "device",
-      "community": 20,
+      "community": 8,
       "norm_label": "device"
     },
     {
@@ -5525,7 +5535,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "transitflow_utils_load_config",
-      "community": 22,
+      "community": 0,
       "norm_label": "load_config()"
     },
     {
@@ -5535,7 +5545,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "transitflow_utils_merge_into_dataclass",
-      "community": 22,
+      "community": 0,
       "norm_label": "merge_into_dataclass()"
     },
     {
@@ -5545,7 +5555,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "transitflow_utils_batch_to_torch",
-      "community": 15,
+      "community": 8,
       "norm_label": "batch_to_torch()"
     },
     {
@@ -5555,7 +5565,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator",
-      "community": 20,
+      "community": 0,
       "norm_label": "simulatoriterator"
     },
     {
@@ -5565,7 +5575,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_init",
-      "community": 20,
+      "community": 8,
       "norm_label": ".__init__()"
     },
     {
@@ -5575,7 +5585,7 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_iter",
-      "community": 20,
+      "community": 0,
       "norm_label": ".__iter__()"
     },
     {
@@ -5585,7 +5595,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_next",
-      "community": 20,
+      "community": 8,
       "norm_label": ".__next__()"
     },
     {
@@ -5595,7 +5605,7 @@
       "source_location": "L100",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_close",
-      "community": 20,
+      "community": 0,
       "norm_label": ".close()"
     },
     {
@@ -5605,7 +5615,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "transitflow_utils_mp_worker",
-      "community": 22,
+      "community": 14,
       "norm_label": "_mp_worker()"
     },
     {
@@ -5615,7 +5625,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator",
-      "community": 20,
+      "community": 0,
       "norm_label": "prefetchsimulator"
     },
     {
@@ -5625,7 +5635,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator_init",
-      "community": 20,
+      "community": 0,
       "norm_label": ".__init__()"
     },
     {
@@ -5635,7 +5645,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator_activate_fallback",
-      "community": 20,
+      "community": 0,
       "norm_label": "._activate_fallback()"
     },
     {
@@ -5645,7 +5655,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator_iter",
-      "community": 20,
+      "community": 0,
       "norm_label": ".__iter__()"
     },
     {
@@ -5655,7 +5665,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator_next",
-      "community": 20,
+      "community": 0,
       "norm_label": ".__next__()"
     },
     {
@@ -5665,7 +5675,7 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "transitflow_utils_prefetchsimulator_close",
-      "community": 20,
+      "community": 0,
       "norm_label": ".close()"
     },
     {
@@ -5695,7 +5705,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_1",
-      "community": 22,
+      "community": 0,
       "norm_label": "shared utilities: config loading, seeding, device selection, data iteration."
     },
     {
@@ -5705,7 +5715,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_22",
-      "community": 0,
+      "community": 8,
       "norm_label": "select a device, preferring cuda, then apple mps, then cpu."
     },
     {
@@ -5715,7 +5725,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_35",
-      "community": 22,
+      "community": 0,
       "norm_label": "load a yaml config into a plain dict."
     },
     {
@@ -5725,7 +5735,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_43",
-      "community": 22,
+      "community": 0,
       "norm_label": "return a copy of dataclass ``dc`` with keys from ``overrides`` applied."
     },
     {
@@ -5735,7 +5745,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_57",
-      "community": 15,
+      "community": 8,
       "norm_label": "move the simulator's numpy batch onto a device as tensors.      on cuda the host"
     },
     {
@@ -5745,7 +5755,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_84",
-      "community": 20,
+      "community": 0,
       "norm_label": "infinite iterator of on-the-fly simulated batches (no disk storage)."
     },
     {
@@ -5755,7 +5765,7 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_108",
-      "community": 22,
+      "community": 14,
       "norm_label": "worker process: build a simulator and stream batches onto the queue."
     },
     {
@@ -5765,7 +5775,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_127",
-      "community": 20,
+      "community": 0,
       "norm_label": "background multiprocess simulator feeding a bounded queue.      falls back to a"
     },
     {
@@ -7238,9 +7248,9 @@
       "source_file": "scripts/baseline_detection.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_baseline_detection",
-      "target": "baselines_tls_has_tls",
-      "confidence_score": 1.0
+      "target": "baselines_tls_has_tls"
     },
     {
       "relation": "imports",
@@ -7249,9 +7259,9 @@
       "source_file": "scripts/baseline_detection.py",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_baseline_detection",
-      "target": "baselines_tls_tls_detect",
-      "confidence_score": 1.0
+      "target": "baselines_tls_tls_detect"
     },
     {
       "relation": "imports",
@@ -7413,9 +7423,9 @@
       "source_file": "scripts/baseline_detection.py",
       "source_location": "L59",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_baseline_detection_main",
-      "target": "baselines_tls_has_tls",
-      "confidence_score": 1.0
+      "target": "baselines_tls_has_tls"
     },
     {
       "relation": "calls",
@@ -7424,9 +7434,9 @@
       "source_file": "scripts/baseline_detection.py",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_baseline_detection_main",
-      "target": "baselines_tls_tls_detect",
-      "confidence_score": 1.0
+      "target": "baselines_tls_tls_detect"
     },
     {
       "relation": "calls",
@@ -7695,11 +7705,714 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/build_noise_library.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "scripts_build_noise_library",
+      "target": "scripts_build_noise_library_collect_target_segments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/build_noise_library.py",
       "source_location": "L27",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "scripts_build_noise_library",
       "target": "scripts_build_noise_library_main"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/build_noise_library.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "scripts_build_noise_library_collect_target_segments",
+      "target": "ndarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/build_noise_library.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "scripts_build_noise_library_main",
+      "target": "scripts_build_noise_library_collect_target_segments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/bls.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_bls_bls_detect",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/mcmc.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_mcmc_log_likelihood",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/mcmc.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_mcmc_log_prob",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/mcmc.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_mcmc_native_ensemble",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/mcmc.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_mcmc_run_mcmc",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "baselines_tls_tls_detect",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/coverage.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_coverage_central_interval_coverage",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/coverage.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_coverage_coverage_calibration_error",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/detection.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_detection_completeness_grid",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/detection.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_detection_detection_metrics",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/posterior_metrics.py",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_posterior_metrics_jensen_shannon_1d",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/posterior_metrics.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_posterior_metrics_marginal_wasserstein",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/posterior_metrics.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_posterior_metrics_negative_log_prob_true",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/posterior_metrics.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_posterior_metrics_posterior_contraction",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/sbc.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_sbc_sbc_ranks",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/evaluation/sbc.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "evaluation_sbc_sbc_uniformity",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/evaluate.py",
+      "source_location": "L90",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_evaluate_stratified_characterization_diagnostics",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L330",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_validate_real_fold_bin_fixed_ephemeris",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/correction.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_correction_importance_weights",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/correction.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_correction_render_raw_flux",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/correction.py",
+      "source_location": "L89",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_correction_sir_resample",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/correction.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_correction_weighted_rank_cdf",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/data.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_data_diskdataset_gather",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/inference.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_inference_transitflowinference_detect",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/inference.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_inference_transitflowinference_expand_std_samples",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/inference.py",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_inference_transitflowinference_log_prob_std",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_autocovariance",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L108",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_eclipsing_binary_signal",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L105",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_estimate_white_sigma",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L164",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_noiselibrary_draw",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_sample_correlated_noise",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L121",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_single_event_signal",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_sinusoid_signal",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/noise.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_noise_white_noise",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L242",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_kipping_to_quadratic",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L256",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_quadratic_to_kipping",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L210",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_log_prob_physical",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L221",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_log_prob_std",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L170",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_physical_to_std",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L161",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_physical_to_u",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L149",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_sample",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L236",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_std_bounds",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L174",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_std_to_physical",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L158",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_priors_transitprior_u_to_physical",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/simulator.py",
+      "source_location": "L144",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_simulator_transitsimulator_sample_gap_masks",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/simulator.py",
+      "source_location": "L118",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_simulator_transitsimulator_sample_physical_a_rs",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/transit_model.py",
+      "source_location": "L153",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_transit_model_exposure_integrated_transit_flux",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/transit_model.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_transit_model_occulted_fraction",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/transit_model.py",
+      "source_location": "L178",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_transit_model_transit_duration",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/transit_model.py",
+      "source_location": "L82",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_transit_model_transit_flux",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/transit_model.py",
+      "source_location": "L153",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_transit_model_transit_flux_batman",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_bin_statistic",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_box_periodogram",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_fill_nans",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_flatten_transit_preserving",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_global_view",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_local_view",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L138",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_make_periodogram_view",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L148",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_make_views",
+      "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/views.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "transitflow_views_normalize_view",
+      "target": "ndarray"
     },
     {
       "relation": "imports",
@@ -8162,9 +8875,9 @@
       "source_file": "scripts/evaluate.py",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_evaluate_rationale_60",
-      "target": "scripts_evaluate_sbc_gate",
-      "confidence_score": 1.0
+      "target": "scripts_evaluate_sbc_gate"
     },
     {
       "relation": "imports",
@@ -8227,20 +8940,9 @@
       "source_file": "scripts/evaluate.py",
       "source_location": "L95",
       "weight": 1.0,
-      "source": "scripts_evaluate_rationale_95",
-      "target": "scripts_evaluate_stratified_characterization_diagnostics",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/evaluate.py",
-      "source_location": "L90",
-      "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "scripts_evaluate_stratified_characterization_diagnostics",
-      "target": "ndarray"
+      "source": "scripts_evaluate_rationale_95",
+      "target": "scripts_evaluate_stratified_characterization_diagnostics"
     },
     {
       "relation": "calls",
@@ -8252,666 +8954,6 @@
       "confidence_score": 1.0,
       "source": "scripts_evaluate_stratified_characterization_diagnostics",
       "target": "transitflow_transit_model_transit_duration"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/bls.py",
-      "source_location": "L15",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_bls_bls_detect",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L25",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_log_likelihood",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_log_prob",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L76",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_native_ensemble",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/mcmc.py",
-      "source_location": "L43",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "baselines_mcmc_run_mcmc",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/baselines/tls.py",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "baselines_tls_tls_detect",
-      "target": "ndarray",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/coverage.py",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_coverage_central_interval_coverage",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/coverage.py",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_coverage_coverage_calibration_error",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/detection.py",
-      "source_location": "L29",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_detection_completeness_grid",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/detection.py",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_detection_detection_metrics",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/posterior_metrics.py",
-      "source_location": "L47",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_posterior_metrics_jensen_shannon_1d",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/posterior_metrics.py",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_posterior_metrics_marginal_wasserstein",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/posterior_metrics.py",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_posterior_metrics_negative_log_prob_true",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/posterior_metrics.py",
-      "source_location": "L22",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_posterior_metrics_posterior_contraction",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/sbc.py",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_sbc_sbc_ranks",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/evaluation/sbc.py",
-      "source_location": "L33",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "evaluation_sbc_sbc_uniformity",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "scripts/validate_real.py",
-      "source_location": "L330",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_fold_bin_fixed_ephemeris",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/correction.py",
-      "source_location": "L46",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_correction_importance_weights",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/correction.py",
-      "source_location": "L31",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_correction_render_raw_flux",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/correction.py",
-      "source_location": "L89",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_correction_sir_resample",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/correction.py",
-      "source_location": "L78",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_correction_weighted_rank_cdf",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/data.py",
-      "source_location": "L150",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_data_diskdataset_gather",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/inference.py",
-      "source_location": "L62",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_transitflowinference_detect",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/inference.py",
-      "source_location": "L37",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_transitflowinference_expand_std_samples",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/inference.py",
-      "source_location": "L100",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_transitflowinference_log_prob_std",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_autocovariance",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L108",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_eclipsing_binary_signal",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L105",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_estimate_white_sigma",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L164",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_noiselibrary_draw",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L51",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_sample_correlated_noise",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L121",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_single_event_signal",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L129",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_sinusoid_signal",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/noise.py",
-      "source_location": "L97",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_noise_white_noise",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L242",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_kipping_to_quadratic",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L256",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_quadratic_to_kipping",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L210",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_log_prob_physical",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L221",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_log_prob_std",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L170",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_physical_to_std",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L161",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_physical_to_u",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L149",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_sample",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L236",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_std_bounds",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L174",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_std_to_physical",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L248",
-      "weight": 1.0,
-      "source": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
-      "target": "ndarray",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/priors.py",
-      "source_location": "L158",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_transitprior_u_to_physical",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/simulator.py",
-      "source_location": "L144",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_simulator_transitsimulator_sample_gap_masks",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/simulator.py",
-      "source_location": "L118",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_simulator_transitsimulator_sample_physical_a_rs",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/transit_model.py",
-      "source_location": "L153",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_transit_model_exposure_integrated_transit_flux",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/transit_model.py",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_transit_model_occulted_fraction",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/transit_model.py",
-      "source_location": "L178",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_transit_model_transit_duration",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/transit_model.py",
-      "source_location": "L82",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_transit_model_transit_flux",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/transit_model.py",
-      "source_location": "L153",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_transit_model_transit_flux_batman",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L23",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_bin_statistic",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L109",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_box_periodogram",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L41",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_fill_nans",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L109",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_flatten_transit_preserving",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L56",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_global_view",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L66",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_local_view",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L138",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_make_periodogram_view",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L148",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_make_views",
-      "target": "ndarray"
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "transitflow/views.py",
-      "source_location": "L85",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_views_normalize_view",
-      "target": "ndarray"
     },
     {
       "relation": "calls",
@@ -10765,9 +10807,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L188",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real",
-      "target": "scripts_validate_real_crash_proof_print",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_crash_proof_print"
     },
     {
       "relation": "contains",
@@ -10785,9 +10827,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L128",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real",
-      "target": "scripts_validate_real_download_lc_impl",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_download_lc_impl"
     },
     {
       "relation": "contains",
@@ -10895,9 +10937,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L155",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real",
-      "target": "scripts_validate_real_safe_print",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_safe_print"
     },
     {
       "relation": "contains",
@@ -11145,9 +11187,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L239",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_download_lc",
-      "target": "scripts_validate_real_safe_print",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_safe_print"
     },
     {
       "relation": "calls",
@@ -11156,9 +11198,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L629",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_main",
-      "target": "scripts_validate_real_safe_print",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_safe_print"
     },
     {
       "relation": "rationale_for",
@@ -11166,9 +11208,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L156",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_156",
-      "target": "scripts_validate_real_safe_print",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_safe_print"
     },
     {
       "relation": "calls",
@@ -11187,9 +11229,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L204",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_204",
-      "target": "scripts_validate_real_download_lc",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_download_lc"
     },
     {
       "relation": "calls",
@@ -11208,9 +11250,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L254",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_254",
-      "target": "scripts_validate_real_refine_t0",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_refine_t0"
     },
     {
       "relation": "calls",
@@ -11240,9 +11282,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L281",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_281",
-      "target": "scripts_validate_real_flatten_lc",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_flatten_lc"
     },
     {
       "relation": "calls",
@@ -11305,9 +11347,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L350",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_350",
-      "target": "scripts_validate_real_real_quality_metrics",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_real_quality_metrics"
     },
     {
       "relation": "calls",
@@ -11359,9 +11401,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L407",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_407",
-      "target": "scripts_validate_real_fold_bin_fixed_ephemeris",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_fold_bin_fixed_ephemeris"
     },
     {
       "relation": "imports",
@@ -11402,9 +11444,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L437",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_437",
-      "target": "scripts_validate_real_real_gate_status",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_real_gate_status"
     },
     {
       "relation": "imports",
@@ -11456,9 +11498,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L460",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_460",
-      "target": "scripts_validate_real_real_diagnostic_status",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_real_diagnostic_status"
     },
     {
       "relation": "imports",
@@ -11510,9 +11552,9 @@
       "source_file": "scripts/validate_real.py",
       "source_location": "L493",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_validate_real_rationale_493",
-      "target": "scripts_validate_real_mcmc_stratified_summary",
-      "confidence_score": 1.0
+      "target": "scripts_validate_real_mcmc_stratified_summary"
     },
     {
       "relation": "calls",
@@ -14935,9 +14977,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "tests_test_priors_stellar_prior",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_stellar_prior"
     },
     {
       "relation": "contains",
@@ -15005,9 +15047,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L84",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "tests_test_priors_test_stellar_density_ars_density_is_normalized",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_test_stellar_density_ars_density_is_normalized"
     },
     {
       "relation": "contains",
@@ -15015,9 +15057,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "tests_test_priors_test_stellar_density_only_changes_ars",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_test_stellar_density_only_changes_ars"
     },
     {
       "relation": "contains",
@@ -15025,9 +15067,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L94",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling"
     },
     {
       "relation": "contains",
@@ -15090,9 +15132,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "transitflow_simulator_simconfig",
-      "confidence_score": 1.0
+      "target": "transitflow_simulator_simconfig"
     },
     {
       "relation": "imports",
@@ -15101,9 +15143,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L97",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors",
-      "target": "transitflow_simulator_transitsimulator",
-      "confidence_score": 1.0
+      "target": "transitflow_simulator_transitsimulator"
     },
     {
       "relation": "calls",
@@ -15134,9 +15176,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_stellar_prior",
-      "target": "transitflow_priors_transitprior",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior"
     },
     {
       "relation": "calls",
@@ -15145,9 +15187,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_test_stellar_density_ars_density_is_normalized",
-      "target": "tests_test_priors_stellar_prior",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_stellar_prior"
     },
     {
       "relation": "calls",
@@ -15156,9 +15198,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_test_stellar_density_only_changes_ars",
-      "target": "tests_test_priors_stellar_prior",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_stellar_prior"
     },
     {
       "relation": "calls",
@@ -15167,9 +15209,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
-      "target": "tests_test_priors_stellar_prior",
-      "confidence_score": 1.0
+      "target": "tests_test_priors_stellar_prior"
     },
     {
       "relation": "calls",
@@ -15178,9 +15220,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L99",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
-      "target": "transitflow_simulator_simconfig",
-      "confidence_score": 1.0
+      "target": "transitflow_simulator_simconfig"
     },
     {
       "relation": "calls",
@@ -15189,9 +15231,9 @@
       "source_file": "tests/test_priors.py",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
-      "target": "transitflow_simulator_transitsimulator",
-      "confidence_score": 1.0
+      "target": "transitflow_simulator_transitsimulator"
     },
     {
       "relation": "contains",
@@ -17001,9 +17043,9 @@
       "source_file": "transitflow/baselines/tls.py",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "baselines_tls",
-      "target": "baselines_tls_has_tls",
-      "confidence_score": 1.0
+      "target": "baselines_tls_has_tls"
     },
     {
       "relation": "contains",
@@ -17011,9 +17053,9 @@
       "source_file": "transitflow/baselines/tls.py",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "baselines_tls",
-      "target": "baselines_tls_tls_detect",
-      "confidence_score": 1.0
+      "target": "baselines_tls_tls_detect"
     },
     {
       "relation": "rationale_for",
@@ -17021,9 +17063,9 @@
       "source_file": "transitflow/baselines/tls.py",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "baselines_tls_rationale_1",
-      "target": "baselines_tls",
-      "confidence_score": 1.0
+      "target": "baselines_tls"
     },
     {
       "relation": "rationale_for",
@@ -17031,9 +17073,9 @@
       "source_file": "transitflow/baselines/tls.py",
       "source_location": "L19",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "baselines_tls_rationale_19",
-      "target": "baselines_tls_tls_detect",
-      "confidence_score": 1.0
+      "target": "baselines_tls_tls_detect"
     },
     {
       "relation": "contains",
@@ -17441,9 +17483,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_85",
-      "target": "transitflow_data_generate_to_disk",
-      "confidence_score": 1.0
+      "target": "transitflow_data_generate_to_disk"
     },
     {
       "relation": "calls",
@@ -17555,9 +17597,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L180",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_180",
-      "target": "transitflow_data_diskdataset",
-      "confidence_score": 1.0
+      "target": "transitflow_data_diskdataset"
     },
     {
       "relation": "calls",
@@ -17656,9 +17698,9 @@
       "source_file": "transitflow/data.py",
       "source_location": "L238",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_data_rationale_238",
-      "target": "transitflow_data_diskiterator",
-      "confidence_score": 1.0
+      "target": "transitflow_data_diskiterator"
     },
     {
       "relation": "imports",
@@ -19175,9 +19217,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L100",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_100",
-      "target": "transitflow_inference_transitflowinference_posterior_samples",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_posterior_samples"
     },
     {
       "relation": "calls",
@@ -19196,9 +19238,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L137",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_137",
-      "target": "transitflow_inference_transitflowinference_log_prob_std",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_log_prob_std"
     },
     {
       "relation": "calls",
@@ -19217,9 +19259,9 @@
       "source_file": "transitflow/inference.py",
       "source_location": "L156",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_inference_rationale_156",
-      "target": "transitflow_inference_transitflowinference_importance_diagnostic",
-      "confidence_score": 1.0
+      "target": "transitflow_inference_transitflowinference_importance_diagnostic"
     },
     {
       "relation": "calls",
@@ -20586,9 +20628,9 @@
       "source_file": "transitflow/models/transitflow.py",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_transitflow_rationale_58",
-      "target": "models_transitflow_transitflow",
-      "confidence_score": 1.0
+      "target": "models_transitflow_transitflow"
     },
     {
       "relation": "method",
@@ -20710,9 +20752,9 @@
       "source_file": "transitflow/models/transitflow.py",
       "source_location": "L115",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "models_transitflow_rationale_115",
-      "target": "models_transitflow_transitflow_velocity_fn",
-      "confidence_score": 1.0
+      "target": "models_transitflow_transitflow_velocity_fn"
     },
     {
       "relation": "contains",
@@ -21450,9 +21492,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L155",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_transitprior",
-      "target": "transitflow_priors_transitprior_from_sim_config",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_from_sim_config"
     },
     {
       "relation": "method",
@@ -21570,9 +21612,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L248",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_transitprior",
-      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs"
     },
     {
       "relation": "method",
@@ -21653,9 +21695,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L137",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_137",
-      "target": "transitflow_priors_transitprior_default_specs",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_default_specs"
     },
     {
       "relation": "calls",
@@ -21664,9 +21706,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_transitprior_from_sim_config",
-      "target": "transitflow_priors_transitprior_default_specs",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_default_specs"
     },
     {
       "relation": "rationale_for",
@@ -21674,9 +21716,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L156",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_156",
-      "target": "transitflow_priors_transitprior_from_sim_config",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_from_sim_config"
     },
     {
       "relation": "rationale_for",
@@ -21684,9 +21726,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L188",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_188",
-      "target": "transitflow_priors_transitprior_sample",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_sample"
     },
     {
       "relation": "calls",
@@ -21738,9 +21780,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L222",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_222",
-      "target": "transitflow_priors_transitprior_torch_buffers",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_torch_buffers"
     },
     {
       "relation": "calls",
@@ -21770,9 +21812,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L250",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_250",
-      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs"
     },
     {
       "relation": "calls",
@@ -21781,9 +21823,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L289",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_transitprior_log_prob_physical",
-      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs"
     },
     {
       "relation": "rationale_for",
@@ -21791,9 +21833,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L278",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_278",
-      "target": "transitflow_priors_transitprior_log_prob_physical",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_log_prob_physical"
     },
     {
       "relation": "rationale_for",
@@ -21811,9 +21853,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L295",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_295",
-      "target": "transitflow_priors_transitprior_log_prob_std",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_transitprior_log_prob_std"
     },
     {
       "relation": "rationale_for",
@@ -21821,9 +21863,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L316",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_316",
-      "target": "transitflow_priors_kipping_to_quadratic",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_kipping_to_quadratic"
     },
     {
       "relation": "imports",
@@ -21853,9 +21895,9 @@
       "source_file": "transitflow/priors.py",
       "source_location": "L330",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_priors_rationale_330",
-      "target": "transitflow_priors_quadratic_to_kipping",
-      "confidence_score": 1.0
+      "target": "transitflow_priors_quadratic_to_kipping"
     },
     {
       "relation": "contains",
@@ -22816,9 +22858,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L117",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_117",
-      "target": "transitflow_train_evaluate",
-      "confidence_score": 1.0
+      "target": "transitflow_train_evaluate"
     },
     {
       "relation": "calls",
@@ -22925,9 +22967,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L205",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_205",
-      "target": "transitflow_train_train",
-      "confidence_score": 1.0
+      "target": "transitflow_train_train"
     },
     {
       "relation": "calls",
@@ -23056,9 +23098,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L448",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_448",
-      "target": "transitflow_train_health",
-      "confidence_score": 1.0
+      "target": "transitflow_train_health"
     },
     {
       "relation": "calls",
@@ -23121,9 +23163,9 @@
       "source_file": "transitflow/train.py",
       "source_location": "L516",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "transitflow_train_rationale_516",
-      "target": "transitflow_train_preflight",
-      "confidence_score": 1.0
+      "target": "transitflow_train_preflight"
     },
     {
       "relation": "contains",
@@ -24840,5 +24882,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f97186d35721d5e670ff2b60815d9be882cdd94f"
+  "built_at_commit": "89d19b9c26b58dec3f8d196e2854df7b486cc299"
 }

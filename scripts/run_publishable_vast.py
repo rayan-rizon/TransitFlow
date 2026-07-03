@@ -171,6 +171,8 @@ def main() -> None:
     ap.add_argument("--run-name", default=None)
     ap.add_argument("--noise-lib", default="data/noise_lib.npz")
     ap.add_argument("--build-noise-lib", action="store_true")
+    ap.add_argument("--noise-workers", type=int, default=1,
+                    help="parallel target downloads when building the noise library")
     ap.add_argument("--noise-targets", nargs="*", default=None)
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--run-dir", default=None)
@@ -266,7 +268,8 @@ def main() -> None:
     if noise_lib is not None and args.build_noise_lib and not noise_lib.exists():
         targets = args.noise_targets or DEFAULT_TARGETS
         run([args.python, "scripts/build_noise_library.py", "--mission", "TESS",
-             "--n-raw", "18000", "--out", str(noise_lib), "--targets", *targets],
+             "--n-raw", "18000", "--out", str(noise_lib),
+             "--workers", str(args.noise_workers), "--targets", *targets],
             repo, logs / "noise_lib.log")
     noise_meta = (
         validate_noise_lib(noise_lib)
@@ -337,6 +340,7 @@ def main() -> None:
         "checkpoint": str(ckpt),
         "data_dir": str(data_dir),
         "noise_lib": None if noise_lib is None else str(noise_lib),
+        "noise_workers": int(args.noise_workers),
         "smoke": bool(args.smoke),
         "fast_check": bool(args.fast_check),
         "n_data": int(n_data),
