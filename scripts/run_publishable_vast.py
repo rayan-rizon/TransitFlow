@@ -223,7 +223,7 @@ def main() -> None:
         n_real_planets = min(args.n_real_planets, 8)
         with_mcmc = 0
         mcmc_steps = args.mcmc_steps
-        speed_n_amortized = 32
+        speed_n_amortized = args.speed_n_amortized or 32
         speed_n_mcmc = 1
         speed_mcmc_steps = 80
         speed_mcmc_walkers = min(args.mcmc_walkers, 16)
@@ -236,7 +236,7 @@ def main() -> None:
         n_real_planets = 12 if args.n_real_planets == 30 else args.n_real_planets
         with_mcmc = 4 if args.with_mcmc == 16 else args.with_mcmc
         mcmc_steps = 400 if args.mcmc_steps == 1500 else args.mcmc_steps
-        speed_n_amortized = min(n_detection, 64)
+        speed_n_amortized = args.speed_n_amortized or min(n_detection, 64)
         speed_n_mcmc = max(1, min(with_mcmc, 2))
         speed_mcmc_steps = mcmc_steps
         speed_mcmc_walkers = min(args.mcmc_walkers, 16)

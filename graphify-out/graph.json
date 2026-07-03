@@ -95,17 +95,17 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_baseline_detection",
-      "community": 1,
+      "community": 3,
       "norm_label": "baseline_detection.py"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/baseline_detection.py",
-      "source_location": "L37",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "scripts_baseline_detection_main",
-      "community": 1,
+      "community": 3,
       "norm_label": "main()"
     },
     {
@@ -115,7 +115,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_benchmark_speed",
-      "community": 1,
+      "community": 3,
       "norm_label": "benchmark_speed.py"
     },
     {
@@ -125,7 +125,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "scripts_benchmark_speed_main",
-      "community": 1,
+      "community": 3,
       "norm_label": "main()"
     },
     {
@@ -155,7 +155,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_diagnose_period",
-      "community": 1,
+      "community": 4,
       "norm_label": "diagnose_period.py"
     },
     {
@@ -165,7 +165,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "scripts_diagnose_period_main",
-      "community": 1,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -175,7 +175,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_evaluate",
-      "community": 1,
+      "community": 4,
       "norm_label": "evaluate.py"
     },
     {
@@ -185,14 +185,14 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "scripts_evaluate_detection_eval",
-      "community": 1,
+      "community": 4,
       "norm_label": "detection_eval()"
     },
     {
       "label": "sbc_gate()",
       "file_type": "code",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L58",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "scripts_evaluate_sbc_gate",
       "community": 6,
@@ -202,20 +202,20 @@
       "label": "_label()",
       "file_type": "code",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L80",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "scripts_evaluate_label",
-      "community": 1,
+      "community": 4,
       "norm_label": "_label()"
     },
     {
       "label": "stratified_characterization_diagnostics()",
       "file_type": "code",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L90",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "scripts_evaluate_stratified_characterization_diagnostics",
-      "community": 1,
+      "community": 4,
       "norm_label": "stratified_characterization_diagnostics()"
     },
     {
@@ -232,29 +232,29 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L135",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "scripts_evaluate_main",
-      "community": 1,
+      "community": 4,
       "norm_label": "main()"
     },
     {
       "label": "_make_plots()",
       "file_type": "code",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L271",
+      "source_location": "L273",
       "_origin": "ast",
       "id": "scripts_evaluate_make_plots",
-      "community": 1,
+      "community": 4,
       "norm_label": "_make_plots()"
     },
     {
       "label": "Multiple-comparison aware SBC gate.      A D-dimensional SBC report contains D p",
       "file_type": "rationale",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L59",
+      "source_location": "L60",
       "_origin": "ast",
-      "id": "scripts_evaluate_rationale_59",
+      "id": "scripts_evaluate_rationale_60",
       "community": 6,
       "norm_label": "multiple-comparison aware sbc gate.      a d-dimensional sbc report contains d p"
     },
@@ -262,10 +262,10 @@
       "label": "Coverage/width diagnostics split by shape and information regime.",
       "file_type": "rationale",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L94",
+      "source_location": "L95",
       "_origin": "ast",
-      "id": "scripts_evaluate_rationale_94",
-      "community": 1,
+      "id": "scripts_evaluate_rationale_95",
+      "community": 4,
       "norm_label": "coverage/width diagnostics split by shape and information regime."
     },
     {
@@ -525,7 +525,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast",
-      "community": 10,
+      "community": 6,
       "norm_label": "run_publishable_vast.py"
     },
     {
@@ -535,7 +535,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_run",
-      "community": 10,
+      "community": 6,
       "norm_label": "run()"
     },
     {
@@ -545,7 +545,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "path",
-      "community": 10,
+      "community": 6,
       "norm_label": "path"
     },
     {
@@ -555,7 +555,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_read_json",
-      "community": 10,
+      "community": 6,
       "norm_label": "read_json()"
     },
     {
@@ -565,7 +565,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_git_sha",
-      "community": 10,
+      "community": 6,
       "norm_label": "git_sha()"
     },
     {
@@ -575,7 +575,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_validate_noise_lib",
-      "community": 10,
+      "community": 6,
       "norm_label": "validate_noise_lib()"
     },
     {
@@ -585,7 +585,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_gate_value",
-      "community": 10,
+      "community": 6,
       "norm_label": "_gate_value()"
     },
     {
@@ -595,27 +595,27 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_build_gate_report",
-      "community": 10,
+      "community": 6,
       "norm_label": "build_gate_report()"
     },
     {
       "label": "write_environment()",
       "file_type": "code",
       "source_file": "scripts/run_publishable_vast.py",
-      "source_location": "L143",
+      "source_location": "L146",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_write_environment",
-      "community": 10,
+      "community": 6,
       "norm_label": "write_environment()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/run_publishable_vast.py",
-      "source_location": "L162",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "scripts_run_publishable_vast_main",
-      "community": 10,
+      "community": 6,
       "norm_label": "main()"
     },
     {
@@ -625,7 +625,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_smoke_test",
-      "community": 1,
+      "community": 4,
       "norm_label": "smoke_test.py"
     },
     {
@@ -635,7 +635,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "scripts_smoke_test_main",
-      "community": 1,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -665,7 +665,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_train_spike_slab",
-      "community": 1,
+      "community": 4,
       "norm_label": "train_spike_slab.py"
     },
     {
@@ -675,7 +675,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "scripts_train_spike_slab_write_json",
-      "community": 1,
+      "community": 4,
       "norm_label": "_write_json()"
     },
     {
@@ -685,7 +685,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "scripts_train_spike_slab_main",
-      "community": 1,
+      "community": 4,
       "norm_label": "main()"
     },
     {
@@ -695,7 +695,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_validate_real",
-      "community": 6,
+      "community": 2,
       "norm_label": "validate_real.py"
     },
     {
@@ -705,7 +705,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "scripts_validate_real_val",
-      "community": 6,
+      "community": 2,
       "norm_label": "_val()"
     },
     {
@@ -715,64 +715,94 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "scripts_validate_real_query_planets",
-      "community": 6,
+      "community": 2,
       "norm_label": "query_planets()"
+    },
+    {
+      "label": "_download_lc_impl()",
+      "file_type": "code",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L128",
+      "_origin": "ast",
+      "id": "scripts_validate_real_download_lc_impl",
+      "community": 2,
+      "norm_label": "_download_lc_impl()"
+    },
+    {
+      "label": "safe_print()",
+      "file_type": "code",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L155",
+      "_origin": "ast",
+      "id": "scripts_validate_real_safe_print",
+      "community": 1,
+      "norm_label": "safe_print()"
+    },
+    {
+      "label": "_crash_proof_print()",
+      "file_type": "code",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L188",
+      "_origin": "ast",
+      "id": "scripts_validate_real_crash_proof_print",
+      "community": 2,
+      "norm_label": "_crash_proof_print()"
     },
     {
       "label": "download_lc()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L128",
+      "source_location": "L203",
       "_origin": "ast",
       "id": "scripts_validate_real_download_lc",
-      "community": 6,
+      "community": 1,
       "norm_label": "download_lc()"
     },
     {
       "label": "_refine_t0()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L163",
+      "source_location": "L253",
       "_origin": "ast",
       "id": "scripts_validate_real_refine_t0",
-      "community": 6,
+      "community": 2,
       "norm_label": "_refine_t0()"
     },
     {
       "label": "_flatten_lc()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L190",
+      "source_location": "L280",
       "_origin": "ast",
       "id": "scripts_validate_real_flatten_lc",
-      "community": 6,
+      "community": 2,
       "norm_label": "_flatten_lc()"
     },
     {
       "label": "build_views()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L211",
+      "source_location": "L301",
       "_origin": "ast",
       "id": "scripts_validate_real_build_views",
-      "community": 6,
+      "community": 2,
       "norm_label": "build_views()"
     },
     {
       "label": "real_quality_metrics()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L259",
+      "source_location": "L349",
       "_origin": "ast",
       "id": "scripts_validate_real_real_quality_metrics",
-      "community": 6,
+      "community": 1,
       "norm_label": "real_quality_metrics()"
     },
     {
       "label": "passes_real_quality()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L300",
+      "source_location": "L390",
       "_origin": "ast",
       "id": "scripts_validate_real_passes_real_quality",
       "community": 6,
@@ -782,7 +812,7 @@
       "label": "fold_bin_fixed_ephemeris()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L314",
+      "source_location": "L404",
       "_origin": "ast",
       "id": "scripts_validate_real_fold_bin_fixed_ephemeris",
       "community": 6,
@@ -792,7 +822,7 @@
       "label": "real_gate_status()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L346",
+      "source_location": "L436",
       "_origin": "ast",
       "id": "scripts_validate_real_real_gate_status",
       "community": 6,
@@ -802,7 +832,7 @@
       "label": "real_diagnostic_status()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L369",
+      "source_location": "L459",
       "_origin": "ast",
       "id": "scripts_validate_real_real_diagnostic_status",
       "community": 6,
@@ -812,30 +842,30 @@
       "label": "_bin_label()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L392",
+      "source_location": "L482",
       "_origin": "ast",
       "id": "scripts_validate_real_bin_label",
-      "community": 6,
+      "community": 2,
       "norm_label": "_bin_label()"
     },
     {
       "label": "mcmc_stratified_summary()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L402",
+      "source_location": "L492",
       "_origin": "ast",
       "id": "scripts_validate_real_mcmc_stratified_summary",
-      "community": 6,
+      "community": 2,
       "norm_label": "mcmc_stratified_summary()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L451",
+      "source_location": "L541",
       "_origin": "ast",
       "id": "scripts_validate_real_main",
-      "community": 6,
+      "community": 1,
       "norm_label": "main()"
     },
     {
@@ -845,7 +875,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_52",
-      "community": 6,
+      "community": 2,
       "norm_label": "read a numeric archive cell as a plain float, robustly.      nasa archive column"
     },
     {
@@ -855,56 +885,66 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "scripts_validate_real_rationale_71",
-      "community": 6,
+      "community": 2,
       "norm_label": "confirmed tess planets *inside the training prior*, in the p range.      boundin"
+    },
+    {
+      "label": "print() that can never crash the caller.      A prior run showed sys.stdout can",
+      "file_type": "rationale",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L156",
+      "_origin": "ast",
+      "id": "scripts_validate_real_rationale_156",
+      "community": 1,
+      "norm_label": "print() that can never crash the caller.      a prior run showed sys.stdout can"
     },
     {
       "label": "Download + clean one TESS single-sector PDCSAP light curve.      Returns (times_",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L129",
+      "source_location": "L204",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_129",
-      "community": 6,
+      "id": "scripts_validate_real_rationale_204",
+      "community": 1,
       "norm_label": "download + clean one tess single-sector pdcsap light curve.      returns (times_"
     },
     {
       "label": "Re-derive the transit epoch from the *data* by a box-search at fixed P.      The",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L164",
+      "source_location": "L254",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_164",
-      "community": 6,
+      "id": "scripts_validate_real_rationale_254",
+      "community": 2,
       "norm_label": "re-derive the transit epoch from the *data* by a box-search at fixed p.      the"
     },
     {
       "label": "Remove slow secular trends, returning flux \u2248 1 around a flat baseline.      The",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L191",
+      "source_location": "L281",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_191",
-      "community": 6,
+      "id": "scripts_validate_real_rationale_281",
+      "community": 2,
       "norm_label": "remove slow secular trends, returning flux \u2248 1 around a flat baseline.      the"
     },
     {
       "label": "Data-only quality checks for real-light-curve validation.      These cuts avoid",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L260",
+      "source_location": "L350",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_260",
-      "community": 6,
+      "id": "scripts_validate_real_rationale_350",
+      "community": 1,
       "norm_label": "data-only quality checks for real-light-curve validation.      these cuts avoid"
     },
     {
       "label": "Compress fixed-ephemeris MCMC data by phase-binning.      With P and t0 fixed, t",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L317",
+      "source_location": "L407",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_317",
+      "id": "scripts_validate_real_rationale_407",
       "community": 6,
       "norm_label": "compress fixed-ephemeris mcmc data by phase-binning.      with p and t0 fixed, t"
     },
@@ -912,9 +952,9 @@
       "label": "Compute real-data pass/fail gates from an aggregate validation summary.",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L347",
+      "source_location": "L437",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_347",
+      "id": "scripts_validate_real_rationale_437",
       "community": 6,
       "norm_label": "compute real-data pass/fail gates from an aggregate validation summary."
     },
@@ -922,9 +962,9 @@
       "label": "Report non-gating real-data diagnostics.      Archive catalog parameters are lit",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L370",
+      "source_location": "L460",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_370",
+      "id": "scripts_validate_real_rationale_460",
       "community": 6,
       "norm_label": "report non-gating real-data diagnostics.      archive catalog parameters are lit"
     },
@@ -932,10 +972,10 @@
       "label": "MCMC Wasserstein summaries by data-only and geometry strata.",
       "file_type": "rationale",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L403",
+      "source_location": "L493",
       "_origin": "ast",
-      "id": "scripts_validate_real_rationale_403",
-      "community": 6,
+      "id": "scripts_validate_real_rationale_493",
+      "community": 2,
       "norm_label": "mcmc wasserstein summaries by data-only and geometry strata."
     },
     {
@@ -945,7 +985,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_conftest",
-      "community": 1,
+      "community": 14,
       "norm_label": "conftest.py"
     },
     {
@@ -955,7 +995,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_conftest_prior",
-      "community": 1,
+      "community": 14,
       "norm_label": "prior()"
     },
     {
@@ -965,7 +1005,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tests_conftest_fast_sim_cfg",
-      "community": 1,
+      "community": 14,
       "norm_label": "fast_sim_cfg()"
     },
     {
@@ -975,7 +1015,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_conftest_fast_simulator",
-      "community": 1,
+      "community": 14,
       "norm_label": "fast_simulator()"
     },
     {
@@ -985,7 +1025,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tests_conftest_tiny_model_cfg",
-      "community": 7,
+      "community": 14,
       "norm_label": "tiny_model_cfg()"
     },
     {
@@ -995,7 +1035,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "tests_conftest_rng",
-      "community": 1,
+      "community": 14,
       "norm_label": "rng()"
     },
     {
@@ -1005,7 +1045,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_conftest_rationale_21",
-      "community": 1,
+      "community": 14,
       "norm_label": "a tiny, fast simulator configuration for unit tests."
     },
     {
@@ -1275,7 +1315,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_end_to_end",
-      "community": 7,
+      "community": 14,
       "norm_label": "test_end_to_end.py"
     },
     {
@@ -1285,7 +1325,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_test_end_to_end_test_short_training_runs_and_learns",
-      "community": 7,
+      "community": 14,
       "norm_label": "test_short_training_runs_and_learns()"
     },
     {
@@ -1295,7 +1335,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_test_end_to_end_rationale_14",
-      "community": 7,
+      "community": 14,
       "norm_label": "a short training run reduces loss and learns better-than-chance detection."
     },
     {
@@ -1375,7 +1415,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "tests_test_evaluate_gates_test_publishable_gate_report_schema_and_status",
-      "community": 10,
+      "community": 6,
       "norm_label": "test_publishable_gate_report_schema_and_status()"
     },
     {
@@ -1415,7 +1455,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_evaluation_test_coverage_calibrated",
-      "community": 1,
+      "community": 4,
       "norm_label": "test_coverage_calibrated()"
     },
     {
@@ -1575,7 +1615,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_inference",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_inference.py"
     },
     {
@@ -1585,7 +1625,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tests_test_inference_inference",
-      "community": 4,
+      "community": 7,
       "norm_label": "_inference()"
     },
     {
@@ -1595,7 +1635,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_inference_test_detect_returns_probabilities",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_detect_returns_probabilities()"
     },
     {
@@ -1605,7 +1645,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_test_inference_test_posterior_samples_shape_and_range",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_posterior_samples_shape_and_range()"
     },
     {
@@ -1615,7 +1655,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_test_inference_test_log_prob_finite",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_log_prob_finite()"
     },
     {
@@ -1625,7 +1665,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "tests_test_inference_test_importance_diagnostic_runs",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_importance_diagnostic_runs()"
     },
     {
@@ -1635,7 +1675,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "tests_test_inference_test_ephemeris_conditioned_inference",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_ephemeris_conditioned_inference()"
     },
     {
@@ -1645,7 +1685,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "tests_test_inference_test_log_prob_slices_characterization_target",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_log_prob_slices_characterization_target()"
     },
     {
@@ -1655,7 +1695,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "tests_test_inference_test_sbc_uses_characterization_dims_for_5d_ephemeris_model",
-      "community": 4,
+      "community": 7,
       "norm_label": "test_sbc_uses_characterization_dims_for_5d_ephemeris_model()"
     },
     {
@@ -1785,7 +1825,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_npe",
-      "community": 24,
+      "community": 8,
       "norm_label": "test_npe.py"
     },
     {
@@ -1795,7 +1835,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_test_npe_test_realnvp_fallback_logprob_and_sample",
-      "community": 24,
+      "community": 8,
       "norm_label": "test_realnvp_fallback_logprob_and_sample()"
     },
     {
@@ -1805,7 +1845,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "tests_test_npe_test_realnvp_density_normalizes_roughly",
-      "community": 24,
+      "community": 8,
       "norm_label": "test_realnvp_density_normalizes_roughly()"
     },
     {
@@ -1815,7 +1855,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "tests_test_npe_test_zuko_backend_if_available",
-      "community": 24,
+      "community": 8,
       "norm_label": "test_zuko_backend_if_available()"
     },
     {
@@ -1825,7 +1865,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_npe_rationale_19",
-      "community": 24,
+      "community": 8,
       "norm_label": "a trained realnvp should assign higher density to in-distribution points."
     },
     {
@@ -1835,7 +1875,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_periodogram",
-      "community": 1,
+      "community": 15,
       "norm_label": "test_periodogram.py"
     },
     {
@@ -1845,7 +1885,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tests_test_periodogram_test_box_periodogram_peaks_at_true_period_high_snr",
-      "community": 1,
+      "community": 14,
       "norm_label": "test_box_periodogram_peaks_at_true_period_high_snr()"
     },
     {
@@ -1875,7 +1915,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_periodogram_rationale_1",
-      "community": 1,
+      "community": 15,
       "norm_label": "tests for the box-periodogram channel (the period-calibration fix)."
     },
     {
@@ -1885,7 +1925,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_test_periodogram_rationale_15",
-      "community": 1,
+      "community": 14,
       "norm_label": "a clean, deep transit produces periodogram power near the true period     (or a"
     },
     {
@@ -1977,6 +2017,46 @@
       "id": "tests_test_priors_test_param_names",
       "community": 23,
       "norm_label": "test_param_names()"
+    },
+    {
+      "label": "_stellar_prior()",
+      "file_type": "code",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L75",
+      "_origin": "ast",
+      "id": "tests_test_priors_stellar_prior",
+      "community": 23,
+      "norm_label": "_stellar_prior()"
+    },
+    {
+      "label": "test_stellar_density_aRs_density_is_normalized()",
+      "file_type": "code",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "tests_test_priors_test_stellar_density_ars_density_is_normalized",
+      "community": 23,
+      "norm_label": "test_stellar_density_ars_density_is_normalized()"
+    },
+    {
+      "label": "test_stellar_density_prior_matches_simulator_sampling()",
+      "file_type": "code",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L94",
+      "_origin": "ast",
+      "id": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
+      "community": 23,
+      "norm_label": "test_stellar_density_prior_matches_simulator_sampling()"
+    },
+    {
+      "label": "test_stellar_density_only_changes_aRs()",
+      "file_type": "code",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L123",
+      "_origin": "ast",
+      "id": "tests_test_priors_test_stellar_density_only_changes_ars",
+      "community": 23,
+      "norm_label": "test_stellar_density_only_changes_ars()"
     },
     {
       "label": "test_simulator.py",
@@ -2095,7 +2175,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_spike_slab",
-      "community": 15,
+      "community": 8,
       "norm_label": "test_spike_slab.py"
     },
     {
@@ -2105,7 +2185,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_make_targets_spikes_negatives",
-      "community": 15,
+      "community": 8,
       "norm_label": "test_make_targets_spikes_negatives()"
     },
     {
@@ -2115,7 +2195,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_detect_prob_separates",
-      "community": 15,
+      "community": 8,
       "norm_label": "test_detect_prob_separates()"
     },
     {
@@ -2125,7 +2205,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "tests_test_spike_slab_test_threshold_between_spike_and_slab",
-      "community": 15,
+      "community": 8,
       "norm_label": "test_threshold_between_spike_and_slab()"
     },
     {
@@ -2155,7 +2235,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_training_run",
-      "community": 7,
+      "community": 0,
       "norm_label": "test_training_run.py"
     },
     {
@@ -2165,7 +2245,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_test_training_run_tiny_cfgs",
-      "community": 7,
+      "community": 0,
       "norm_label": "_tiny_cfgs()"
     },
     {
@@ -2175,7 +2255,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "tests_test_training_run_test_run_dir_artifacts_and_checkpoints",
-      "community": 7,
+      "community": 0,
       "norm_label": "test_run_dir_artifacts_and_checkpoints()"
     },
     {
@@ -2185,7 +2265,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "tests_test_training_run_test_resume_continues_from_checkpoint",
-      "community": 7,
+      "community": 0,
       "norm_label": "test_resume_continues_from_checkpoint()"
     },
     {
@@ -2195,7 +2275,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_training_run_rationale_1",
-      "community": 7,
+      "community": 0,
       "norm_label": "tests for production run management: run dir, checkpoints, resume, status."
     },
     {
@@ -2205,7 +2285,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_transit_model",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_transit_model.py"
     },
     {
@@ -2215,7 +2295,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_out_of_transit_is_unity",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_out_of_transit_is_unity()"
     },
     {
@@ -2225,7 +2305,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_depth_scales_with_radius_ratio",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_depth_scales_with_radius_ratio()"
     },
     {
@@ -2235,7 +2315,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_secondary_eclipse_flat",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_secondary_eclipse_flat()"
     },
     {
@@ -2245,7 +2325,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_vectorized_matches_loop",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_vectorized_matches_loop()"
     },
     {
@@ -2255,7 +2335,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_exposure_integration_one_subsample_matches_instantaneous",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_exposure_integration_one_subsample_matches_instantaneous()"
     },
     {
@@ -2265,7 +2345,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_duration_physical",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_duration_physical()"
     },
     {
@@ -2275,7 +2355,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "tests_test_transit_model_test_native_matches_batman",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_native_matches_batman()"
     },
     {
@@ -2305,7 +2385,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_test_views_test_local_view_centers_transit",
-      "community": 3,
+      "community": 2,
       "norm_label": "test_local_view_centers_transit()"
     },
     {
@@ -2495,7 +2575,7 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "baselines_mcmc_has_emcee",
-      "community": 1,
+      "community": 3,
       "norm_label": "has_emcee()"
     },
     {
@@ -2527,6 +2607,56 @@
       "id": "baselines_mcmc_rationale_155",
       "community": 3,
       "norm_label": "affine-invariant stretch-move ensemble sampler (goodman & weare 2010)."
+    },
+    {
+      "label": "tls.py",
+      "file_type": "code",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "baselines_tls",
+      "community": 3,
+      "norm_label": "tls.py"
+    },
+    {
+      "label": "has_tls()",
+      "file_type": "code",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "baselines_tls_has_tls",
+      "community": 3,
+      "norm_label": "has_tls()"
+    },
+    {
+      "label": "tls_detect()",
+      "file_type": "code",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "baselines_tls_tls_detect",
+      "community": 3,
+      "norm_label": "tls_detect()"
+    },
+    {
+      "label": "Transit Least Squares detection baseline.",
+      "file_type": "rationale",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "baselines_tls_rationale_1",
+      "community": 3,
+      "norm_label": "transit least squares detection baseline."
+    },
+    {
+      "label": "Run Transit Least Squares and return the peak detection score.",
+      "file_type": "rationale",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "baselines_tls_rationale_19",
+      "community": 3,
+      "norm_label": "run transit least squares and return the peak detection score."
     },
     {
       "label": "correction.py",
@@ -2652,7 +2782,7 @@
       "label": "generate_to_disk()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L77",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "transitflow_data_generate_to_disk",
       "community": 5,
@@ -2662,7 +2792,7 @@
       "label": "_sha256_file()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L118",
+      "source_location": "L122",
       "_origin": "ast",
       "id": "transitflow_data_sha256_file",
       "community": 5,
@@ -2672,7 +2802,7 @@
       "label": "_git_sha()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L128",
+      "source_location": "L132",
       "_origin": "ast",
       "id": "transitflow_data_git_sha",
       "community": 5,
@@ -2682,7 +2812,7 @@
       "label": "_write_dataset_metadata()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L140",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "transitflow_data_write_dataset_metadata",
       "community": 5,
@@ -2692,7 +2822,7 @@
       "label": "DiskDataset",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L175",
+      "source_location": "L179",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset",
       "community": 32,
@@ -2702,7 +2832,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L189",
+      "source_location": "L193",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_init",
       "community": 32,
@@ -2712,7 +2842,7 @@
       "label": ".__len__()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L216",
+      "source_location": "L220",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_len",
       "community": 32,
@@ -2722,7 +2852,7 @@
       "label": "._gather()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L219",
+      "source_location": "L223",
       "_origin": "ast",
       "id": "transitflow_data_diskdataset_gather",
       "community": 32,
@@ -2732,7 +2862,7 @@
       "label": "DiskIterator",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L233",
+      "source_location": "L237",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator",
       "community": 32,
@@ -2742,7 +2872,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L236",
+      "source_location": "L240",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_init",
       "community": 32,
@@ -2752,7 +2882,7 @@
       "label": "._new_perm()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L246",
+      "source_location": "L250",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_new_perm",
       "community": 32,
@@ -2762,7 +2892,7 @@
       "label": ".__iter__()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L252",
+      "source_location": "L256",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_iter",
       "community": 32,
@@ -2772,7 +2902,7 @@
       "label": ".__next__()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L255",
+      "source_location": "L259",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_next",
       "community": 32,
@@ -2782,7 +2912,7 @@
       "label": ".close()",
       "file_type": "code",
       "source_file": "transitflow/data.py",
-      "source_location": "L271",
+      "source_location": "L277",
       "_origin": "ast",
       "id": "transitflow_data_diskiterator_close",
       "community": 32,
@@ -2812,9 +2942,9 @@
       "label": "Pre-generate ``n_total`` light curves into sharded ``.npz`` files.      Resumabl",
       "file_type": "rationale",
       "source_file": "transitflow/data.py",
-      "source_location": "L81",
+      "source_location": "L85",
       "_origin": "ast",
-      "id": "transitflow_data_rationale_81",
+      "id": "transitflow_data_rationale_85",
       "community": 5,
       "norm_label": "pre-generate ``n_total`` light curves into sharded ``.npz`` files.      resumabl"
     },
@@ -2822,9 +2952,9 @@
       "label": "Loads sharded light-curve data; serves shuffled batches as torch tensors.      D",
       "file_type": "rationale",
       "source_file": "transitflow/data.py",
-      "source_location": "L176",
+      "source_location": "L180",
       "_origin": "ast",
-      "id": "transitflow_data_rationale_176",
+      "id": "transitflow_data_rationale_180",
       "community": 32,
       "norm_label": "loads sharded light-curve data; serves shuffled batches as torch tensors.      d"
     },
@@ -2832,9 +2962,9 @@
       "label": "Infinite shuffled iterator over a :class:`DiskDataset` for training.",
       "file_type": "rationale",
       "source_file": "transitflow/data.py",
-      "source_location": "L234",
+      "source_location": "L238",
       "_origin": "ast",
-      "id": "transitflow_data_rationale_234",
+      "id": "transitflow_data_rationale_238",
       "community": 32,
       "norm_label": "infinite shuffled iterator over a :class:`diskdataset` for training."
     },
@@ -2865,7 +2995,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "evaluation_coverage",
-      "community": 1,
+      "community": 4,
       "norm_label": "coverage.py"
     },
     {
@@ -2875,7 +3005,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "evaluation_coverage_central_interval_coverage",
-      "community": 1,
+      "community": 4,
       "norm_label": "central_interval_coverage()"
     },
     {
@@ -2885,7 +3015,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "evaluation_coverage_coverage_calibration_error",
-      "community": 1,
+      "community": 4,
       "norm_label": "coverage_calibration_error()"
     },
     {
@@ -2895,7 +3025,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "evaluation_coverage_rationale_1",
-      "community": 1,
+      "community": 4,
       "norm_label": "expected coverage probability of posterior credible intervals."
     },
     {
@@ -2905,7 +3035,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "evaluation_coverage_rationale_10",
-      "community": 1,
+      "community": 4,
       "norm_label": "empirical coverage of central credible intervals vs nominal level.      for each"
     },
     {
@@ -2915,7 +3045,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "evaluation_coverage_rationale_34",
-      "community": 1,
+      "community": 4,
       "norm_label": "mean absolute deviation of empirical from nominal coverage (lower better)."
     },
     {
@@ -2935,7 +3065,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "evaluation_detection_detection_metrics",
-      "community": 1,
+      "community": 4,
       "norm_label": "detection_metrics()"
     },
     {
@@ -2965,7 +3095,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "evaluation_detection_rationale_15",
-      "community": 1,
+      "community": 4,
       "norm_label": "roc-auc, average precision, and curve arrays."
     },
     {
@@ -3195,7 +3325,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "tensor",
-      "community": 19,
+      "community": 8,
       "norm_label": "tensor"
     },
     {
@@ -3315,7 +3445,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference",
-      "community": 1,
+      "community": 2,
       "norm_label": "inference.py"
     },
     {
@@ -3335,7 +3465,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_init",
-      "community": 1,
+      "community": 3,
       "norm_label": ".__init__()"
     },
     {
@@ -3345,7 +3475,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_expand_std_samples",
-      "community": 3,
+      "community": 1,
       "norm_label": "._expand_std_samples()"
     },
     {
@@ -3355,7 +3485,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_to_t",
-      "community": 3,
+      "community": 1,
       "norm_label": "._to_t()"
     },
     {
@@ -3365,57 +3495,57 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_embed",
-      "community": 3,
+      "community": 1,
       "norm_label": ".embed()"
     },
     {
       "label": ".detect()",
       "file_type": "code",
       "source_file": "transitflow/inference.py",
-      "source_location": "L82",
+      "source_location": "L89",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_detect",
-      "community": 3,
+      "community": 1,
       "norm_label": ".detect()"
     },
     {
       "label": ".posterior_samples()",
       "file_type": "code",
       "source_file": "transitflow/inference.py",
-      "source_location": "L88",
+      "source_location": "L97",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_posterior_samples",
-      "community": 3,
+      "community": 1,
       "norm_label": ".posterior_samples()"
     },
     {
       "label": ".detect_and_characterize()",
       "file_type": "code",
       "source_file": "transitflow/inference.py",
-      "source_location": "L107",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_detect_and_characterize",
-      "community": 3,
+      "community": 1,
       "norm_label": ".detect_and_characterize()"
     },
     {
       "label": ".log_prob_std()",
       "file_type": "code",
       "source_file": "transitflow/inference.py",
-      "source_location": "L123",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_log_prob_std",
-      "community": 3,
+      "community": 1,
       "norm_label": ".log_prob_std()"
     },
     {
       "label": ".importance_diagnostic()",
       "file_type": "code",
       "source_file": "transitflow/inference.py",
-      "source_location": "L140",
+      "source_location": "L153",
       "_origin": "ast",
       "id": "transitflow_inference_transitflowinference_importance_diagnostic",
-      "community": 3,
+      "community": 1,
       "norm_label": ".importance_diagnostic()"
     },
     {
@@ -3425,37 +3555,37 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_inference_rationale_1",
-      "community": 1,
+      "community": 2,
       "norm_label": "amortized inference: detection probability, posterior samples, densities.  wraps"
     },
     {
       "label": "Return physical posterior samples ``(B, n_samples, 7)``.",
       "file_type": "rationale",
       "source_file": "transitflow/inference.py",
-      "source_location": "L91",
+      "source_location": "L100",
       "_origin": "ast",
-      "id": "transitflow_inference_rationale_91",
-      "community": 3,
+      "id": "transitflow_inference_rationale_100",
+      "community": 1,
       "norm_label": "return physical posterior samples ``(b, n_samples, 7)``."
     },
     {
       "label": "Exact ``log q(theta | x)`` in standardized space.",
       "file_type": "rationale",
       "source_file": "transitflow/inference.py",
-      "source_location": "L124",
+      "source_location": "L137",
       "_origin": "ast",
-      "id": "transitflow_inference_rationale_124",
-      "community": 3,
+      "id": "transitflow_inference_rationale_137",
+      "community": 1,
       "norm_label": "exact ``log q(theta | x)`` in standardized space."
     },
     {
       "label": "Approximate IS efficiency as a misspecification flag.          Uses a Gaussian l",
       "file_type": "rationale",
       "source_file": "transitflow/inference.py",
-      "source_location": "L143",
+      "source_location": "L156",
       "_origin": "ast",
-      "id": "transitflow_inference_rationale_143",
-      "community": 3,
+      "id": "transitflow_inference_rationale_156",
+      "community": 1,
       "norm_label": "approximate is efficiency as a misspecification flag.          uses a gaussian l"
     },
     {
@@ -3485,7 +3615,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_embedding",
-      "community": 30,
+      "community": 17,
       "norm_label": "embedding.py"
     },
     {
@@ -3495,7 +3625,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d",
-      "community": 30,
+      "community": 17,
       "norm_label": "residualblock1d"
     },
     {
@@ -3505,7 +3635,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d_init",
-      "community": 30,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -3515,7 +3645,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "models_embedding_residualblock1d_forward",
-      "community": 30,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3525,7 +3655,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch",
-      "community": 30,
+      "community": 17,
       "norm_label": "cnnbranch"
     },
     {
@@ -3535,7 +3665,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch_init",
-      "community": 30,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -3545,7 +3675,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "models_embedding_cnnbranch_forward",
-      "community": 30,
+      "community": 17,
       "norm_label": ".forward()"
     },
     {
@@ -3565,14 +3695,14 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "models_embedding_dualbranchembedding_init",
-      "community": 30,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
       "label": ".forward()",
       "file_type": "code",
       "source_file": "transitflow/models/embedding.py",
-      "source_location": "L109",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "models_embedding_dualbranchembedding_forward",
       "community": 17,
@@ -3585,7 +3715,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_embedding_rationale_1",
-      "community": 30,
+      "community": 17,
       "norm_label": "dual-branch 1-d cnn embedding network ``e(x) -> e``.  a resnet-1d style global b"
     },
     {
@@ -3595,7 +3725,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "models_embedding_rationale_16",
-      "community": 30,
+      "community": 17,
       "norm_label": "two 3-wide conv layers + identity/projection skip, optional /2 downsample."
     },
     {
@@ -3605,7 +3735,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "models_embedding_rationale_40",
-      "community": 30,
+      "community": 17,
       "norm_label": "stack of residual blocks with progressive downsampling -> pooled vector."
     },
     {
@@ -3805,7 +3935,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_npe",
-      "community": 19,
+      "community": 8,
       "norm_label": "npe.py"
     },
     {
@@ -3815,7 +3945,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "models_npe_couplinglayer",
-      "community": 19,
+      "community": 8,
       "norm_label": "_couplinglayer"
     },
     {
@@ -3825,7 +3955,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_init",
-      "community": 19,
+      "community": 8,
       "norm_label": ".__init__()"
     },
     {
@@ -3835,7 +3965,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_forward",
-      "community": 19,
+      "community": 8,
       "norm_label": ".forward()"
     },
     {
@@ -3845,7 +3975,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "models_npe_couplinglayer_inverse",
-      "community": 19,
+      "community": 8,
       "norm_label": ".inverse()"
     },
     {
@@ -3855,7 +3985,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "models_npe_realnvp",
-      "community": 19,
+      "community": 8,
       "norm_label": "_realnvp"
     },
     {
@@ -3865,7 +3995,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "models_npe_realnvp_init",
-      "community": 19,
+      "community": 8,
       "norm_label": ".__init__()"
     },
     {
@@ -3875,7 +4005,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "models_npe_realnvp_log_prob",
-      "community": 19,
+      "community": 8,
       "norm_label": ".log_prob()"
     },
     {
@@ -3885,7 +4015,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "models_npe_realnvp_sample",
-      "community": 19,
+      "community": 8,
       "norm_label": ".sample()"
     },
     {
@@ -3895,7 +4025,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "models_npe_npehead",
-      "community": 24,
+      "community": 8,
       "norm_label": "npehead"
     },
     {
@@ -3905,7 +4035,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "models_npe_npehead_init",
-      "community": 19,
+      "community": 8,
       "norm_label": ".__init__()"
     },
     {
@@ -3915,7 +4045,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "models_npe_npehead_log_prob",
-      "community": 24,
+      "community": 8,
       "norm_label": ".log_prob()"
     },
     {
@@ -3925,7 +4055,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "models_npe_npehead_sample",
-      "community": 24,
+      "community": 8,
       "norm_label": ".sample()"
     },
     {
@@ -3935,7 +4065,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "models_npe_npehead_nll",
-      "community": 24,
+      "community": 8,
       "norm_label": ".nll()"
     },
     {
@@ -3945,7 +4075,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_npe_rationale_1",
-      "community": 19,
+      "community": 8,
       "norm_label": "neural posterior estimation head (variant b baseline).  a conditional neural spl"
     },
     {
@@ -3955,7 +4085,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "models_npe_rationale_24",
-      "community": 19,
+      "community": 8,
       "norm_label": "conditional affine coupling (realnvp) with a fixed binary mask."
     },
     {
@@ -3965,7 +4095,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "models_npe_rationale_56",
-      "community": 19,
+      "community": 8,
       "norm_label": "fallback conditional realnvp over a standard-normal base."
     },
     {
@@ -3975,7 +4105,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "models_npe_rationale_89",
-      "community": 24,
+      "community": 8,
       "norm_label": "conditional normalizing flow posterior head ``q(theta | e)``."
     },
     {
@@ -3985,7 +4115,7 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "models_npe_rationale_112",
-      "community": 24,
+      "community": 8,
       "norm_label": "return ``(b, n, param_dim)`` posterior samples."
     },
     {
@@ -3995,7 +4125,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_spike_slab",
-      "community": 15,
+      "community": 8,
       "norm_label": "spike_slab.py"
     },
     {
@@ -4005,7 +4135,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabconfig",
-      "community": 15,
+      "community": 8,
       "norm_label": "spikeslabconfig"
     },
     {
@@ -4015,7 +4145,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter",
-      "community": 15,
+      "community": 8,
       "norm_label": "spikeslabadapter"
     },
     {
@@ -4025,7 +4155,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_init",
-      "community": 15,
+      "community": 8,
       "norm_label": ".__init__()"
     },
     {
@@ -4035,7 +4165,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_make_targets",
-      "community": 15,
+      "community": 8,
       "norm_label": ".make_targets()"
     },
     {
@@ -4045,7 +4175,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "models_spike_slab_spikeslabadapter_detect_prob",
-      "community": 19,
+      "community": 8,
       "norm_label": ".detect_prob()"
     },
     {
@@ -4055,7 +4185,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "models_spike_slab_train_spike_slab",
-      "community": 15,
+      "community": 8,
       "norm_label": "train_spike_slab()"
     },
     {
@@ -4065,7 +4195,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_1",
-      "community": 15,
+      "community": 8,
       "norm_label": "variant c (experimental): unified spike-and-slab posterior.  a single posterior"
     },
     {
@@ -4075,7 +4205,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_37",
-      "community": 15,
+      "community": 8,
       "norm_label": "maps (theta_std, d) to spike-and-slab targets and reads detection back."
     },
     {
@@ -4085,7 +4215,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_47",
-      "community": 15,
+      "community": 8,
       "norm_label": "augmented training targets: spike the depth dim for non-planets."
     },
     {
@@ -4095,7 +4225,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_62",
-      "community": 19,
+      "community": 8,
       "norm_label": "posterior detection probability = p(depth dim above threshold).          ``sampl"
     },
     {
@@ -4105,7 +4235,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "models_spike_slab_rationale_73",
-      "community": 15,
+      "community": 8,
       "norm_label": "train variant c: one unified flow over all rows (no detection head, no mask)."
     },
     {
@@ -4115,7 +4245,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_transitflow",
-      "community": 32,
+      "community": 15,
       "norm_label": "transitflow.py"
     },
     {
@@ -4125,14 +4255,14 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "models_transitflow_modelconfig",
-      "community": 7,
+      "community": 15,
       "norm_label": "modelconfig"
     },
     {
       "label": "TransitFlow",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L56",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "models_transitflow_transitflow",
       "community": 15,
@@ -4142,7 +4272,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L59",
+      "source_location": "L60",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_init",
       "community": 17,
@@ -4152,37 +4282,37 @@
       "label": ".embed()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L90",
+      "source_location": "L92",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_embed",
-      "community": 19,
+      "community": 15,
       "norm_label": ".embed()"
     },
     {
       "label": ".detect_logits()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L97",
+      "source_location": "L100",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_detect_logits",
-      "community": 19,
+      "community": 15,
       "norm_label": ".detect_logits()"
     },
     {
       "label": ".velocity()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L101",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_velocity",
-      "community": 19,
+      "community": 15,
       "norm_label": ".velocity()"
     },
     {
       "label": ".param_dim()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L108",
+      "source_location": "L111",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_param_dim",
       "community": 15,
@@ -4192,7 +4322,7 @@
       "label": ".velocity_fn()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L111",
+      "source_location": "L114",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_velocity_fn",
       "community": 8,
@@ -4202,7 +4332,7 @@
       "label": ".num_parameters()",
       "file_type": "code",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L117",
+      "source_location": "L120",
       "_origin": "ast",
       "id": "models_transitflow_transitflow_num_parameters",
       "community": 15,
@@ -4215,16 +4345,16 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "models_transitflow_rationale_1",
-      "community": 32,
+      "community": 15,
       "norm_label": "the full transitflow model: shared embedding + detection + posterior head.  the"
     },
     {
       "label": "Shared-embedding joint detection + characterization model.",
       "file_type": "rationale",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "_origin": "ast",
-      "id": "models_transitflow_rationale_57",
+      "id": "models_transitflow_rationale_58",
       "community": 15,
       "norm_label": "shared-embedding joint detection + characterization model."
     },
@@ -4232,9 +4362,9 @@
       "label": "Return a callable ``(tau, theta, e) -> v`` carrying ``param_dim``.",
       "file_type": "rationale",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L112",
+      "source_location": "L115",
       "_origin": "ast",
-      "id": "models_transitflow_rationale_112",
+      "id": "models_transitflow_rationale_115",
       "community": 8,
       "norm_label": "return a callable ``(tau, theta, e) -> v`` carrying ``param_dim``."
     },
@@ -4465,7 +4595,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors",
-      "community": 1,
+      "community": 4,
       "norm_label": "priors.py"
     },
     {
@@ -4535,7 +4665,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior",
-      "community": 1,
+      "community": 3,
       "norm_label": "transitprior"
     },
     {
@@ -4552,147 +4682,167 @@
       "label": ".default_specs()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L120",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_default_specs",
       "community": 31,
       "norm_label": ".default_specs()"
     },
     {
+      "label": ".from_sim_config()",
+      "file_type": "code",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L155",
+      "_origin": "ast",
+      "id": "transitflow_priors_transitprior_from_sim_config",
+      "community": 31,
+      "norm_label": ".from_sim_config()"
+    },
+    {
       "label": ".dim()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L139",
+      "source_location": "L177",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_dim",
-      "community": 1,
+      "community": 3,
       "norm_label": ".dim()"
     },
     {
       "label": ".names()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L143",
+      "source_location": "L181",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_names",
-      "community": 1,
+      "community": 3,
       "norm_label": ".names()"
     },
     {
       "label": ".sample()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L149",
+      "source_location": "L187",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_sample",
-      "community": 2,
+      "community": 3,
       "norm_label": ".sample()"
     },
     {
       "label": "._u_to_physical()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L158",
+      "source_location": "L196",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_u_to_physical",
-      "community": 2,
+      "community": 3,
       "norm_label": "._u_to_physical()"
     },
     {
       "label": "._physical_to_u()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L161",
+      "source_location": "L199",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_u",
-      "community": 2,
+      "community": 3,
       "norm_label": "._physical_to_u()"
     },
     {
       "label": ".physical_to_std()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L170",
+      "source_location": "L208",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std",
-      "community": 2,
+      "community": 3,
       "norm_label": ".physical_to_std()"
     },
     {
       "label": ".std_to_physical()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L174",
+      "source_location": "L212",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_to_physical",
-      "community": 2,
+      "community": 3,
       "norm_label": ".std_to_physical()"
     },
     {
       "label": ".torch_buffers()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L183",
+      "source_location": "L221",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_torch_buffers",
-      "community": 19,
+      "community": 3,
       "norm_label": ".torch_buffers()"
     },
     {
       "label": ".std_to_physical_torch()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L194",
+      "source_location": "L232",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_to_physical_torch",
-      "community": 19,
+      "community": 3,
       "norm_label": ".std_to_physical_torch()"
     },
     {
       "label": ".physical_to_std_torch()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L201",
+      "source_location": "L239",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_physical_to_std_torch",
-      "community": 19,
+      "community": 3,
       "norm_label": ".physical_to_std_torch()"
+    },
+    {
+      "label": "._stellar_density_logpdf_a_rs()",
+      "file_type": "code",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L248",
+      "_origin": "ast",
+      "id": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "community": 3,
+      "norm_label": "._stellar_density_logpdf_a_rs()"
     },
     {
       "label": ".log_prob_physical()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L210",
+      "source_location": "L277",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_physical",
-      "community": 2,
+      "community": 3,
       "norm_label": ".log_prob_physical()"
     },
     {
       "label": ".log_prob_std()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L221",
+      "source_location": "L294",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_log_prob_std",
-      "community": 2,
+      "community": 3,
       "norm_label": ".log_prob_std()"
     },
     {
       "label": ".std_bounds()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L236",
+      "source_location": "L309",
       "_origin": "ast",
       "id": "transitflow_priors_transitprior_std_bounds",
-      "community": 2,
+      "community": 3,
       "norm_label": ".std_bounds()"
     },
     {
       "label": "kipping_to_quadratic()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L242",
+      "source_location": "L315",
       "_origin": "ast",
       "id": "transitflow_priors_kipping_to_quadratic",
       "community": 3,
@@ -4702,7 +4852,7 @@
       "label": "quadratic_to_kipping()",
       "file_type": "code",
       "source_file": "transitflow/priors.py",
-      "source_location": "L256",
+      "source_location": "L329",
       "_origin": "ast",
       "id": "transitflow_priors_quadratic_to_kipping",
       "community": 23,
@@ -4715,7 +4865,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_1",
-      "community": 1,
+      "community": 4,
       "norm_label": "parameter priors and bijective transforms for transitflow.  the inference target"
     },
     {
@@ -4735,66 +4885,86 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "transitflow_priors_rationale_92",
-      "community": 1,
+      "community": 3,
       "norm_label": "joint prior over the 7-d transit parameter vector with standardization.      the"
     },
     {
       "label": "Default prior ranges. ``regime`` selects the period upper bound.",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L121",
+      "source_location": "L137",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_121",
+      "id": "transitflow_priors_rationale_137",
       "community": 31,
       "norm_label": "default prior ranges. ``regime`` selects the period upper bound."
+    },
+    {
+      "label": "Build a prior whose *density* matches a simulator ``SimConfig``.          The fo",
+      "file_type": "rationale",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L156",
+      "_origin": "ast",
+      "id": "transitflow_priors_rationale_156",
+      "community": 31,
+      "norm_label": "build a prior whose *density* matches a simulator ``simconfig``.          the fo"
     },
     {
       "label": "Draw ``n`` parameter vectors from the prior. Returns ``(n, 7)``.",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L150",
+      "source_location": "L188",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_150",
-      "community": 2,
+      "id": "transitflow_priors_rationale_188",
+      "community": 3,
       "norm_label": "draw ``n`` parameter vectors from the prior. returns ``(n, 7)``."
     },
     {
       "label": "Return (log_mask, u_mean, u_std, u_low, u_high) as tensors.",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L184",
+      "source_location": "L222",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_184",
-      "community": 19,
+      "id": "transitflow_priors_rationale_222",
+      "community": 3,
       "norm_label": "return (log_mask, u_mean, u_std, u_low, u_high) as tensors."
+    },
+    {
+      "label": "Log density of a/Rs given P under the stellar-density prior.          Inverts a/",
+      "file_type": "rationale",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L250",
+      "_origin": "ast",
+      "id": "transitflow_priors_rationale_250",
+      "community": 3,
+      "norm_label": "log density of a/rs given p under the stellar-density prior.          inverts a/"
     },
     {
       "label": "Log prior density in physical space; ``-inf`` outside support.",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L211",
+      "source_location": "L278",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_211",
-      "community": 2,
+      "id": "transitflow_priors_rationale_278",
+      "community": 3,
       "norm_label": "log prior density in physical space; ``-inf`` outside support."
     },
     {
       "label": "Log prior density in standardized space; ``-inf`` outside support.          In `",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L222",
+      "source_location": "L295",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_222",
-      "community": 2,
+      "id": "transitflow_priors_rationale_295",
+      "community": 3,
       "norm_label": "log prior density in standardized space; ``-inf`` outside support.          in `"
     },
     {
       "label": "Map Kipping (2013) (q1, q2) in [0,1]^2 to quadratic LD (u1, u2).      Guarantees",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L243",
+      "source_location": "L316",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_243",
+      "id": "transitflow_priors_rationale_316",
       "community": 3,
       "norm_label": "map kipping (2013) (q1, q2) in [0,1]^2 to quadratic ld (u1, u2).      guarantees"
     },
@@ -4802,9 +4972,9 @@
       "label": "Inverse of :func:`kipping_to_quadratic`.",
       "file_type": "rationale",
       "source_file": "transitflow/priors.py",
-      "source_location": "L257",
+      "source_location": "L330",
       "_origin": "ast",
-      "id": "transitflow_priors_rationale_257",
+      "id": "transitflow_priors_rationale_330",
       "community": 23,
       "norm_label": "inverse of :func:`kipping_to_quadratic`."
     },
@@ -4815,7 +4985,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_simulator",
-      "community": 1,
+      "community": 2,
       "norm_label": "simulator.py"
     },
     {
@@ -4845,7 +5015,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator",
-      "community": 1,
+      "community": 14,
       "norm_label": "transitsimulator"
     },
     {
@@ -4855,7 +5025,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "transitflow_simulator_transitsimulator_init",
-      "community": 1,
+      "community": 14,
       "norm_label": ".__init__()"
     },
     {
@@ -4895,7 +5065,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_1",
-      "community": 1,
+      "community": 2,
       "norm_label": "the sbi forward simulator: parameters + physics + noise -> dual-view data.  for"
     },
     {
@@ -4915,7 +5085,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "transitflow_simulator_rationale_102",
-      "community": 1,
+      "community": 14,
       "norm_label": "vectorized forward simulator producing dual-view sbi training data."
     },
     {
@@ -4955,7 +5125,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "transitflow_train_trainconfig",
-      "community": 7,
+      "community": 0,
       "norm_label": "trainconfig"
     },
     {
@@ -4975,7 +5145,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "transitflow_train_compute_losses",
-      "community": 15,
+      "community": 0,
       "norm_label": "compute_losses()"
     },
     {
@@ -4992,7 +5162,7 @@
       "label": "evaluate()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L115",
+      "source_location": "L116",
       "_origin": "ast",
       "id": "transitflow_train_evaluate",
       "community": 0,
@@ -5002,7 +5172,7 @@
       "label": "save_checkpoint()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L146",
+      "source_location": "L148",
       "_origin": "ast",
       "id": "transitflow_train_save_checkpoint",
       "community": 0,
@@ -5012,17 +5182,17 @@
       "label": "load_checkpoint()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L167",
+      "source_location": "L169",
       "_origin": "ast",
       "id": "transitflow_train_load_checkpoint",
-      "community": 1,
+      "community": 0,
       "norm_label": "load_checkpoint()"
     },
     {
       "label": "_write_json_atomic()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L180",
+      "source_location": "L182",
       "_origin": "ast",
       "id": "transitflow_train_write_json_atomic",
       "community": 0,
@@ -5032,7 +5202,7 @@
       "label": "_human_time()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L187",
+      "source_location": "L189",
       "_origin": "ast",
       "id": "transitflow_train_human_time",
       "community": 0,
@@ -5042,7 +5212,7 @@
       "label": "train()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L197",
+      "source_location": "L199",
       "_origin": "ast",
       "id": "transitflow_train_train",
       "community": 0,
@@ -5052,7 +5222,7 @@
       "label": "history_tail()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L434",
+      "source_location": "L436",
       "_origin": "ast",
       "id": "transitflow_train_history_tail",
       "community": 0,
@@ -5062,7 +5232,7 @@
       "label": "_health()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L444",
+      "source_location": "L446",
       "_origin": "ast",
       "id": "transitflow_train_health",
       "community": 0,
@@ -5072,7 +5242,7 @@
       "label": "_write_status()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L461",
+      "source_location": "L463",
       "_origin": "ast",
       "id": "transitflow_train_write_status",
       "community": 0,
@@ -5082,7 +5252,7 @@
       "label": "_rotate_step_ckpt()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L483",
+      "source_location": "L485",
       "_origin": "ast",
       "id": "transitflow_train_rotate_step_ckpt",
       "community": 0,
@@ -5092,7 +5262,7 @@
       "label": "_resolve_resume()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L497",
+      "source_location": "L499",
       "_origin": "ast",
       "id": "transitflow_train_resolve_resume",
       "community": 0,
@@ -5102,7 +5272,7 @@
       "label": "preflight()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L509",
+      "source_location": "L511",
       "_origin": "ast",
       "id": "transitflow_train_preflight",
       "community": 0,
@@ -5112,7 +5282,7 @@
       "label": "_preflight_report()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L613",
+      "source_location": "L615",
       "_origin": "ast",
       "id": "transitflow_train_preflight_report",
       "community": 0,
@@ -5122,7 +5292,7 @@
       "label": "_snapshot_config()",
       "file_type": "code",
       "source_file": "transitflow/train.py",
-      "source_location": "L633",
+      "source_location": "L635",
       "_origin": "ast",
       "id": "transitflow_train_snapshot_config",
       "community": 0,
@@ -5145,16 +5315,16 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "transitflow_train_rationale_92",
-      "community": 15,
+      "community": 0,
       "norm_label": "forward pass returning the component losses (differentiable)."
     },
     {
       "label": "Validation losses, detection accuracy, and ROC-AUC.",
       "file_type": "rationale",
       "source_file": "transitflow/train.py",
-      "source_location": "L116",
+      "source_location": "L117",
       "_origin": "ast",
-      "id": "transitflow_train_rationale_116",
+      "id": "transitflow_train_rationale_117",
       "community": 0,
       "norm_label": "validation losses, detection accuracy, and roc-auc."
     },
@@ -5162,9 +5332,9 @@
       "label": "Train a TransitFlow model; returns history and the trained model.",
       "file_type": "rationale",
       "source_file": "transitflow/train.py",
-      "source_location": "L203",
+      "source_location": "L205",
       "_origin": "ast",
-      "id": "transitflow_train_rationale_203",
+      "id": "transitflow_train_rationale_205",
       "community": 0,
       "norm_label": "train a transitflow model; returns history and the trained model."
     },
@@ -5172,9 +5342,9 @@
       "label": "Derive run-health warnings so a wasteful run is caught early.",
       "file_type": "rationale",
       "source_file": "transitflow/train.py",
-      "source_location": "L446",
+      "source_location": "L448",
       "_origin": "ast",
-      "id": "transitflow_train_rationale_446",
+      "id": "transitflow_train_rationale_448",
       "community": 0,
       "norm_label": "derive run-health warnings so a wasteful run is caught early."
     },
@@ -5182,9 +5352,9 @@
       "label": "Short pre-run check so a misconfigured run never wastes GPU hours.      Runs ~``",
       "file_type": "rationale",
       "source_file": "transitflow/train.py",
-      "source_location": "L514",
+      "source_location": "L516",
       "_origin": "ast",
-      "id": "transitflow_train_rationale_514",
+      "id": "transitflow_train_rationale_516",
       "community": 0,
       "norm_label": "short pre-run check so a misconfigured run never wastes gpu hours.      runs ~``"
     },
@@ -5195,7 +5365,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_transit_model",
-      "community": 3,
+      "community": 2,
       "norm_label": "transit_model.py"
     },
     {
@@ -5205,7 +5375,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "transitflow_transit_model_occulted_fraction",
-      "community": 3,
+      "community": 2,
       "norm_label": "_occulted_fraction()"
     },
     {
@@ -5215,7 +5385,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_flux",
-      "community": 3,
+      "community": 2,
       "norm_label": "transit_flux()"
     },
     {
@@ -5225,7 +5395,7 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "transitflow_transit_model_exposure_integrated_transit_flux",
-      "community": 3,
+      "community": 2,
       "norm_label": "exposure_integrated_transit_flux()"
     },
     {
@@ -5235,7 +5405,7 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_flux_batman",
-      "community": 3,
+      "community": 2,
       "norm_label": "_transit_flux_batman()"
     },
     {
@@ -5245,7 +5415,7 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "transitflow_transit_model_transit_duration",
-      "community": 3,
+      "community": 2,
       "norm_label": "transit_duration()"
     },
     {
@@ -5255,7 +5425,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "transitflow_transit_model_has_batman",
-      "community": 3,
+      "community": 2,
       "norm_label": "has_batman()"
     },
     {
@@ -5265,7 +5435,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_1",
-      "community": 3,
+      "community": 2,
       "norm_label": "quadratic limb-darkened transit light-curve model.  two engines are provided:  *"
     },
     {
@@ -5275,7 +5445,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_38",
-      "community": 3,
+      "community": 2,
       "norm_label": "fraction of the total stellar flux blocked by the planet.      parameters are 1-"
     },
     {
@@ -5285,7 +5455,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_94",
-      "community": 3,
+      "community": 2,
       "norm_label": "compute normalized transit flux.      parameters     ----------     times:"
     },
     {
@@ -5295,7 +5465,7 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_167",
-      "community": 3,
+      "community": 2,
       "norm_label": "transit flux averaged over a finite cadence exposure.      ``transit_flux`` eval"
     },
     {
@@ -5305,7 +5475,7 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "transitflow_transit_model_rationale_216",
-      "community": 3,
+      "community": 2,
       "norm_label": "approximate total (t14) transit duration in days.      uses the standard small-a"
     },
     {
@@ -5415,7 +5585,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "transitflow_utils_simulatoriterator_next",
-      "community": 15,
+      "community": 20,
       "norm_label": ".__next__()"
     },
     {
@@ -5435,7 +5605,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "transitflow_utils_mp_worker",
-      "community": 1,
+      "community": 22,
       "norm_label": "_mp_worker()"
     },
     {
@@ -5585,7 +5755,7 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "transitflow_utils_rationale_108",
-      "community": 1,
+      "community": 22,
       "norm_label": "worker process: build a simulator and stream batches onto the queue."
     },
     {
@@ -5665,7 +5835,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "transitflow_views_flatten_transit_preserving",
-      "community": 6,
+      "community": 2,
       "norm_label": "flatten_transit_preserving()"
     },
     {
@@ -5765,7 +5935,7 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "transitflow_views_rationale_118",
-      "community": 6,
+      "community": 2,
       "norm_label": "remove slow trends without absorbing the transit depth.      real validation alr"
     },
     {
@@ -7066,6 +7236,28 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "scripts/baseline_detection.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "scripts_baseline_detection",
+      "target": "baselines_tls_has_tls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/baseline_detection.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "scripts_baseline_detection",
+      "target": "baselines_tls_tls_detect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/baseline_detection.py",
       "source_location": "L29",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -7213,6 +7405,28 @@
       "confidence_score": 1.0,
       "source": "scripts_baseline_detection_main",
       "target": "baselines_bls_has_astropy"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/baseline_detection.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "scripts_baseline_detection_main",
+      "target": "baselines_tls_has_tls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/baseline_detection.py",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "scripts_baseline_detection_main",
+      "target": "baselines_tls_tls_detect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -7946,11 +8160,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L59",
+      "source_location": "L60",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_evaluate_rationale_59",
-      "target": "scripts_evaluate_sbc_gate"
+      "source": "scripts_evaluate_rationale_60",
+      "target": "scripts_evaluate_sbc_gate",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -8011,11 +8225,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/evaluate.py",
-      "source_location": "L94",
+      "source_location": "L95",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_evaluate_rationale_94",
-      "target": "scripts_evaluate_stratified_characterization_diagnostics"
+      "source": "scripts_evaluate_rationale_95",
+      "target": "scripts_evaluate_stratified_characterization_diagnostics",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8093,6 +8307,17 @@
       "confidence_score": 1.0,
       "source": "baselines_mcmc_run_mcmc",
       "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "parameter_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "baselines_tls_tls_detect",
+      "target": "ndarray",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -8489,6 +8714,17 @@
       "confidence_score": 1.0,
       "source": "transitflow_priors_transitprior_std_to_physical",
       "target": "ndarray"
+    },
+    {
+      "relation": "references",
+      "context": "return_type",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "target": "ndarray",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10527,11 +10763,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "scripts_validate_real",
+      "target": "scripts_validate_real_crash_proof_print",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
       "source_location": "L123",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "scripts_validate_real",
       "target": "scripts_validate_real_download_lc"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L128",
+      "weight": 1.0,
+      "source": "scripts_validate_real",
+      "target": "scripts_validate_real_download_lc_impl",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10632,6 +10888,16 @@
       "confidence_score": 1.0,
       "source": "scripts_validate_real",
       "target": "scripts_validate_real_refine_t0"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "scripts_validate_real",
+      "target": "scripts_validate_real_safe_print",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10877,6 +11143,38 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
+      "source_location": "L239",
+      "weight": 1.0,
+      "source": "scripts_validate_real_download_lc",
+      "target": "scripts_validate_real_safe_print",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L629",
+      "weight": 1.0,
+      "source": "scripts_validate_real_main",
+      "target": "scripts_validate_real_safe_print",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
+      "source_location": "L156",
+      "weight": 1.0,
+      "source": "scripts_validate_real_rationale_156",
+      "target": "scripts_validate_real_safe_print",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/validate_real.py",
       "source_location": "L302",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -10887,11 +11185,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L129",
+      "source_location": "L204",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_129",
-      "target": "scripts_validate_real_download_lc"
+      "source": "scripts_validate_real_rationale_204",
+      "target": "scripts_validate_real_download_lc",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10908,11 +11206,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L164",
+      "source_location": "L254",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_164",
-      "target": "scripts_validate_real_refine_t0"
+      "source": "scripts_validate_real_rationale_254",
+      "target": "scripts_validate_real_refine_t0",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10940,11 +11238,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L191",
+      "source_location": "L281",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_191",
-      "target": "scripts_validate_real_flatten_lc"
+      "source": "scripts_validate_real_rationale_281",
+      "target": "scripts_validate_real_flatten_lc",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11005,11 +11303,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L260",
+      "source_location": "L350",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_260",
-      "target": "scripts_validate_real_real_quality_metrics"
+      "source": "scripts_validate_real_rationale_350",
+      "target": "scripts_validate_real_real_quality_metrics",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11059,11 +11357,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L317",
+      "source_location": "L407",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_317",
-      "target": "scripts_validate_real_fold_bin_fixed_ephemeris"
+      "source": "scripts_validate_real_rationale_407",
+      "target": "scripts_validate_real_fold_bin_fixed_ephemeris",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11102,11 +11400,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L347",
+      "source_location": "L437",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_347",
-      "target": "scripts_validate_real_real_gate_status"
+      "source": "scripts_validate_real_rationale_437",
+      "target": "scripts_validate_real_real_gate_status",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11156,11 +11454,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L370",
+      "source_location": "L460",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_370",
-      "target": "scripts_validate_real_real_diagnostic_status"
+      "source": "scripts_validate_real_rationale_460",
+      "target": "scripts_validate_real_real_diagnostic_status",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11210,11 +11508,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/validate_real.py",
-      "source_location": "L403",
+      "source_location": "L493",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "scripts_validate_real_rationale_403",
-      "target": "scripts_validate_real_mcmc_stratified_summary"
+      "source": "scripts_validate_real_rationale_493",
+      "target": "scripts_validate_real_mcmc_stratified_summary",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -14635,6 +14933,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_priors.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "tests_test_priors_stellar_prior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
       "source_location": "L55",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -14695,6 +15003,36 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/test_priors.py",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "tests_test_priors_test_stellar_density_ars_density_is_normalized",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "tests_test_priors_test_stellar_density_only_changes_ars",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
       "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -14746,6 +15084,28 @@
       "target": "transitflow_priors_transitprior"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "transitflow_simulator_simconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "tests_test_priors",
+      "target": "transitflow_simulator_transitsimulator",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -14766,6 +15126,72 @@
       "confidence_score": 1.0,
       "source": "tests_test_priors_test_kipping_validity",
       "target": "transitflow_priors_quadratic_to_kipping"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "tests_test_priors_stellar_prior",
+      "target": "transitflow_priors_transitprior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "tests_test_priors_test_stellar_density_ars_density_is_normalized",
+      "target": "tests_test_priors_stellar_prior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "tests_test_priors_test_stellar_density_only_changes_ars",
+      "target": "tests_test_priors_stellar_prior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
+      "target": "tests_test_priors_stellar_prior",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
+      "target": "transitflow_simulator_simconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_priors.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "tests_test_priors_test_stellar_density_prior_matches_simulator_sampling",
+      "target": "transitflow_simulator_transitsimulator",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -16572,6 +16998,46 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "baselines_tls",
+      "target": "baselines_tls_has_tls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "baselines_tls",
+      "target": "baselines_tls_tls_detect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "baselines_tls_rationale_1",
+      "target": "baselines_tls",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/baselines/tls.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "baselines_tls_rationale_19",
+      "target": "baselines_tls_tls_detect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "transitflow/correction.py",
       "source_location": "L46",
       "weight": 1.0,
@@ -16973,11 +17439,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/data.py",
-      "source_location": "L81",
+      "source_location": "L85",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_data_rationale_81",
-      "target": "transitflow_data_generate_to_disk"
+      "source": "transitflow_data_rationale_85",
+      "target": "transitflow_data_generate_to_disk",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -17087,11 +17553,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/data.py",
-      "source_location": "L176",
+      "source_location": "L180",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_data_rationale_176",
-      "target": "transitflow_data_diskdataset"
+      "source": "transitflow_data_rationale_180",
+      "target": "transitflow_data_diskdataset",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -17188,11 +17654,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/data.py",
-      "source_location": "L234",
+      "source_location": "L238",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_data_rationale_234",
-      "target": "transitflow_data_diskiterator"
+      "source": "transitflow_data_rationale_238",
+      "target": "transitflow_data_diskiterator",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -18707,11 +19173,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/inference.py",
-      "source_location": "L91",
+      "source_location": "L100",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_rationale_91",
-      "target": "transitflow_inference_transitflowinference_posterior_samples"
+      "source": "transitflow_inference_rationale_100",
+      "target": "transitflow_inference_transitflowinference_posterior_samples",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18728,11 +19194,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/inference.py",
-      "source_location": "L124",
+      "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_rationale_124",
-      "target": "transitflow_inference_transitflowinference_log_prob_std"
+      "source": "transitflow_inference_rationale_137",
+      "target": "transitflow_inference_transitflowinference_log_prob_std",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -18749,11 +19215,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/inference.py",
-      "source_location": "L143",
+      "source_location": "L156",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_inference_rationale_143",
-      "target": "transitflow_inference_transitflowinference_importance_diagnostic"
+      "source": "transitflow_inference_rationale_156",
+      "target": "transitflow_inference_transitflowinference_importance_diagnostic",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20118,11 +20584,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_transitflow_rationale_57",
-      "target": "models_transitflow_transitflow"
+      "source": "models_transitflow_rationale_58",
+      "target": "models_transitflow_transitflow",
+      "confidence_score": 1.0
     },
     {
       "relation": "method",
@@ -20242,11 +20708,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/models/transitflow.py",
-      "source_location": "L112",
+      "source_location": "L115",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "models_transitflow_rationale_112",
-      "target": "models_transitflow_transitflow_velocity_fn"
+      "source": "models_transitflow_rationale_115",
+      "target": "models_transitflow_transitflow_velocity_fn",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -20982,6 +21448,16 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "source": "transitflow_priors_transitprior",
+      "target": "transitflow_priors_transitprior_from_sim_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
       "source_location": "L100",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -21092,6 +21568,16 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
+      "source_location": "L248",
+      "weight": 1.0,
+      "source": "transitflow_priors_transitprior",
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
       "source_location": "L183",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -21165,21 +21651,42 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L121",
+      "source_location": "L137",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_121",
-      "target": "transitflow_priors_transitprior_default_specs"
+      "source": "transitflow_priors_rationale_137",
+      "target": "transitflow_priors_transitprior_default_specs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L168",
+      "weight": 1.0,
+      "source": "transitflow_priors_transitprior_from_sim_config",
+      "target": "transitflow_priors_transitprior_default_specs",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L150",
+      "source_location": "L156",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_150",
-      "target": "transitflow_priors_transitprior_sample"
+      "source": "transitflow_priors_rationale_156",
+      "target": "transitflow_priors_transitprior_from_sim_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "transitflow_priors_rationale_188",
+      "target": "transitflow_priors_transitprior_sample",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21229,11 +21736,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L184",
+      "source_location": "L222",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_184",
-      "target": "transitflow_priors_transitprior_torch_buffers"
+      "source": "transitflow_priors_rationale_222",
+      "target": "transitflow_priors_transitprior_torch_buffers",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -21261,11 +21768,32 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L211",
+      "source_location": "L250",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_211",
-      "target": "transitflow_priors_transitprior_log_prob_physical"
+      "source": "transitflow_priors_rationale_250",
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L289",
+      "weight": 1.0,
+      "source": "transitflow_priors_transitprior_log_prob_physical",
+      "target": "transitflow_priors_transitprior_stellar_density_logpdf_a_rs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L278",
+      "weight": 1.0,
+      "source": "transitflow_priors_rationale_278",
+      "target": "transitflow_priors_transitprior_log_prob_physical",
+      "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
@@ -21281,11 +21809,21 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L243",
+      "source_location": "L295",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_243",
-      "target": "transitflow_priors_kipping_to_quadratic"
+      "source": "transitflow_priors_rationale_295",
+      "target": "transitflow_priors_transitprior_log_prob_std",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "transitflow/priors.py",
+      "source_location": "L316",
+      "weight": 1.0,
+      "source": "transitflow_priors_rationale_316",
+      "target": "transitflow_priors_kipping_to_quadratic",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -21313,11 +21851,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/priors.py",
-      "source_location": "L257",
+      "source_location": "L330",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_priors_rationale_257",
-      "target": "transitflow_priors_quadratic_to_kipping"
+      "source": "transitflow_priors_rationale_330",
+      "target": "transitflow_priors_quadratic_to_kipping",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -22276,11 +22814,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/train.py",
-      "source_location": "L116",
+      "source_location": "L117",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_train_rationale_116",
-      "target": "transitflow_train_evaluate"
+      "source": "transitflow_train_rationale_117",
+      "target": "transitflow_train_evaluate",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -22385,11 +22923,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/train.py",
-      "source_location": "L203",
+      "source_location": "L205",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_train_rationale_203",
-      "target": "transitflow_train_train"
+      "source": "transitflow_train_rationale_205",
+      "target": "transitflow_train_train",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -22516,11 +23054,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/train.py",
-      "source_location": "L446",
+      "source_location": "L448",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_train_rationale_446",
-      "target": "transitflow_train_health"
+      "source": "transitflow_train_rationale_448",
+      "target": "transitflow_train_health",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -22581,11 +23119,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "transitflow/train.py",
-      "source_location": "L514",
+      "source_location": "L516",
       "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "transitflow_train_rationale_514",
-      "target": "transitflow_train_preflight"
+      "source": "transitflow_train_rationale_516",
+      "target": "transitflow_train_preflight",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -24302,5 +24840,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ac8be3292cf76f7ddacd78c7cbfb4cff1dd61d00"
+  "built_at_commit": "f97186d35721d5e670ff2b60815d9be882cdd94f"
 }
