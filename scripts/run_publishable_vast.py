@@ -207,7 +207,11 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     results.mkdir(parents=True, exist_ok=True)
 
-    noise_lib = (repo / args.noise_lib).resolve()
+    noise_lib: Path | None
+    if str(args.noise_lib).strip().lower() in {"", "none", "null"}:
+        noise_lib = None
+    else:
+        noise_lib = (repo / args.noise_lib).resolve()
     data_dir = Path(args.data_dir).resolve() if args.data_dir else out_dir / "data"
     run_dir = Path(args.run_dir).resolve() if args.run_dir else out_dir / "run"
     if args.smoke:
@@ -256,20 +260,28 @@ def main() -> None:
     run([args.python, "-m", "pytest", "-q", "-m", "not slow", *FAST_PYTEST],
         repo, logs / "pytest_fast.log")
 
-    if args.build_noise_lib and not noise_lib.exists():
+    if args.build_noise_lib and noise_lib is None:
+        raise SystemExit("--build-noise-lib requires a real --noise-lib path")
+
+    if noise_lib is not None and args.build_noise_lib and not noise_lib.exists():
         targets = args.noise_targets or DEFAULT_TARGETS
         run([args.python, "scripts/build_noise_library.py", "--mission", "TESS",
              "--n-raw", "18000", "--out", str(noise_lib), "--targets", *targets],
             repo, logs / "noise_lib.log")
-    noise_meta = validate_noise_lib(noise_lib)
+    noise_meta = (
+        validate_noise_lib(noise_lib)
+        if noise_lib is not None else
+        {"path": None, "available": False}
+    )
     (out_dir / "noise_lib.json").write_text(json.dumps(noise_meta, indent=2))
 
     if not list(data_dir.glob("shard_*.npz")):
-        run([args.python, "scripts/generate_data.py", "--config", args.config,
-             "--n", str(n_data), "--workers", str(args.workers),
-             "--shard-size", str(args.shard_size), "--out", str(data_dir),
-             "--noise-lib", str(noise_lib)],
-            repo, logs / "generate_data.log")
+        generate_cmd = [args.python, "scripts/generate_data.py", "--config", args.config,
+                        "--n", str(n_data), "--workers", str(args.workers),
+                        "--shard-size", str(args.shard_size), "--out", str(data_dir)]
+        if noise_lib is not None:
+            generate_cmd.extend(["--noise-lib", str(noise_lib)])
+        run(generate_cmd, repo, logs / "generate_data.log")
 
     run([args.python, "scripts/preflight.py", "--config", args.config,
          "--expect", "cuda", "--data-dir", str(data_dir)],
@@ -281,23 +293,28 @@ def main() -> None:
 
     ckpt = run_dir / "checkpoints" / "latest.pt"
     eval_dir = results / "synthetic"
-    run([args.python, "scripts/evaluate.py", "--ckpt", str(ckpt),
-         "--noise-lib", str(noise_lib), "--n-sbc", str(n_sbc),
-         "--n-detection", str(n_detection), "--n-posterior", str(n_posterior),
-         "--out", str(eval_dir), "--plots"],
-        repo, logs / "evaluate.log")
+    evaluate_cmd = [args.python, "scripts/evaluate.py", "--ckpt", str(ckpt),
+                    "--n-sbc", str(n_sbc), "--n-detection", str(n_detection),
+                    "--n-posterior", str(n_posterior), "--out", str(eval_dir),
+                    "--plots"]
+    if noise_lib is not None:
+        evaluate_cmd.extend(["--noise-lib", str(noise_lib)])
+    run(evaluate_cmd, repo, logs / "evaluate.log")
     baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt", str(ckpt),
-                    "--noise-lib", str(noise_lib), "--n", str(n_detection),
-                    "--out", str(results / "bls_vs_transitflow.json")]
+                    "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json")]
+    if noise_lib is not None:
+        baseline_cmd.extend(["--noise-lib", str(noise_lib)])
     if args.with_tls_baseline:
         baseline_cmd.extend(["--with-tls", "--tls-n", str(args.tls_baseline_n)])
     run(baseline_cmd, repo, logs / "baseline_detection.log")
-    run([args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
-         "--noise-lib", str(noise_lib), "--n-amortized", str(speed_n_amortized),
-         "--n-post", str(n_posterior), "--n-mcmc", str(speed_n_mcmc),
-         "--mcmc-steps", str(speed_mcmc_steps), "--mcmc-walkers",
-         str(speed_mcmc_walkers), "--out", str(results / "speed.json")],
-        repo, logs / "speed.log")
+    speed_cmd = [args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
+                 "--n-amortized", str(speed_n_amortized), "--n-post", str(n_posterior),
+                 "--n-mcmc", str(speed_n_mcmc), "--mcmc-steps", str(speed_mcmc_steps),
+                 "--mcmc-walkers", str(speed_mcmc_walkers),
+                 "--out", str(results / "speed.json")]
+    if noise_lib is not None:
+        speed_cmd.extend(["--noise-lib", str(noise_lib)])
+    run(speed_cmd, repo, logs / "speed.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
            "--detector-ckpt", str(ckpt), "--n-planets", str(n_real_planets),
@@ -319,7 +336,7 @@ def main() -> None:
         "config": args.config,
         "checkpoint": str(ckpt),
         "data_dir": str(data_dir),
-        "noise_lib": str(noise_lib),
+        "noise_lib": None if noise_lib is None else str(noise_lib),
         "smoke": bool(args.smoke),
         "fast_check": bool(args.fast_check),
         "n_data": int(n_data),
