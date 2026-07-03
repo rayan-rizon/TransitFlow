@@ -1,0 +1,327 @@
+$ /venv/main/bin/python scripts/validate_real.py --ckpt /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt --detector-ckpt /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt --n-planets 30 --n-post 2000 --with-mcmc 16 --mcmc-steps 1500 --mcmc-walkers 64 --out /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/real --is-correct-mcmc --is-samples 3000
+== querying archive (P in [0.5, 13.0] d, Rp/Rs in [0.01, 0.15], TESS) ==
+   180 candidate planets
+/venv/main/lib/python3.12/site-packages/lightkurve/prf/__init__.py:7: UserWarning: Warning: the tpfmodel submodule is not available without oktopus installed, which requires a current version of autograd. See #1452 for details.
+  warnings.warn(
+   [ 1] TOI-5319 b         p_det=1.000 P_err=0.000
+Warning: 30% (5872/19412) of the cadences will be ignored due to the quality mask (quality_bitmask=17087).
+   skip HIP 8152 b: quality {'n_cadences': 12844, 'cadence_fraction_of_training': 0.7135555555555556, 'n_in_transit': 178, 'n_transits': 2, 'sigma': 0.000702846867175145, 'expected_snr': 11.129166363031647, 'observed_depth': 0.0004793730213729086, 'observed_snr': 9.09961203678361, 'finite_geometry': True, 'impact_parameter': 0.518763}
+   skip TIC 290487717 b: quality {'n_cadences': 791, 'cadence_fraction_of_training': 0.043944444444444446, 'n_in_transit': 30, 'n_transits': 7, 'sigma': 0.001355244498812714, 'expected_snr': 16.71519081254398, 'observed_depth': 0.0035039441280828587, 'observed_snr': 14.161202948029617, 'finite_geometry': True, 'impact_parameter': 0.681224}
+   [ 2] TOI-2981 b         p_det=1.000 P_err=0.000
+   [ 3] TOI-776 b          p_det=1.000 P_err=0.000
+   skip HD 23472 e: quality {'n_cadences': 17644, 'cadence_fraction_of_training': 0.9802222222222222, 'n_in_transit': 181, 'n_transits': 4, 'sigma': 0.0005227590618071345, 'expected_snr': 2.9190190758322916, 'observed_depth': 0.00016098422520205435, 'observed_snr': 4.143058249226373, 'finite_geometry': True, 'impact_parameter': 0.5}
+   skip TOI-4511 b: quality {'n_cadences': 14108, 'cadence_fraction_of_training': 0.7837777777777778, 'n_in_transit': 88, 'n_transits': 3, 'sigma': 0.001013668962279696, 'expected_snr': 5.862469005668478, 'observed_depth': 0.0009339078361003672, 'observed_snr': 8.642695388080938, 'finite_geometry': True, 'impact_parameter': 0.494968}
+   skip TOI-929 b: quality {'n_cadences': 16876, 'cadence_fraction_of_training': 0.9375555555555556, 'n_in_transit': 344, 'n_transits': 5, 'sigma': 0.002202891047889474, 'expected_snr': 9.929184848656115, 'observed_depth': 0.0012647766210674982, 'observed_snr': 10.648784357301176, 'finite_geometry': True, 'impact_parameter': 0.455358}
+   [ 4] TOI-198 b          p_det=1.000 P_err=0.000
+   [ 5] TOI-1135 b         p_det=1.000 P_err=0.000
+   skip TOI-4405 b: quality {'n_cadences': 15808, 'cadence_fraction_of_training': 0.8782222222222222, 'n_in_transit': 255, 'n_transits': 4, 'sigma': 0.0036123397203024227, 'expected_snr': 5.1002809052980895, 'observed_depth': 0.001303560330812692, 'observed_snr': 5.762522571251896, 'finite_geometry': True, 'impact_parameter': 0.45336}
+   [ 6] TOI-7510 b         p_det=1.000 P_err=0.000
+   [ 7] HD 213885 b        p_det=1.000 P_err=0.000
+   skip LTT 9779 b: quality {'n_cadences': 18014, 'cadence_fraction_of_training': 1.0007777777777778, 'n_in_transit': 344, 'n_transits': 35, 'sigma': 0.0006318975645571729, 'expected_snr': 60.76525616538571, 'observed_depth': 0.0016438605591930777, 'observed_snr': 48.25002196813986, 'finite_geometry': False, 'impact_parameter': nan}
+   [ 8] TOI-2654 b         p_det=1.000 P_err=0.000
+   [ 9] TOI-1201 b         p_det=1.000 P_err=0.000
+   skip TOI-1243 b: quality {'n_cadences': 18423, 'cadence_fraction_of_training': 1.0235, 'n_in_transit': 160, 'n_transits': 6, 'sigma': 0.0021859920469674207, 'expected_snr': 10.11029848277384, 'observed_depth': 0.0014126505129516964, 'observed_snr': 8.174216671885501, 'finite_geometry': True, 'impact_parameter': 0.78}
+   [10] TOI-1728 b         p_det=1.000 P_err=0.000
+   [11] Wolf 327 b         p_det=1.000 P_err=0.000
+   skip GJ 341 b: quality {'n_cadences': 16170, 'cadence_fraction_of_training': 0.8983333333333333, 'n_in_transit': 203, 'n_transits': 4, 'sigma': 0.0003903869058926263, 'expected_snr': 9.343137534150822, 'observed_depth': 0.0002714244626260687, 'observed_snr': 9.906078454876326, 'finite_geometry': False, 'impact_parameter': nan}
+   [12] TOI-132 b          p_det=1.000 P_err=0.000
+   skip TOI-4495 b: quality {'n_cadences': 11996, 'cadence_fraction_of_training': 0.6664444444444444, 'n_in_transit': 438, 'n_transits': 11, 'sigma': 0.0006716861468442489, 'expected_snr': 9.894322534124932, 'observed_depth': 0.00028010975372427804, 'observed_snr': 8.72768163081844, 'finite_geometry': True, 'impact_parameter': 0.26}
+   [13] TOI-913 b          p_det=1.000 P_err=0.000
+   [14] TOI-620 b          p_det=0.923 P_err=0.000
+   [15] TOI-1811 b         p_det=1.000 P_err=0.000
+   [16] TOI-5398 b         p_det=1.000 P_err=0.000
+   [17] TOI-815 b          p_det=1.000 P_err=0.000
+   [18] LHS 1478 b         p_det=1.000 P_err=0.000
+   skip TOI-663 d: quality {'n_cadences': 14736, 'cadence_fraction_of_training': 0.8186666666666667, 'n_in_transit': 324, 'n_transits': 4, 'sigma': 0.002781606005829408, 'expected_snr': 7.702205112837945, 'observed_depth': 0.00044146743342587946, 'observed_snr': 2.8567718738788104, 'finite_geometry': False, 'impact_parameter': 0.17}
+   [19] TOI-942 c          p_det=0.236 P_err=0.000
+   skip TOI-1080 b: quality {'n_cadences': 17122, 'cadence_fraction_of_training': 0.9512222222222222, 'n_in_transit': 215, 'n_transits': 7, 'sigma': 0.005626099496921714, 'expected_snr': 7.826596395951731, 'observed_depth': 0.0035163005182903273, 'observed_snr': 9.164268529068638, 'finite_geometry': True, 'impact_parameter': 0.38}
+   [20] TOI-622 b          p_det=1.000 P_err=0.000
+   [21] LTT 3780 c         p_det=1.000 P_err=0.000
+   [22] TOI-1820 b         p_det=1.000 P_err=0.000
+   skip TOI-942 b: quality {'n_cadences': 17493, 'cadence_fraction_of_training': 0.9718333333333333, 'n_in_transit': 510, 'n_transits': 6, 'sigma': 0.0017414485495806983, 'expected_snr': 20.697028963811793, 'observed_depth': 0.0007254880523325236, 'observed_snr': 9.408160220316477, 'finite_geometry': True, 'impact_parameter': 0.05}
+   [23] GJ 3090 b          p_det=1.000 P_err=0.000
+   [24] TOI-2136 b         p_det=1.000 P_err=0.000
+   [25] TOI-6420 b         p_det=1.000 P_err=0.000
+   [26] TOI-159 b          p_det=1.000 P_err=0.000
+   [27] TOI-178 d          p_det=1.000 P_err=0.000
+   [28] TOI-3261 b         p_det=1.000 P_err=0.000
+   [29] TOI-4153 b         p_det=1.000 P_err=0.000
+   skip TOI-3353.01: quality {'n_cadences': 17643, 'cadence_fraction_of_training': 0.9801666666666666, 'n_in_transit': 516, 'n_transits': 6, 'sigma': 0.0005900314181976858, 'expected_snr': 22.051631597151225, 'observed_depth': 2.361165592490444e-05, 'observed_snr': 0.909025694256701, 'finite_geometry': False, 'impact_parameter': nan}
+   [30] TOI-3082 b         p_det=1.000 P_err=0.000
+   [checkpoint] saved 30 detection records to /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/real/records_checkpoint.json
+== MCMC shape agreement (first 16 detected planets) ==
+   TOI-5319 b         W(P)=0.0000 W(RpRs)=0.0114 ESS=0.034
+   TOI-2981 b         W(P)=0.0000 W(RpRs)=0.0027 ESS=0.001
+   TOI-776 b          W(P)=0.0000 W(RpRs)=0.0007 ESS=0.019
+   TOI-198 b          W(P)=0.0000 W(RpRs)=0.0018 ESS=0.010
+   TOI-1135 b         W(P)=0.0000 W(RpRs)=0.0013 ESS=0.001
+   TOI-7510 b         W(P)=0.0000 W(RpRs)=0.0148 ESS=0.000
+   HD 213885 b        W(P)=0.0000 W(RpRs)=0.0006 ESS=0.009
+   TOI-2654 b         W(P)=0.0000 W(RpRs)=0.0043 ESS=0.006
+   TOI-1201 b         W(P)=0.0000 W(RpRs)=0.0112 ESS=0.019
+   TOI-1728 b         W(P)=0.0000 W(RpRs)=0.0018 ESS=0.005
+   Wolf 327 b         W(P)=0.0000 W(RpRs)=0.0028 ESS=0.002
+   TOI-132 b          W(P)=0.0000 W(RpRs)=0.0007 ESS=0.040
+   TOI-913 b          W(P)=0.0000 W(RpRs)=0.0027 ESS=0.008
+   TOI-620 b          W(P)=0.0000 W(RpRs)=0.0191 ESS=0.000
+   TOI-1811 b         W(P)=0.0000 W(RpRs)=0.0120 ESS=0.000
+   TOI-5398 b         W(P)=0.0000 W(RpRs)=0.0027 ESS=0.000
+
+== SUMMARY ==
+{
+  "n_planets": 30,
+  "checkpoint": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt",
+  "detector_checkpoint": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt",
+  "detection": {
+    "threshold": 0.9,
+    "n_detected": 29,
+    "detected_fraction": 0.9666666666666667,
+    "median_p_detect": 1.0
+  },
+  "per_param": {
+    "P": {
+      "n": 30,
+      "median_frac_err": 1.2175266516410177e-08,
+      "coverage_68": 0.0,
+      "coverage_95": 0.0,
+      "mean_abs_z": NaN
+    },
+    "RpRs": {
+      "n": 30,
+      "median_frac_err": 0.06562090020356877,
+      "coverage_68": 0.6,
+      "coverage_95": 0.8,
+      "mean_abs_z": 1.149629355924605
+    },
+    "aRs": {
+      "n": 30,
+      "median_frac_err": 0.138437600055544,
+      "coverage_68": 0.23333333333333334,
+      "coverage_95": 0.5333333333333333,
+      "mean_abs_z": 4.063578065407955
+    },
+    "b": {
+      "n": 30,
+      "median_frac_err": 0.3484571417721066,
+      "coverage_68": 0.6333333333333333,
+      "coverage_95": 0.8333333333333334,
+      "mean_abs_z": 1.2656804331265532
+    }
+  },
+  "detected_per_param": {
+    "P": {
+      "n": 29,
+      "median_frac_err": 1.210822939266939e-08,
+      "coverage_68": 0.0,
+      "coverage_95": 0.0,
+      "mean_abs_z": NaN
+    },
+    "RpRs": {
+      "n": 29,
+      "median_frac_err": 0.06396348509878191,
+      "coverage_68": 0.6206896551724138,
+      "coverage_95": 0.8275862068965517,
+      "mean_abs_z": 1.1049936489648997
+    },
+    "aRs": {
+      "n": 29,
+      "median_frac_err": 0.14050468898592317,
+      "coverage_68": 0.20689655172413793,
+      "coverage_95": 0.5172413793103449,
+      "mean_abs_z": 4.179305990754529
+    },
+    "b": {
+      "n": 29,
+      "median_frac_err": 0.3420953974304378,
+      "coverage_68": 0.6206896551724138,
+      "coverage_95": 0.8275862068965517,
+      "mean_abs_z": 1.2856216247214272
+    }
+  },
+  "mcmc_agreement": {
+    "P": {
+      "n": 16,
+      "median_wasserstein": 1.7937323015804196e-08,
+      "median_wasserstein_prior_fraction": 1.4349858412643357e-09,
+      "median_wasserstein_width_fraction": 17937.3230158042
+    },
+    "RpRs": {
+      "n": 16,
+      "median_wasserstein": 0.0026784847714971024,
+      "median_wasserstein_prior_fraction": 0.019132034082122162,
+      "median_wasserstein_width_fraction": 0.31774401114302453
+    },
+    "aRs": {
+      "n": 16,
+      "median_wasserstein": 1.0775842136827536,
+      "median_wasserstein_prior_fraction": 0.022927323695377737,
+      "median_wasserstein_width_fraction": 0.4185454843130411
+    },
+    "b": {
+      "n": 16,
+      "median_wasserstein": 0.1274665614569201,
+      "median_wasserstein_prior_fraction": 0.11587869223356372,
+      "median_wasserstein_width_fraction": 0.39961138156807685
+    }
+  },
+  "importance_correction": {
+    "enabled": true,
+    "n_samples": 3000,
+    "mean_ess_fraction": 0.009602028024468426,
+    "median_ess_fraction": 0.005476108657252312,
+    "min_ess_fraction": 0.0003335721650457704
+  },
+  "mcmc_conditioning": {
+    "ephemeris_fixed": true,
+    "acceptance_fraction_median": 0.35140625000000003
+  },
+  "mcmc_stratified": {
+    "impact": {
+      "high_b": {
+        "n": 2,
+        "RpRs_median_prior_fraction": 0.11122718179296923,
+        "RpRs_median_width_fraction": 3.0751065548862164,
+        "aRs_median_prior_fraction": 0.06225775073478771,
+        "aRs_median_width_fraction": 0.7357397265782146,
+        "b_median_prior_fraction": 0.051255783106075266,
+        "b_median_width_fraction": 0.7055571043422705
+      },
+      "low_b": {
+        "n": 7,
+        "RpRs_median_prior_fraction": 0.019044520154177912,
+        "RpRs_median_width_fraction": 0.3250419501561983,
+        "aRs_median_prior_fraction": 0.03933730936768431,
+        "aRs_median_width_fraction": 0.5703197961347732,
+        "b_median_prior_fraction": 0.13046335286358093,
+        "b_median_width_fraction": 0.3833719554385727
+      },
+      "mid_b": {
+        "n": 7,
+        "RpRs_median_prior_fraction": 0.01913404040012063,
+        "RpRs_median_width_fraction": 0.28829241786932,
+        "aRs_median_prior_fraction": 0.020480472044573355,
+        "aRs_median_width_fraction": 0.33855089040591235,
+        "b_median_prior_fraction": 0.13362537041453246,
+        "b_median_width_fraction": 0.3182893421364145
+      }
+    },
+    "observed_snr": {
+      "high_snr": {
+        "n": 3,
+        "RpRs_median_prior_fraction": 0.019044520154177912,
+        "RpRs_median_width_fraction": 0.4473472527702276,
+        "aRs_median_prior_fraction": 0.005569228819010838,
+        "aRs_median_width_fraction": 0.39696792686093896,
+        "b_median_prior_fraction": 0.06471646502343144,
+        "b_median_width_fraction": 0.4158508076975809
+      },
+      "low_snr": {
+        "n": 9,
+        "RpRs_median_prior_fraction": 0.01913404040012063,
+        "RpRs_median_width_fraction": 0.3104460721298508,
+        "aRs_median_prior_fraction": 0.023131897381663883,
+        "aRs_median_width_fraction": 0.33855089040591235,
+        "b_median_prior_fraction": 0.13362537041453246,
+        "b_median_width_fraction": 0.3182893421364145
+      },
+      "mid_snr": {
+        "n": 4,
+        "RpRs_median_prior_fraction": 0.024991162868475324,
+        "RpRs_median_width_fraction": 0.29526130235321646,
+        "aRs_median_prior_fraction": 0.03133351751784146,
+        "aRs_median_width_fraction": 0.667002968670652,
+        "b_median_prior_fraction": 0.1158786922335637,
+        "b_median_width_fraction": 0.4332958460567975
+      }
+    },
+    "rprs": {
+      "deep": {
+        "n": 3,
+        "RpRs_median_prior_fraction": 0.03085229797282696,
+        "RpRs_median_width_fraction": 0.3022301868371129,
+        "aRs_median_prior_fraction": 0.01321521177212322,
+        "aRs_median_width_fraction": 0.39696792686093896,
+        "b_median_prior_fraction": 0.10129403160354648,
+        "b_median_width_fraction": 0.4158508076975809
+      },
+      "medium": {
+        "n": 7,
+        "RpRs_median_prior_fraction": 0.07997162673995027,
+        "RpRs_median_width_fraction": 0.4473472527702276,
+        "aRs_median_prior_fraction": 0.03933730936768431,
+        "aRs_median_width_fraction": 0.5703197961347732,
+        "b_median_prior_fraction": 0.13046335286358093,
+        "b_median_width_fraction": 0.4832197366750223
+      },
+      "shallow": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.009175333064073688,
+        "RpRs_median_width_fraction": 0.23630601886747193,
+        "aRs_median_prior_fraction": 0.016116141292753815,
+        "aRs_median_width_fraction": 0.23662278877219522,
+        "b_median_prior_fraction": 0.1211260039776645,
+        "b_median_width_fraction": 0.26948988228777593
+      }
+    },
+    "a_rs": {
+      "compact": {
+        "n": 4,
+        "RpRs_median_prior_fraction": 0.012149210674852615,
+        "RpRs_median_width_fraction": 0.26907816402652274,
+        "aRs_median_prior_fraction": 0.009417472271410963,
+        "aRs_median_width_fraction": 0.34909095731904005,
+        "b_median_prior_fraction": 0.12275915281166089,
+        "b_median_width_fraction": 0.2877555680304539
+      },
+      "mid": {
+        "n": 10,
+        "RpRs_median_prior_fraction": 0.055411962356388615,
+        "RpRs_median_width_fraction": 0.39088272723030054,
+        "aRs_median_prior_fraction": 0.0348384333847197,
+        "aRs_median_width_fraction": 0.537768126185066,
+        "b_median_prior_fraction": 0.11424554339956733,
+        "b_median_width_fraction": 0.4495352721863016
+      },
+      "wide": {
+        "n": 2,
+        "RpRs_median_prior_fraction": 0.009031082351915113,
+        "RpRs_median_width_fraction": 0.19117263894509895,
+        "aRs_median_prior_fraction": 0.11546192004871388,
+        "aRs_median_width_fraction": 0.3687622084063033,
+        "b_median_prior_fraction": 0.16700578243983477,
+        "b_median_width_fraction": 0.32501941731552286
+      }
+    },
+    "n_transits": {
+      "many": {
+        "n": 9,
+        "RpRs_median_prior_fraction": 0.019686390088613632,
+        "RpRs_median_width_fraction": 0.3022301868371129,
+        "aRs_median_prior_fraction": 0.01321521177212322,
+        "aRs_median_width_fraction": 0.39696792686093896,
+        "b_median_prior_fraction": 0.13362537041453246,
+        "b_median_width_fraction": 0.4158508076975809
+      },
+      "several": {
+        "n": 7,
+        "RpRs_median_prior_fraction": 0.019044520154177912,
+        "RpRs_median_width_fraction": 0.3344182016903735,
+        "aRs_median_prior_fraction": 0.03933730936768431,
+        "aRs_median_width_fraction": 0.5703197961347732,
+        "b_median_prior_fraction": 0.09802773393555372,
+        "b_median_width_fraction": 0.3833719554385727
+      }
+    }
+  },
+  "gate_status": {
+    "detected_fraction_ge_0.9": true,
+    "mcmc_characterization_prior_fraction_le_0.1": false,
+    "mcmc_characterization_width_fraction_le_0.5_diagnostic": true,
+    "importance_correction_min_ess_fraction_ge_0.05": false
+  },
+  "diagnostic_status": {
+    "archive_detected_char_cov68_ge_0.5": false,
+    "archive_detected_char_cov95_ge_0.8": false
+  }
+}
+wrote /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/real/real_validation.json

@@ -1,0 +1,10 @@
+$ /venv/main/bin/python scripts/evaluate.py --ckpt /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt --n-sbc 1000 --n-detection 5000 --n-posterior 2000 --out /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/synthetic --plots --noise-lib /workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz
+== detection ==
+{'roc_auc': 0.9993727744415907, 'average_precision': 0.9994214094712691}
+== SBC ==
+SBC uniformity p-values: [0.189, 0.77, 0.625, 0.187, 0.896]
+== coverage ==
+characterization SBC p-values: [0.189, 0.77, 0.625, 0.187, 0.896]
+characterization coverage calibration error: 0.0129
+wrote /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/synthetic/metrics.json
+wrote SBC + coverage figures to /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/synthetic

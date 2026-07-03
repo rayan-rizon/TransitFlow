@@ -1,0 +1,25 @@
+{
+  "checkpoint": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt",
+  "n": 5000,
+  "noise_lib": "/workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz",
+  "noise_lib_available": true,
+  "n_planets": 2463,
+  "n_negatives": 2537,
+  "bls": {
+    "roc_auc": 0.4093519044411488,
+    "average_precision": 0.4040001099738494
+  },
+  "tls": {
+    "n": 500,
+    "roc_auc": 0.6857647531112003,
+    "average_precision": 0.7009817871162651
+  },
+  "transitflow": {
+    "roc_auc": 0.9989761757415343,
+    "average_precision": 0.9987714398596045
+  },
+  "auc_gain": 0.5896242713003855,
+  "bls_backend": "astropy",
+  "tls_backend": "transitleastsquares",
+  "tls_requested": true
+}

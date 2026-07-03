@@ -1,0 +1,15 @@
+$ /venv/main/bin/python scripts/preflight.py --config configs/publishable.yaml --expect cuda --data-dir /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_data
+================================================================
+ PREFLIGHT
+================================================================
+  device                : cuda
+  params                : 4176422
+  lc_per_s              : 2933.9
+  data_wait_frac        : 0.029
+  finite_losses         : True
+  loss_trending_down    : True
+  checkpoint_ok         : True
+  projected_full_run_h  : 1.45
+  projected_cost_usd    : 0.58
+  VERDICT: PASS
+================================================================

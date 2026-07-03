@@ -1,0 +1,2536 @@
+$ /venv/main/bin/python scripts/baseline_detection.py --ckpt /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt --n 5000 --out /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/bls_vs_transitflow.json --noise-lib /workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz --with-tls --tls-n 500
+== detection baseline: BLS + TLS vs TransitFlow on 5000 LCs ==
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.09605 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2935 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.18944 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.60954 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.76072 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.95648 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.36383 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.30136 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.92139 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.82900 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.33408 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.46366 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.23631 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.48979 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.02212 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.55809 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.88091 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.61180 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.48979 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2929 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.19745 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.80007 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.26600 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.31505 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.66176 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.88369 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.57892 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.60988 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.81999 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.68284 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.12130 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/stats.py:458: RuntimeWarning: divide by zero encountered in scalar divide
+  snr_pink_per_transit[i] = (1 - mean_flux) / pinknoise
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.37676 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.07791 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.68679 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.83381 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.64866 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.79120 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.23386 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.48666 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.62115 days
+/venv/main/lib/python3.12/site-packages/numpy/_core/_methods.py:219: RuntimeWarning: Degrees of freedom <= 0 for slice
+  ret = _var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+/venv/main/lib/python3.12/site-packages/numpy/_core/_methods.py:178: RuntimeWarning: invalid value encountered in divide
+  arrmean = um.true_divide(arrmean, div, out=arrmean,
+/venv/main/lib/python3.12/site-packages/numpy/_core/_methods.py:211: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/venv/main/lib/python3.12/site-packages/transitleastsquares/main.py:411: UserWarning: 19 of 43 transits without data. The true period may be twice the given period.
+  warnings.warn(text)
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.75282 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.98644 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.68849 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2925 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.47142 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.74551 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.66040 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.27325 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.65122 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.68397 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.00689 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.15095 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.50674 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.68291 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.62831 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.71345 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.80144 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.69759 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2924 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.19989 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.18357 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.13350 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.93312 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.33756 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.82304 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/main.py:411: UserWarning: 1 of 3 transits without data. The true period may be twice the given period.
+  warnings.warn(text)
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.24006 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2908 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.11809 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.23757 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.52540 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.13868 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.00343 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.94284 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.04159 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.51664 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.63523 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.35337 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.88525 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.75320 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.13451 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.20228 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.94583 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.27473 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.69888 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.56693 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.27961 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.01162 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.71699 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.27593 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.17715 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.42244 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.17948 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.99272 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.34802 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.36130 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.97563 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.23631 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.62424 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.26600 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.86608 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.15838 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.32535 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2925 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.95679 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.22374 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.63751 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.54799 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.89449 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.44478 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.14283 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.25766 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.56254 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.56254 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.67670 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.23402 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.02317 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.40805 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.81858 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.19708 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.68776 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2915 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.37469 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.45628 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.80128 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.76960 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.07675 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.62495 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2936 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.42643 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.57942 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.92666 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.32315 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.35464 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2908 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.04484 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.94184 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.77649 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.63572 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.34292 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.17715 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.94004 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.63216 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.27168 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.41738 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.34415 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.91575 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.09032 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.74524 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.32179 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.45203 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.99545 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.55304 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.91350 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.02743 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.26017 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2922 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.02116 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.78320 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.97348 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.68340 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.46100 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.04466 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.12015 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.01983 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.56693 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.41039 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.47372 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.60724 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.57185 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/main.py:411: UserWarning: 1 of 2 transits without data. The true period may be twice the given period.
+  warnings.warn(text)
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.23130 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.04360 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.12774 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.79411 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.29855 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.19391 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.59731 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.34415 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.36130 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.72644 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.99104 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.96378 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.30707 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.60606 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.62495 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2916 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.66248 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.46092 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.10218 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.93219 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.94791 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.12409 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.27507 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.93005 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.26981 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2921 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.45546 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.15237 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.23007 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.04466 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.34100 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.43300 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.02963 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.57988 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.51102 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.61378 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.17272 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.75270 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.61180 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.32848 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.44905 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.24355 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.07476 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.62831 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.30573 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.88808 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.74911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.77876 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.39056 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.38911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.71430 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.07484 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.84491 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.49828 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.76882 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.02791 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.57892 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.63090 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.34638 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2937 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.96987 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.59408 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.33018 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.25697 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.37899 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.24556 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.36193 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.43946 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.98525 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.41700 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.71748 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.70113 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2919 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.04466 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.14056 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.95006 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2908 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.05251 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.98475 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.70816 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.53818 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.11269 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.89678 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.48755 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.23509 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.75827 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.65181 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.59632 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.90097 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.24733 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.07675 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2920 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.87000 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.24797 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.83459 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.04466 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.78320 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.77911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.78079 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.61180 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.83308 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.35350 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.43540 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.64485 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.76266 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.07476 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.77916 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.89805 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.77806 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.06901 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.46788 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.56125 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.89671 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.77876 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.36336 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.30992 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.14177 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.76960 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.22374 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.08725 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.41568 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.57988 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.69420 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.48127 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.67230 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.48597 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.79411 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.07894 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.00132 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.86854 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.90585 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.72036 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.01369 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.39018 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.86076 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.68227 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.01067 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.34638 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.23631 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.39633 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2922 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.39056 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.94098 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.21284 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.89821 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.85621 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.02517 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.11809 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2933 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.93768 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.08205 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.80137 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.94184 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.89805 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.98748 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.07891 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.71748 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.53197 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.39633 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.34292 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.18806 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.49828 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.29788 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.32820 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.15270 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.45580 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.79463 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.44707 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.24006 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2929 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.17882 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.15838 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2908 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.80760 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.12571 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.62405 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.44308 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.44098 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.15994 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.71748 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.12026 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.12571 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.82405 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.98919 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.88134 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.19745 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.40747 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.77911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.77911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.44478 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.91350 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.16156 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.33824 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.19278 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.42175 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.05351 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.25766 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.60496 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.16716 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.06818 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.83528 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.87690 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.40964 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.95723 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.62019 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2908 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.52540 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.76366 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.57988 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.18944 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.06224 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.75992 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.52911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.40821 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.25764 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.28348 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2923 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.74159 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.71239 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.64598 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.57027 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.60988 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.45877 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.15270 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.62495 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.01680 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2918 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.71165 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.55260 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.02505 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.89041 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.85543 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.95579 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.92544 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.68538 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.80720 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.75631 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.91545 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.93854 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.67837 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.26767 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.04674 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.59534 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.77469 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.47099 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.09032 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.07484 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.66144 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.43931 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2916 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.01463 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.32820 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.35464 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.46514 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.59922 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.79125 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.04917 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.00840 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.56956 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.44402 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.86954 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.42244 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.72644 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.67469 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.68581 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.64548 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.93768 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.01733 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.34654 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2921 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.45237 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.96074 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.60415 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.70857 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.62911 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.46856 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.81974 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.40747 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.67980 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.61819 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.10947 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.72033 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.60990 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/main.py:411: UserWarning: 25 of 44 transits without data. The true period may be twice the given period.
+  warnings.warn(text)
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.49828 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.32456 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.69492 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.22554 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.94886 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.08420 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.26148 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.49828 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.05652 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.99749 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2912 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.62495 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.85212 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.05038 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.33717 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.39462 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.12585 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.23631 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.06562 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.66140 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.55260 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.05351 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.13062 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2913 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.64761 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.43065 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.52540 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.46999 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.27967 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.35615 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.31059 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2915 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.20788 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.16610 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 8.51366 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.60724 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.41518 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.43065 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 6.78079 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.21813 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.86459 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.73653 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.28344 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 9.28801 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 11.42643 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.40511 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.05552 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.47808 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.43065 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 5.40747 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.00117 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.87000 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.24427 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 3.19027 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.81858 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 4.32820 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 7.73667 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.75748 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 2.53445 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.07482 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2911 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.74536 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.82900 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 0.87077 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.86854 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2909 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 10.30439 days
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 1.51159 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/main.py:411: UserWarning: 7 of 18 transits without data. The true period may be twice the given period.
+  warnings.warn(text)
+Transit Least Squares TLS 1.32 (5 Apr 2024)
+Creating model cache for 38 durations
+Searching 2910 data points, 2441 periods from 0.601 to 12.999 days
+Using all 96 CPU threads
+Searching for best T0 for period 12.99875 days
+  512/5000  (0 LC/s)
+  1024/5000  (0 LC/s)
+  1536/5000  (0 LC/s)
+  2048/5000  (0 LC/s)
+  2560/5000  (0 LC/s)
+  3072/5000  (0 LC/s)
+  3584/5000  (0 LC/s)
+  4096/5000  (0 LC/s)
+  4608/5000  (0 LC/s)
+
+== DETECTION BASELINE ==
+  BLS         ROC-AUC 0.4094  AP 0.4040
+  TLS         ROC-AUC 0.6858  AP 0.7010
+  TransitFlow ROC-AUC 0.9990  AP 0.9988
+  gain        +0.5896 AUC
+wrote /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/bls_vs_transitflow.json

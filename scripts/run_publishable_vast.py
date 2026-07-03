@@ -192,6 +192,9 @@ def main() -> None:
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for real MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000)
+    ap.add_argument("--is-max-samples", type=int, default=None,
+                    help="adaptively retry real correction up to this many proposal samples")
+    ap.add_argument("--is-target-ess-fraction", type=float, default=0.05)
     ap.add_argument("--speed-n-amortized", type=int, default=None)
     ap.add_argument("--steps", type=int, default=None,
                     help="override training steps; useful for fast metric checks")
@@ -326,6 +329,9 @@ def main() -> None:
            "--out", str(real_dir)]
     if args.is_correct_mcmc:
         cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples)])
+        if args.is_max_samples is not None:
+            cmd.extend(["--is-max-samples", str(args.is_max_samples)])
+        cmd.extend(["--is-target-ess-fraction", str(args.is_target_ess_fraction)])
     run(cmd, repo, logs / "validate_real.log")
 
     report = build_gate_report(
@@ -356,6 +362,9 @@ def main() -> None:
         "mcmc_walkers": int(args.mcmc_walkers),
         "is_correct_mcmc": bool(args.is_correct_mcmc),
         "is_samples": int(args.is_samples),
+        "is_max_samples": None if args.is_max_samples is None
+        else int(args.is_max_samples),
+        "is_target_ess_fraction": float(args.is_target_ess_fraction),
         "speed_n_amortized": int(speed_n_amortized),
         "speed_n_mcmc": int(speed_n_mcmc),
         "speed_mcmc_steps": int(speed_mcmc_steps),

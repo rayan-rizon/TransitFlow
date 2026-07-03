@@ -561,6 +561,10 @@ def main():
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
                     help="proposal samples for likelihood correction")
+    ap.add_argument("--is-max-samples", type=int, default=None,
+                    help="adaptively retry correction up to this many proposal samples")
+    ap.add_argument("--is-target-ess-fraction", type=float, default=0.05,
+                    help="target normalized ESS for adaptive correction")
     ap.add_argument("--resume-records", default=None,
                     help="skip the detection loop and load detection records "
                          "from this JSON checkpoint (e.g. a prior "
@@ -683,7 +687,7 @@ def main():
     if args.with_mcmc > 0:
         from scipy.stats import wasserstein_distance
 
-        from transitflow.correction import importance_weights, sir_resample
+        from transitflow.correction import adaptive_importance_weights, sir_resample
         from transitflow.baselines.mcmc import run_mcmc
         print(f"== MCMC shape agreement (first {args.with_mcmc} detected planets) ==")
         by_name = {r["name"]: r for r in records
@@ -745,9 +749,12 @@ def main():
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:
-                    corr = importance_weights(
+                    corr = adaptive_importance_weights(
                         inf, gv, lv, np.array([sf]), mcmc_f, mcmc_t, mcmc_err,
-                        n_samples=args.is_samples, periodogram=pg, ephem_feat=eph)
+                        initial_samples=args.is_samples,
+                        max_samples=args.is_max_samples,
+                        target_ess_fraction=args.is_target_ess_fraction,
+                        periodogram=pg, ephem_feat=eph)
                     amort = sir_resample(corr["phys"], corr["w"], args.n_post,
                                          np.random.default_rng(done + 1234))
                     ess = corr["ess_fraction"]
@@ -773,6 +780,7 @@ def main():
                 by_name[pl["name"]]["mcmc_cadences"] = int(len(mcmc_t))
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
+                    by_name[pl["name"]]["is_attempts"] = corr.get("attempts", [])
                 ess_txt = "" if ess is None else f" ESS={ess:.3f}"
                 print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}{ess_txt}")
                 done += 1

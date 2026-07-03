@@ -1,0 +1,2 @@
+$ /venv/main/bin/python -m pytest -q -m not slow tests/test_evaluate_gates.py tests/test_inference.py tests/test_simulator.py tests/test_data.py tests/test_baselines.py
+.................................                                        [100%]

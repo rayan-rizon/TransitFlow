@@ -1,0 +1,13 @@
+$ /venv/main/bin/python scripts/benchmark_speed.py --ckpt /dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt --n-amortized 512 --n-post 2000 --n-mcmc 5 --mcmc-steps 1500 --mcmc-walkers 64 --out /workspace/tf_runs/full_03cca0a_cpu23_20260703_072020/results/speed.json --noise-lib /workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz
+{
+  "device": "cuda",
+  "noise_lib": "/workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz",
+  "noise_lib_available": true,
+  "amortized_ms_per_object": 56.16,
+  "amortized_posterior_samples": 2000,
+  "mcmc_backend": "emcee",
+  "mcmc_s_per_object": 96.43,
+  "mcmc_steps": 1500,
+  "mcmc_walkers": 64,
+  "speedup_x": 1717.1
+}

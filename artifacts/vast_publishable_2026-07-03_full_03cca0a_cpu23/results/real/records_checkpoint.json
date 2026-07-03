@@ -1,0 +1,1622 @@
+[
+  {
+    "name": "TOI-5319 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 18278,
+      "cadence_fraction_of_training": 1.0154444444444444,
+      "n_in_transit": 304,
+      "n_transits": 7,
+      "sigma": 0.003586570223842278,
+      "expected_snr": 18.02984688081659,
+      "observed_depth": 0.0036979011324803635,
+      "observed_snr": 17.97681498890998,
+      "finite_geometry": true,
+      "impact_parameter": 0.3
+    },
+    "params": {
+      "P": {
+        "published": 4.07853,
+        "post_median": 4.078530043433055,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 1.064919355122174e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0609,
+        "post_median": 0.061193531180526284,
+        "post_std": 0.00520174556952856,
+        "z": 0.056429361375489984,
+        "frac_err": 0.004819888021778014,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 22.46,
+        "post_median": 15.31208970838199,
+        "post_std": 2.0818466559654696,
+        "z": -3.4334470654386995,
+        "frac_err": 0.3182506808378455,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.3,
+        "post_median": 0.6885920012263436,
+        "post_std": 0.16166692110019865,
+        "z": 2.403658080341001,
+        "frac_err": 1.2953066707544787,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-2981 b",
+    "p_detect": 0.9999988079071045,
+    "quality": {
+      "n_cadences": 17088,
+      "cadence_fraction_of_training": 0.9493333333333334,
+      "n_in_transit": 642,
+      "n_transits": 7,
+      "sigma": 0.00489900664134263,
+      "expected_snr": 67.21546206689732,
+      "observed_depth": 0.012121316806825266,
+      "observed_snr": 62.691590491690405,
+      "finite_geometry": true,
+      "impact_parameter": 0.34
+    },
+    "params": {
+      "P": {
+        "published": 3.601501,
+        "post_median": 3.601500988731188,
+        "post_std": 4.440892098500626e-16,
+        "z": -25375108.0,
+        "frac_err": 3.1289208753739074e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.114,
+        "post_median": 0.10633027205484746,
+        "post_std": 0.004052526407430271,
+        "z": -1.8925793872903982,
+        "frac_err": 0.06727831530835562,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 9.51,
+        "post_median": 9.041086405151518,
+        "post_std": 0.3463392104930305,
+        "z": -1.3539142570110994,
+        "frac_err": 0.04930742322276364,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.34,
+        "post_median": 0.21936157872131637,
+        "post_std": 0.13973771135773916,
+        "z": -0.8633204315894378,
+        "frac_err": 0.35481888611377543,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-776 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15207,
+      "cadence_fraction_of_training": 0.8448333333333333,
+      "n_in_transit": 215,
+      "n_transits": 3,
+      "sigma": 0.0009429673205274802,
+      "expected_snr": 15.52732892766084,
+      "observed_depth": 0.0012448624559150412,
+      "observed_snr": 19.35726328181435,
+      "finite_geometry": true,
+      "impact_parameter": 0.26
+    },
+    "params": {
+      "P": {
+        "published": 8.24662,
+        "post_median": 8.246620186824977,
+        "post_std": 3.552713678800501e-15,
+        "z": 52586556.0,
+        "frac_err": 2.265473331161234e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0316,
+        "post_median": 0.03337264959437225,
+        "post_std": 0.001981679543782481,
+        "z": 0.8945187933810664,
+        "frac_err": 0.05609650615102047,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 27.87,
+        "post_median": 18.193520883706622,
+        "post_std": 2.4633127600879314,
+        "z": -3.928238132435917,
+        "frac_err": 0.34720054238584064,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.26,
+        "post_median": 0.6681049913779336,
+        "post_std": 0.1714998124665968,
+        "z": 2.379623543071924,
+        "frac_err": 1.5696345822228213,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-198 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 18011,
+      "cadence_fraction_of_training": 1.0006111111111111,
+      "n_in_transit": 197,
+      "n_transits": 3,
+      "sigma": 0.0009490904473441062,
+      "expected_snr": 13.203427867019245,
+      "observed_depth": 0.0009292570758523411,
+      "observed_snr": 13.742362097803996,
+      "finite_geometry": true,
+      "impact_parameter": 0.22
+    },
+    "params": {
+      "P": {
+        "published": 10.215213,
+        "post_median": 10.21521357254894,
+        "post_std": 3.552713678800501e-15,
+        "z": 161158199.5,
+        "frac_err": 5.604865408234855e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.02988,
+        "post_median": 0.034864206406729784,
+        "post_std": 0.004732390131677337,
+        "z": 1.053211224781925,
+        "frac_err": 0.16680744333098338,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 34.69,
+        "post_median": 22.695553304699775,
+        "post_std": 4.020543624899355,
+        "z": -2.9832897772873874,
+        "frac_err": 0.3457609309685853,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.22,
+        "post_median": 0.8141777729444866,
+        "post_std": 0.13383605960680736,
+        "z": 4.439594042817028,
+        "frac_err": 2.700808058838575,
+        "in_68": false,
+        "in_95": false
+      }
+    }
+  },
+  {
+    "name": "TOI-1135 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 18420,
+      "cadence_fraction_of_training": 1.0233333333333334,
+      "n_in_transit": 531,
+      "n_transits": 4,
+      "sigma": 0.0006839115529476708,
+      "expected_snr": 192.87680100610348,
+      "observed_depth": 0.005099626769434984,
+      "observed_snr": 171.82474681236863,
+      "finite_geometry": true,
+      "impact_parameter": 0.176
+    },
+    "params": {
+      "P": {
+        "published": 8.0277327,
+        "post_median": 8.027732691121948,
+        "post_std": 3.552713678800501e-15,
+        "z": -2498949.5,
+        "frac_err": 1.105922730994976e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.07566,
+        "post_median": 0.07476783667870818,
+        "post_std": 0.002839053221397545,
+        "z": -0.314246775850385,
+        "frac_err": 0.011791743606817708,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 14.57,
+        "post_median": 13.821458881580352,
+        "post_std": 0.48206922372020206,
+        "z": -1.552766867469867,
+        "frac_err": 0.05137550572543916,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.176,
+        "post_median": 0.2181924190433573,
+        "post_std": 0.10552237323452121,
+        "z": 0.39984334838248525,
+        "frac_err": 0.23972965365543922,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-7510 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15309,
+      "cadence_fraction_of_training": 0.8505,
+      "n_in_transit": 289,
+      "n_transits": 3,
+      "sigma": 0.002374679713221104,
+      "expected_snr": 30.060340180854332,
+      "observed_depth": 0.004696646878148636,
+      "observed_snr": 33.62263823790569,
+      "finite_geometry": true,
+      "impact_parameter": 0.18
+    },
+    "params": {
+      "P": {
+        "published": 11.530869,
+        "post_median": 11.530869017950673,
+        "post_std": 1.7763568394002505e-15,
+        "z": 10105331.0,
+        "frac_err": 1.5567494380738672e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0648,
+        "post_median": 0.0838395646423031,
+        "post_std": 0.006525070222392304,
+        "z": 2.9179095386536056,
+        "frac_err": 0.29382044201085045,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 21.27,
+        "post_median": 22.90769455403653,
+        "post_std": 1.553248205976858,
+        "z": 1.0543675812627542,
+        "frac_err": 0.07699551264863808,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.18,
+        "post_median": 0.1885153299731008,
+        "post_std": 0.13871921767910664,
+        "z": 0.06138536617759024,
+        "frac_err": 0.047307388739448945,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "HD 213885 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 17639,
+      "cadence_fraction_of_training": 0.9799444444444444,
+      "n_in_transit": 1008,
+      "n_transits": 27,
+      "sigma": 0.00028959785244061836,
+      "expected_snr": 23.14547818337863,
+      "observed_depth": 0.00020525658104375566,
+      "observed_snr": 22.502564732071217,
+      "finite_geometry": true,
+      "impact_parameter": 0.675
+    },
+    "params": {
+      "P": {
+        "published": 1.008035,
+        "post_median": 1.0080349833070614,
+        "post_std": 2.220446049250313e-16,
+        "z": -75178312.0,
+        "frac_err": 1.6559879951559955e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.01453,
+        "post_median": 0.01397073780596331,
+        "post_std": 0.000830028487357157,
+        "z": -0.6737867465457742,
+        "frac_err": 0.038490171647397736,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 3.927,
+        "post_median": 4.996137395547948,
+        "post_std": 0.6010403944488744,
+        "z": 1.7788112170535504,
+        "frac_err": 0.2722529655074989,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.675,
+        "post_median": 0.4440856067344545,
+        "post_std": 0.20882468001902724,
+        "z": -1.1057811425570272,
+        "frac_err": 0.3420953974304378,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-2654 b",
+    "p_detect": 0.9995009899139404,
+    "quality": {
+      "n_cadences": 15406,
+      "cadence_fraction_of_training": 0.8558888888888889,
+      "n_in_transit": 380,
+      "n_transits": 9,
+      "sigma": 0.005872734036170374,
+      "expected_snr": 30.726526744161575,
+      "observed_depth": 0.008982170016246571,
+      "observed_snr": 29.81485740006526,
+      "finite_geometry": true,
+      "impact_parameter": 0.478171
+    },
+    "params": {
+      "P": {
+        "published": 2.96760425926,
+        "post_median": 2.967604252395277,
+        "post_std": 4.440892098500626e-16,
+        "z": -15457982.0,
+        "frac_err": 2.313220501296987e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.09621239,
+        "post_median": 0.09820002697807859,
+        "post_std": 0.005188561933293066,
+        "z": 0.38308051510856345,
+        "frac_err": 0.02065884630948874,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 12.388131,
+        "post_median": 11.329932996024768,
+        "post_std": 0.736699264002576,
+        "z": -1.4364043181282877,
+        "frac_err": 0.08542031110061976,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.478171,
+        "post_median": 0.2973250079161228,
+        "post_std": 0.18145942687515873,
+        "z": -0.9966194382852119,
+        "frac_err": 0.3782035967967049,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-1201 b",
+    "p_detect": 0.9999998807907104,
+    "quality": {
+      "n_cadences": 14759,
+      "cadence_fraction_of_training": 0.8199444444444445,
+      "n_in_transit": 418,
+      "n_transits": 11,
+      "sigma": 0.0022170365998665474,
+      "expected_snr": 17.71569601105964,
+      "observed_depth": 0.0016270731363794422,
+      "observed_snr": 15.004528505906052,
+      "finite_geometry": true,
+      "impact_parameter": 0.404
+    },
+    "params": {
+      "P": {
+        "published": 2.4919863,
+        "post_median": 2.491986299026166,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 3.907863965769014e-10,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.04383,
+        "post_median": 0.05322098305414594,
+        "post_std": 0.01309859322526065,
+        "z": 0.7169459263789806,
+        "frac_err": 0.21425925288948064,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 12.23,
+        "post_median": 7.111200407491883,
+        "post_std": 1.246885049876989,
+        "z": -4.105269842647573,
+        "frac_err": 0.4185445292320619,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.404,
+        "post_median": 0.8578659836226309,
+        "post_std": 0.1262475660554013,
+        "z": 3.595047396188696,
+        "frac_err": 1.1234306525312645,
+        "in_68": false,
+        "in_95": false
+      }
+    }
+  },
+  {
+    "name": "TOI-1728 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 17632,
+      "cadence_fraction_of_training": 0.9795555555555555,
+      "n_in_transit": 462,
+      "n_transits": 8,
+      "sigma": 0.0016139525541822887,
+      "expected_snr": 72.92789257024644,
+      "observed_depth": 0.004717151107851092,
+      "observed_snr": 62.82174748557039,
+      "finite_geometry": true,
+      "impact_parameter": 0.39
+    },
+    "params": {
+      "P": {
+        "published": 3.49151,
+        "post_median": 3.4915099868197976,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 3.774928974263328e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.074,
+        "post_median": 0.07196998574096417,
+        "post_std": 0.003561310740354014,
+        "z": -0.5700188517764773,
+        "frac_err": 0.027432625122105828,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 13.48,
+        "post_median": 12.19911193859645,
+        "post_std": 1.1323636560746722,
+        "z": -1.1311631687683585,
+        "frac_err": 0.09502136954032268,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.39,
+        "post_median": 0.5534432886480786,
+        "post_std": 0.17946673910441086,
+        "z": 0.9107163224991227,
+        "frac_err": 0.4190853555078937,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "Wolf 327 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 17084,
+      "cadence_fraction_of_training": 0.9491111111111111,
+      "n_in_transit": 1152,
+      "n_transits": 48,
+      "sigma": 0.0016672392137161568,
+      "expected_snr": 15.960422578053887,
+      "observed_depth": 0.0007982765844263273,
+      "observed_snr": 16.2510607418491,
+      "finite_geometry": true,
+      "impact_parameter": 0.47
+    },
+    "params": {
+      "P": {
+        "published": 0.5734745,
+        "post_median": 0.5734745179239722,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 3.125504655456349e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.028,
+        "post_median": 0.03381767895917187,
+        "post_std": 0.002603316961953965,
+        "z": 2.2347178788422712,
+        "frac_err": 0.2077742485418525,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 5.3,
+        "post_median": 3.0000000000000004,
+        "post_std": 0.03921276341522152,
+        "z": -58.65437168111418,
+        "frac_err": 0.4339622641509433,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.47,
+        "post_median": 0.06493073066171637,
+        "post_std": 0.08364080804366027,
+        "z": -4.842962171370207,
+        "frac_err": 0.8618495092303906,
+        "in_68": false,
+        "in_95": false
+      }
+    }
+  },
+  {
+    "name": "TOI-132 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 17642,
+      "cadence_fraction_of_training": 0.9801111111111112,
+      "n_in_transit": 716,
+      "n_transits": 13,
+      "sigma": 0.0015484457141597843,
+      "expected_snr": 21.900827411295307,
+      "observed_depth": 0.0011340681080985737,
+      "observed_snr": 19.597454478696704,
+      "finite_geometry": true,
+      "impact_parameter": 0.533
+    },
+    "params": {
+      "P": {
+        "published": 2.1097019,
+        "post_median": 2.109701903404349,
+        "post_std": 8.881784197001252e-16,
+        "z": 3832956.0,
+        "frac_err": 1.6136634293499537e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0356,
+        "post_median": 0.032189631598203,
+        "post_std": 0.002035217667090913,
+        "z": -1.6756774751624939,
+        "frac_err": 0.09579686521901692,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 6.362,
+        "post_median": 7.255890831328443,
+        "post_std": 0.8327806523178487,
+        "z": 1.0733808822773545,
+        "frac_err": 0.14050468898592317,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.533,
+        "post_median": 0.4527649120190925,
+        "post_std": 0.2064084037121998,
+        "z": -0.3887200643864347,
+        "frac_err": 0.15053487426061446,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-913 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 16633,
+      "cadence_fraction_of_training": 0.9240555555555555,
+      "n_in_transit": 202,
+      "n_transits": 3,
+      "sigma": 0.0009024582247902814,
+      "expected_snr": 14.746584045109106,
+      "observed_depth": 0.001075470788443833,
+      "observed_snr": 16.93741762767177,
+      "finite_geometry": true,
+      "impact_parameter": 0.387
+    },
+    "params": {
+      "P": {
+        "published": 11.098644,
+        "post_median": 11.09864350576667,
+        "post_std": 3.552713678800501e-15,
+        "z": -139114315.0,
+        "frac_err": 4.453096520777328e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0306,
+        "post_median": 0.03033067534718914,
+        "post_std": 0.0027611295362339086,
+        "z": -0.09754147687623844,
+        "frac_err": 0.008801459242184928,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 24.352,
+        "post_median": 23.368862562742294,
+        "post_std": 3.1723621256680925,
+        "z": -0.3099070655594402,
+        "frac_err": 0.0403719381265484,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.387,
+        "post_median": 0.48104316206327047,
+        "post_std": 0.2251947686447361,
+        "z": 0.4176081115437968,
+        "frac_err": 0.24300558672679703,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-620 b",
+    "p_detect": 0.9231578707695007,
+    "quality": {
+      "n_cadences": 12993,
+      "cadence_fraction_of_training": 0.7218333333333333,
+      "n_in_transit": 163,
+      "n_transits": 5,
+      "sigma": 0.0013391728694383358,
+      "expected_snr": 37.47936650203441,
+      "observed_depth": 0.001901668700607262,
+      "observed_snr": 18.129758475082504,
+      "finite_geometry": true,
+      "impact_parameter": 0.887
+    },
+    "params": {
+      "P": {
+        "published": 5.0988179,
+        "post_median": 5.098817961737657,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 1.210822939266939e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0627,
+        "post_median": 0.03764416096190838,
+        "post_std": 0.009384581742278826,
+        "z": -2.6698940588062263,
+        "frac_err": 0.3996146577048105,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 18.87,
+        "post_median": 10.258111546195668,
+        "post_std": 1.5413477118469256,
+        "z": -5.587245750983148,
+        "frac_err": 0.45637988626414056,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.887,
+        "post_median": 0.5368811949621172,
+        "post_std": 0.259354618422747,
+        "z": -1.3499617132986257,
+        "frac_err": 0.39472244085443386,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-1811 b",
+    "p_detect": 0.9999998807907104,
+    "quality": {
+      "n_cadences": 16050,
+      "cadence_fraction_of_training": 0.8916666666666667,
+      "n_in_transit": 350,
+      "n_transits": 8,
+      "sigma": 0.00196378769630875,
+      "expected_snr": 167.80783468167306,
+      "observed_depth": 0.015098399595800838,
+      "observed_snr": 143.8369292217293,
+      "finite_geometry": true,
+      "impact_parameter": 0.7393
+    },
+    "params": {
+      "P": {
+        "published": 3.7130765,
+        "post_median": 3.713076543024131,
+        "post_std": 8.881784197001252e-16,
+        "z": 48440865.0,
+        "frac_err": 1.1587192163858489e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.13272,
+        "post_median": 0.1470942777971389,
+        "post_std": 0.004074435905298244,
+        "z": 3.5279184974899542,
+        "frac_err": 0.10830528780243295,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 12.28,
+        "post_median": 11.647741792288873,
+        "post_std": 0.48036723969374046,
+        "z": -1.3161975993913007,
+        "frac_err": 0.051486824732176445,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.7393,
+        "post_median": 0.732546798935247,
+        "post_std": 0.029168651935704216,
+        "z": -0.2315225633203376,
+        "frac_err": 0.00913458821148785,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-5398 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15507,
+      "cadence_fraction_of_training": 0.8615,
+      "n_in_transit": 256,
+      "n_transits": 3,
+      "sigma": 0.0007882448610345458,
+      "expected_snr": 164.05074919268358,
+      "observed_depth": 0.009344646919458466,
+      "observed_snr": 189.6800830583313,
+      "finite_geometry": true,
+      "impact_parameter": 0.272
+    },
+    "params": {
+      "P": {
+        "published": 10.590547,
+        "post_median": 10.590547472817985,
+        "post_std": 1.7763568394002505e-15,
+        "z": 266172862.0,
+        "frac_err": 4.464528450479838e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0899,
+        "post_median": 0.09759252141532325,
+        "post_std": 0.006037076828579287,
+        "z": 1.2742129400949742,
+        "frac_err": 0.08556753520937993,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 20.0,
+        "post_median": 17.540788246295534,
+        "post_std": 0.8916915009988223,
+        "z": -2.757917677750428,
+        "frac_err": 0.12296058768522329,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.272,
+        "post_median": 0.26159779384687254,
+        "post_std": 0.12946478835511224,
+        "z": -0.08034776316626731,
+        "frac_err": 0.03824340497473338,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-815 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15315,
+      "cadence_fraction_of_training": 0.8508333333333333,
+      "n_in_transit": 202,
+      "n_transits": 3,
+      "sigma": 0.0008300091443726784,
+      "expected_snr": 20.85660717788121,
+      "observed_depth": 0.0011872533430327126,
+      "observed_snr": 20.329945235473875,
+      "finite_geometry": true,
+      "impact_parameter": 0.279
+    },
+    "params": {
+      "P": {
+        "published": 11.197259,
+        "post_median": 11.197259455510281,
+        "post_std": 1.7763568394002505e-15,
+        "z": 256429491.0,
+        "frac_err": 4.0680516558719856e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0349,
+        "post_median": 0.03295858161916284,
+        "post_std": 0.002425678231992368,
+        "z": -0.8003610516975068,
+        "frac_err": 0.05562803383487566,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 25.2,
+        "post_median": 20.37826736368084,
+        "post_std": 1.8311885080163515,
+        "z": -2.6331164788393826,
+        "frac_err": 0.19133859667933167,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.279,
+        "post_median": 0.3087080564688456,
+        "post_std": 0.19373667368482445,
+        "z": 0.15334245139965264,
+        "frac_err": 0.10648048913564714,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "LHS 1478 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 14459,
+      "cadence_fraction_of_training": 0.8032777777777778,
+      "n_in_transit": 214,
+      "n_transits": 12,
+      "sigma": 0.001976111947286198,
+      "expected_snr": 15.800807929409382,
+      "observed_depth": 0.001763076199609248,
+      "observed_snr": 13.051680250997345,
+      "finite_geometry": true,
+      "impact_parameter": 0.717
+    },
+    "params": {
+      "P": {
+        "published": 1.9495378,
+        "post_median": 1.9495377848606181,
+        "post_std": 4.440892098500626e-16,
+        "z": -34090857.5,
+        "frac_err": 7.765626278334321e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0462,
+        "post_median": 0.0420619361826938,
+        "post_std": 0.004536435494277615,
+        "z": -0.9121839873014986,
+        "frac_err": 0.08956848089407358,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 16.119,
+        "post_median": 7.113486894256191,
+        "post_std": 1.2224083763602085,
+        "z": -7.367025030177103,
+        "frac_err": 0.5586893173114839,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.717,
+        "post_median": 0.7404449957026031,
+        "post_std": 0.18856763772836152,
+        "z": 0.12433202210644717,
+        "frac_err": 0.03269873877629451,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-942 c",
+    "p_detect": 0.23608329892158508,
+    "quality": {
+      "n_cadences": 17493,
+      "cadence_fraction_of_training": 0.9718333333333333,
+      "n_in_transit": 173,
+      "n_transits": 3,
+      "sigma": 0.0017413937251005813,
+      "expected_snr": 17.32994175971909,
+      "observed_depth": 0.0030280954362292833,
+      "observed_snr": 22.87155196879575,
+      "finite_geometry": true,
+      "impact_parameter": 0.149
+    },
+    "params": {
+      "P": {
+        "published": 10.156272,
+        "post_median": 10.156271473812739,
+        "post_std": 1.7763568394002505e-15,
+        "z": -296217094.0,
+        "frac_err": 5.180909499806296e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0479,
+        "post_median": 0.029160564934420787,
+        "post_std": 0.007667323150656586,
+        "z": -2.444064857756057,
+        "frac_err": 0.39121993873860567,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 17.88,
+        "post_median": 19.679423766676102,
+        "post_std": 2.543469359418925,
+        "z": 0.7074682303572924,
+        "frac_err": 0.1006389131250617,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.149,
+        "post_median": 0.29271115011880755,
+        "post_std": 0.20906910507400353,
+        "z": 0.6873858768752015,
+        "frac_err": 0.9645043632134735,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-622 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 13177,
+      "cadence_fraction_of_training": 0.7320555555555556,
+      "n_in_transit": 352,
+      "n_transits": 4,
+      "sigma": 0.0005055040056495805,
+      "expected_snr": 133.123692895345,
+      "observed_depth": 0.0037466770304086516,
+      "observed_snr": 139.05704242889234,
+      "finite_geometry": true,
+      "impact_parameter": 0.629
+    },
+    "params": {
+      "P": {
+        "published": 6.402513,
+        "post_median": 6.402512889790972,
+        "post_std": 2.6645352591003757e-15,
+        "z": -41361444.666666664,
+        "frac_err": 1.7213401625527746e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.05989,
+        "post_median": 0.05896409777118043,
+        "post_std": 0.0033162791124748928,
+        "z": -0.2791991257118822,
+        "frac_err": 0.01546004723358769,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 10.637,
+        "post_median": 10.8124785295701,
+        "post_std": 0.8291074194977204,
+        "z": 0.21164752050633684,
+        "frac_err": 0.016496994412907754,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.629,
+        "post_median": 0.426327711820067,
+        "post_std": 0.1824376617564969,
+        "z": -1.110912550778269,
+        "frac_err": 0.32221349472167404,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "LTT 3780 c",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15578,
+      "cadence_fraction_of_training": 0.8654444444444445,
+      "n_in_transit": 92,
+      "n_transits": 2,
+      "sigma": 0.0017749282063077986,
+      "expected_snr": 18.11633112813432,
+      "observed_depth": 0.0024660966055077838,
+      "observed_snr": 13.326718002674806,
+      "finite_geometry": true,
+      "impact_parameter": 0.794
+    },
+    "params": {
+      "P": {
+        "published": 12.252284,
+        "post_median": 12.252283921601295,
+        "post_std": 3.552713678800501e-15,
+        "z": -22067273.5,
+        "frac_err": 6.398701206834726e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0579,
+        "post_median": 0.05951015628310098,
+        "post_std": 0.014059961980015098,
+        "z": 0.11452067120733797,
+        "frac_err": 0.027809262229723346,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 43.0,
+        "post_median": 31.32228492107957,
+        "post_std": 4.015094226661455,
+        "z": -2.9084535554301127,
+        "frac_err": 0.27157476927721924,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.794,
+        "post_median": 0.8900400193760893,
+        "post_std": 0.04530030668678552,
+        "z": 2.120074374774707,
+        "frac_err": 0.12095720324444496,
+        "in_68": false,
+        "in_95": false
+      }
+    }
+  },
+  {
+    "name": "TOI-1820 b",
+    "p_detect": 0.9999986886978149,
+    "quality": {
+      "n_cadences": 13493,
+      "cadence_fraction_of_training": 0.7496111111111111,
+      "n_in_transit": 350,
+      "n_transits": 5,
+      "sigma": 0.0013158629573392555,
+      "expected_snr": 85.83519506572918,
+      "observed_depth": 0.0047220368440622495,
+      "observed_snr": 67.13557798575906,
+      "finite_geometry": true,
+      "impact_parameter": 0.84
+    },
+    "params": {
+      "P": {
+        "published": 4.860674,
+        "post_median": 4.860674111638184,
+        "post_std": 8.881784197001252e-16,
+        "z": 125693421.0,
+        "frac_err": 2.2967634535968164e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0777,
+        "post_median": 0.08851256270371552,
+        "post_std": 0.0038193112566742454,
+        "z": 2.8310242284706604,
+        "frac_err": 0.13915782115463982,
+        "in_68": false,
+        "in_95": false
+      },
+      "aRs": {
+        "published": 8.7,
+        "post_median": 8.713727291302794,
+        "post_std": 0.6064435907518632,
+        "z": 0.02263572657396812,
+        "frac_err": 0.001577849575033862,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.84,
+        "post_median": 0.7889644220382855,
+        "post_std": 0.05191559590005956,
+        "z": -0.983049064099366,
+        "frac_err": 0.060756640430612414,
+        "in_68": false,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "GJ 3090 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 18013,
+      "cadence_fraction_of_training": 1.0007222222222223,
+      "n_in_transit": 296,
+      "n_transits": 10,
+      "sigma": 0.0008006867655470908,
+      "expected_snr": 30.864669102878985,
+      "observed_depth": 0.0013380096156325738,
+      "observed_snr": 28.75030391251083,
+      "finite_geometry": true,
+      "impact_parameter": 0.7
+    },
+    "params": {
+      "P": {
+        "published": 2.85310198,
+        "post_median": 2.8531019880454513,
+        "post_std": 4.440892098500626e-16,
+        "z": 18116746.0,
+        "frac_err": 2.8198961945952885e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0379,
+        "post_median": 0.03506742685675402,
+        "post_std": 0.0017900700626533317,
+        "z": -1.5823811605716709,
+        "frac_err": 0.07473807765820534,
+        "in_68": false,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 13.18,
+        "post_median": 11.382636663370327,
+        "post_std": 1.4098402190747574,
+        "z": -1.2748702387063668,
+        "frac_err": 0.13637051112516482,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.7,
+        "post_median": 0.7105286502137578,
+        "post_std": 0.12420147517744204,
+        "z": 0.08477073399261906,
+        "frac_err": 0.015040928876796884,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-2136 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 16941,
+      "cadence_fraction_of_training": 0.9411666666666667,
+      "n_in_transit": 149,
+      "n_transits": 4,
+      "sigma": 0.0032862626109567746,
+      "expected_snr": 12.973759120175082,
+      "observed_depth": 0.0034146775938407314,
+      "observed_snr": 12.68354264204142,
+      "finite_geometry": true,
+      "impact_parameter": 0.35
+    },
+    "params": {
+      "P": {
+        "published": 7.851928,
+        "post_median": 7.851927859953694,
+        "post_std": 2.6645352591003757e-15,
+        "z": -52559374.333333336,
+        "frac_err": 1.783591318048535e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0591,
+        "post_median": 0.06404901331273413,
+        "post_std": 0.005835740545259718,
+        "z": 0.8480523207554419,
+        "frac_err": 0.08373964996166045,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 35.75,
+        "post_median": 20.665328657777472,
+        "post_std": 3.040392272851655,
+        "z": -4.961422733808708,
+        "frac_err": 0.4219488487334973,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.35,
+        "post_median": 0.7784246951068634,
+        "post_std": 0.12415388433647245,
+        "z": 3.4507554668670637,
+        "frac_err": 1.2240705574481814,
+        "in_68": false,
+        "in_95": false
+      }
+    }
+  },
+  {
+    "name": "TOI-6420 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 16794,
+      "cadence_fraction_of_training": 0.933,
+      "n_in_transit": 329,
+      "n_transits": 4,
+      "sigma": 0.004624023491566465,
+      "expected_snr": 27.34959302225386,
+      "observed_depth": 0.004768799968561943,
+      "observed_snr": 18.70626244680069,
+      "finite_geometry": true,
+      "impact_parameter": 0.849
+    },
+    "params": {
+      "P": {
+        "published": 6.961508,
+        "post_median": 6.961508278952123,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 4.007064600575201e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0835,
+        "post_median": 0.07680342725005573,
+        "post_std": 0.009775596972483872,
+        "z": -0.6850295453867045,
+        "frac_err": 0.08019847604723677,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 12.33,
+        "post_median": 14.440821848073218,
+        "post_std": 2.3845725937443287,
+        "z": 0.8851992401534489,
+        "frac_err": 0.1711939860562221,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.849,
+        "post_median": 0.7499855275663763,
+        "post_std": 0.19434079124953987,
+        "z": -0.5094888818605555,
+        "frac_err": 0.11662482029873229,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-159 b",
+    "p_detect": 0.9999688863754272,
+    "quality": {
+      "n_cadences": 18082,
+      "cadence_fraction_of_training": 1.0045555555555556,
+      "n_in_transit": 839,
+      "n_transits": 8,
+      "sigma": 0.0013726749503633847,
+      "expected_snr": 222.99724689617105,
+      "observed_depth": 0.010373603662694353,
+      "observed_snr": 218.89856935503158,
+      "finite_geometry": true,
+      "impact_parameter": 0.18
+    },
+    "params": {
+      "P": {
+        "published": 3.7628396,
+        "post_median": 3.762839553934175,
+        "post_std": 1.3322676295501878e-15,
+        "z": -34577005.333333336,
+        "frac_err": 1.2242303640150965e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.1028,
+        "post_median": 0.09986683629420207,
+        "post_std": 0.006255721704406841,
+        "z": -0.46887694887892317,
+        "frac_err": 0.02853272087352078,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 7.43,
+        "post_median": 8.006884128491084,
+        "post_std": 0.2667155676467392,
+        "z": 2.1629188486483795,
+        "frac_err": 0.07764254757618899,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.18,
+        "post_median": 0.09028070623824297,
+        "post_std": 0.07932395411172868,
+        "z": -1.1310491864208683,
+        "frac_err": 0.49844052089865015,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-178 d",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 18013,
+      "cadence_fraction_of_training": 1.0007222222222223,
+      "n_in_transit": 274,
+      "n_transits": 5,
+      "sigma": 0.0012382932381172827,
+      "expected_snr": 18.66800788746803,
+      "observed_depth": 0.001158441107054431,
+      "observed_snr": 15.485518094094896,
+      "finite_geometry": true,
+      "impact_parameter": 0.501
+    },
+    "params": {
+      "P": {
+        "published": 6.557569,
+        "post_median": 6.5575693349644535,
+        "post_std": 8.881784197001252e-16,
+        "z": 377136447.0,
+        "frac_err": 5.108058390354414e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.03737,
+        "post_median": 0.03623673464228548,
+        "post_std": 0.0029463330827897566,
+        "z": -0.38463585951438956,
+        "frac_err": 0.030325538071033425,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 19.57,
+        "post_median": 16.76712324130907,
+        "post_std": 2.795213278865062,
+        "z": -1.002741644039764,
+        "frac_err": 0.1432231353444523,
+        "in_68": true,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.501,
+        "post_median": 0.6991898151721356,
+        "post_std": 0.18278998024267737,
+        "z": 1.0842487914764967,
+        "frac_err": 0.39558845343739646,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-3261 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 16500,
+      "cadence_fraction_of_training": 0.9166666666666666,
+      "n_in_transit": 1289,
+      "n_transits": 29,
+      "sigma": 0.004047587798541554,
+      "expected_snr": 14.98351905088639,
+      "observed_depth": 0.0016977231468885412,
+      "observed_snr": 15.059031804533038,
+      "finite_geometry": true,
+      "impact_parameter": 0.17
+    },
+    "params": {
+      "P": {
+        "published": 0.8831331,
+        "post_median": 0.8831331307813299,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 3.4854689434012675e-08,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0411,
+        "post_median": 0.04278224195340135,
+        "post_std": 0.003684514360952137,
+        "z": 0.456570877082057,
+        "frac_err": 0.04093046115331757,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 4.333,
+        "post_median": 3.7774705956038064,
+        "post_std": 0.40095658314910904,
+        "z": -1.3855101219016568,
+        "frac_err": 0.12820895554954853,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.17,
+        "post_median": 0.26857877791958173,
+        "post_std": 0.2019345925230767,
+        "z": 0.48817182181560265,
+        "frac_err": 0.5798751642328336,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-4153 b",
+    "p_detect": 0.9999997615814209,
+    "quality": {
+      "n_cadences": 17305,
+      "cadence_fraction_of_training": 0.9613888888888888,
+      "n_in_transit": 675,
+      "n_transits": 6,
+      "sigma": 0.0018463040288241098,
+      "expected_snr": 119.36250634724121,
+      "observed_depth": 0.008339630238706097,
+      "observed_snr": 117.35334265865495,
+      "finite_geometry": true,
+      "impact_parameter": 0.184
+    },
+    "params": {
+      "P": {
+        "published": 4.6174141,
+        "post_median": 4.617414073178197,
+        "post_std": 0.0,
+        "z": NaN,
+        "frac_err": 5.808836475145666e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0921,
+        "post_median": 0.08923358751397975,
+        "post_std": 0.003532493112592152,
+        "z": -0.8114417762917788,
+        "frac_err": 0.031122828295551037,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 8.46,
+        "post_median": 8.109957850635295,
+        "post_std": 0.24156308468712478,
+        "z": -1.4490713670844375,
+        "frac_err": 0.04137614058684464,
+        "in_68": false,
+        "in_95": true
+      },
+      "b": {
+        "published": 0.184,
+        "post_median": 0.1430676259649295,
+        "post_std": 0.10895468527751384,
+        "z": -0.37568255032643516,
+        "frac_err": 0.2224585545384266,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  },
+  {
+    "name": "TOI-3082 b",
+    "p_detect": 1.0,
+    "quality": {
+      "n_cadences": 15354,
+      "cadence_fraction_of_training": 0.853,
+      "n_in_transit": 635,
+      "n_transits": 13,
+      "sigma": 0.0028591028815357555,
+      "expected_snr": 21.075350094444197,
+      "observed_depth": 0.002042956880349056,
+      "observed_snr": 18.00595994547108,
+      "finite_geometry": true,
+      "impact_parameter": 0.355
+    },
+    "params": {
+      "P": {
+        "published": 1.926907,
+        "post_median": 1.9269069971464903,
+        "post_std": 6.661338147750939e-16,
+        "z": -4283688.333333333,
+        "frac_err": 1.4808756472372033e-09,
+        "in_68": false,
+        "in_95": false
+      },
+      "RpRs": {
+        "published": 0.0489,
+        "post_median": 0.052027814421330434,
+        "post_std": 0.003407766461768009,
+        "z": 0.9178488186974146,
+        "frac_err": 0.06396348509878191,
+        "in_68": true,
+        "in_95": true
+      },
+      "aRs": {
+        "published": 8.519,
+        "post_median": 6.5722321266339145,
+        "post_std": 0.7854404661043431,
+        "z": -2.47856834143234,
+        "frac_err": 0.22852070352929751,
+        "in_68": false,
+        "in_95": false
+      },
+      "b": {
+        "published": 0.355,
+        "post_median": 0.5854388538716109,
+        "post_std": 0.19196235643622647,
+        "z": 1.2004377220081013,
+        "frac_err": 0.6491235320327068,
+        "in_68": true,
+        "in_95": true
+      }
+    }
+  }
+]

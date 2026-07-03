@@ -1,0 +1,274 @@
+{
+  "synthetic": {
+    "detection": {
+      "roc_auc": 0.9993727744415907,
+      "average_precision": 0.9994214094712691
+    },
+    "characterization_sbc_gate": {
+      "alpha_familywise": 0.05,
+      "bonferroni_alpha_per_test": 0.01,
+      "n_tests": 5,
+      "min_pvalue": 0.18710677791497005,
+      "pass": true,
+      "all_raw_p_gt_0.05": true
+    },
+    "characterization_coverage_calibration_error": 0.01292631578947366
+  },
+  "real": {
+    "detection": {
+      "threshold": 0.9,
+      "n_detected": 29,
+      "detected_fraction": 0.9666666666666667,
+      "median_p_detect": 1.0
+    },
+    "gate_status": {
+      "detected_fraction_ge_0.9": true,
+      "mcmc_characterization_prior_fraction_le_0.1": false,
+      "mcmc_characterization_width_fraction_le_0.5_diagnostic": true,
+      "importance_correction_min_ess_fraction_ge_0.05": false
+    },
+    "mcmc_agreement": {
+      "P": {
+        "n": 16,
+        "median_wasserstein": 1.7937323015804196e-08,
+        "median_wasserstein_prior_fraction": 1.4349858412643357e-09,
+        "median_wasserstein_width_fraction": 17937.3230158042
+      },
+      "RpRs": {
+        "n": 16,
+        "median_wasserstein": 0.0026784847714971024,
+        "median_wasserstein_prior_fraction": 0.019132034082122162,
+        "median_wasserstein_width_fraction": 0.31774401114302453
+      },
+      "aRs": {
+        "n": 16,
+        "median_wasserstein": 1.0775842136827536,
+        "median_wasserstein_prior_fraction": 0.022927323695377737,
+        "median_wasserstein_width_fraction": 0.4185454843130411
+      },
+      "b": {
+        "n": 16,
+        "median_wasserstein": 0.1274665614569201,
+        "median_wasserstein_prior_fraction": 0.11587869223356372,
+        "median_wasserstein_width_fraction": 0.39961138156807685
+      }
+    },
+    "mcmc_stratified": {
+      "impact": {
+        "high_b": {
+          "n": 2,
+          "RpRs_median_prior_fraction": 0.11122718179296923,
+          "RpRs_median_width_fraction": 3.0751065548862164,
+          "aRs_median_prior_fraction": 0.06225775073478771,
+          "aRs_median_width_fraction": 0.7357397265782146,
+          "b_median_prior_fraction": 0.051255783106075266,
+          "b_median_width_fraction": 0.7055571043422705
+        },
+        "low_b": {
+          "n": 7,
+          "RpRs_median_prior_fraction": 0.019044520154177912,
+          "RpRs_median_width_fraction": 0.3250419501561983,
+          "aRs_median_prior_fraction": 0.03933730936768431,
+          "aRs_median_width_fraction": 0.5703197961347732,
+          "b_median_prior_fraction": 0.13046335286358093,
+          "b_median_width_fraction": 0.3833719554385727
+        },
+        "mid_b": {
+          "n": 7,
+          "RpRs_median_prior_fraction": 0.01913404040012063,
+          "RpRs_median_width_fraction": 0.28829241786932,
+          "aRs_median_prior_fraction": 0.020480472044573355,
+          "aRs_median_width_fraction": 0.33855089040591235,
+          "b_median_prior_fraction": 0.13362537041453246,
+          "b_median_width_fraction": 0.3182893421364145
+        }
+      },
+      "observed_snr": {
+        "high_snr": {
+          "n": 3,
+          "RpRs_median_prior_fraction": 0.019044520154177912,
+          "RpRs_median_width_fraction": 0.4473472527702276,
+          "aRs_median_prior_fraction": 0.005569228819010838,
+          "aRs_median_width_fraction": 0.39696792686093896,
+          "b_median_prior_fraction": 0.06471646502343144,
+          "b_median_width_fraction": 0.4158508076975809
+        },
+        "low_snr": {
+          "n": 9,
+          "RpRs_median_prior_fraction": 0.01913404040012063,
+          "RpRs_median_width_fraction": 0.3104460721298508,
+          "aRs_median_prior_fraction": 0.023131897381663883,
+          "aRs_median_width_fraction": 0.33855089040591235,
+          "b_median_prior_fraction": 0.13362537041453246,
+          "b_median_width_fraction": 0.3182893421364145
+        },
+        "mid_snr": {
+          "n": 4,
+          "RpRs_median_prior_fraction": 0.024991162868475324,
+          "RpRs_median_width_fraction": 0.29526130235321646,
+          "aRs_median_prior_fraction": 0.03133351751784146,
+          "aRs_median_width_fraction": 0.667002968670652,
+          "b_median_prior_fraction": 0.1158786922335637,
+          "b_median_width_fraction": 0.4332958460567975
+        }
+      },
+      "rprs": {
+        "deep": {
+          "n": 3,
+          "RpRs_median_prior_fraction": 0.03085229797282696,
+          "RpRs_median_width_fraction": 0.3022301868371129,
+          "aRs_median_prior_fraction": 0.01321521177212322,
+          "aRs_median_width_fraction": 0.39696792686093896,
+          "b_median_prior_fraction": 0.10129403160354648,
+          "b_median_width_fraction": 0.4158508076975809
+        },
+        "medium": {
+          "n": 7,
+          "RpRs_median_prior_fraction": 0.07997162673995027,
+          "RpRs_median_width_fraction": 0.4473472527702276,
+          "aRs_median_prior_fraction": 0.03933730936768431,
+          "aRs_median_width_fraction": 0.5703197961347732,
+          "b_median_prior_fraction": 0.13046335286358093,
+          "b_median_width_fraction": 0.4832197366750223
+        },
+        "shallow": {
+          "n": 6,
+          "RpRs_median_prior_fraction": 0.009175333064073688,
+          "RpRs_median_width_fraction": 0.23630601886747193,
+          "aRs_median_prior_fraction": 0.016116141292753815,
+          "aRs_median_width_fraction": 0.23662278877219522,
+          "b_median_prior_fraction": 0.1211260039776645,
+          "b_median_width_fraction": 0.26948988228777593
+        }
+      },
+      "a_rs": {
+        "compact": {
+          "n": 4,
+          "RpRs_median_prior_fraction": 0.012149210674852615,
+          "RpRs_median_width_fraction": 0.26907816402652274,
+          "aRs_median_prior_fraction": 0.009417472271410963,
+          "aRs_median_width_fraction": 0.34909095731904005,
+          "b_median_prior_fraction": 0.12275915281166089,
+          "b_median_width_fraction": 0.2877555680304539
+        },
+        "mid": {
+          "n": 10,
+          "RpRs_median_prior_fraction": 0.055411962356388615,
+          "RpRs_median_width_fraction": 0.39088272723030054,
+          "aRs_median_prior_fraction": 0.0348384333847197,
+          "aRs_median_width_fraction": 0.537768126185066,
+          "b_median_prior_fraction": 0.11424554339956733,
+          "b_median_width_fraction": 0.4495352721863016
+        },
+        "wide": {
+          "n": 2,
+          "RpRs_median_prior_fraction": 0.009031082351915113,
+          "RpRs_median_width_fraction": 0.19117263894509895,
+          "aRs_median_prior_fraction": 0.11546192004871388,
+          "aRs_median_width_fraction": 0.3687622084063033,
+          "b_median_prior_fraction": 0.16700578243983477,
+          "b_median_width_fraction": 0.32501941731552286
+        }
+      },
+      "n_transits": {
+        "many": {
+          "n": 9,
+          "RpRs_median_prior_fraction": 0.019686390088613632,
+          "RpRs_median_width_fraction": 0.3022301868371129,
+          "aRs_median_prior_fraction": 0.01321521177212322,
+          "aRs_median_width_fraction": 0.39696792686093896,
+          "b_median_prior_fraction": 0.13362537041453246,
+          "b_median_width_fraction": 0.4158508076975809
+        },
+        "several": {
+          "n": 7,
+          "RpRs_median_prior_fraction": 0.019044520154177912,
+          "RpRs_median_width_fraction": 0.3344182016903735,
+          "aRs_median_prior_fraction": 0.03933730936768431,
+          "aRs_median_width_fraction": 0.5703197961347732,
+          "b_median_prior_fraction": 0.09802773393555372,
+          "b_median_width_fraction": 0.3833719554385727
+        }
+      }
+    }
+  },
+  "baselines": {
+    "bls": {
+      "checkpoint": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt",
+      "n": 5000,
+      "noise_lib": "/workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz",
+      "noise_lib_available": true,
+      "n_planets": 2463,
+      "n_negatives": 2537,
+      "bls": {
+        "roc_auc": 0.4093519044411488,
+        "average_precision": 0.4040001099738494
+      },
+      "tls": {
+        "n": 500,
+        "roc_auc": 0.6857647531112003,
+        "average_precision": 0.7009817871162651
+      },
+      "transitflow": {
+        "roc_auc": 0.9989761757415343,
+        "average_precision": 0.9987714398596045
+      },
+      "auc_gain": 0.5896242713003855,
+      "bls_backend": "astropy",
+      "tls_backend": "transitleastsquares",
+      "tls_requested": true
+    },
+    "speed": {
+      "device": "cuda",
+      "noise_lib": "/workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz",
+      "noise_lib_available": true,
+      "amortized_ms_per_object": 56.16,
+      "amortized_posterior_samples": 2000,
+      "mcmc_backend": "emcee",
+      "mcmc_s_per_object": 96.43,
+      "mcmc_steps": 1500,
+      "mcmc_walkers": 64,
+      "speedup_x": 1717.1
+    }
+  },
+  "status": {
+    "synthetic_detection_auc_ge_0.99": true,
+    "synthetic_characterization_sbc_familywise_alpha_0.05": true,
+    "synthetic_characterization_coverage_error_le_0.03": true,
+    "real_quality_gated_detection_ge_27_of_30": true,
+    "real_mcmc_n_ge_16": true,
+    "real_mcmc_prior_fraction_le_0.1": false,
+    "real_mcmc_width_fraction_le_0.5": true,
+    "speedup_ge_1000x": true,
+    "bls_baseline_regenerated": true,
+    "importance_correction_min_ess_fraction_ge_0.05": false,
+    "final_pass": false
+  },
+  "run": {
+    "run_name": "full_03cca0a_cpu23_20260703_072020",
+    "config": "configs/publishable.yaml",
+    "checkpoint": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_run/checkpoints/latest.pt",
+    "data_dir": "/dev/shm/tf_full_03cca0a_cpu23_20260703_072020_data",
+    "noise_lib": "/workspace/noise_lib_full_03cca0a_cpu23_20260703_072020.npz",
+    "noise_workers": 4,
+    "smoke": false,
+    "fast_check": false,
+    "n_data": 1000000,
+    "steps": null,
+    "n_sbc": 1000,
+    "n_detection": 5000,
+    "with_tls_baseline": true,
+    "tls_baseline_n": 500,
+    "n_posterior": 2000,
+    "n_real_planets": 30,
+    "with_mcmc": 16,
+    "mcmc_steps": 1500,
+    "mcmc_walkers": 64,
+    "is_correct_mcmc": true,
+    "is_samples": 3000,
+    "speed_n_amortized": 512,
+    "speed_n_mcmc": 5,
+    "speed_mcmc_steps": 1500,
+    "speed_mcmc_walkers": 64
+  }
+}

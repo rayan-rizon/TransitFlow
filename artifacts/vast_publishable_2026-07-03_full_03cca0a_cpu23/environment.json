@@ -1,0 +1,11 @@
+{
+  "created_unix": 1783063221.3270965,
+  "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+  "platform": "Linux-6.8.0-117-generic-x86_64-with-glibc2.39",
+  "git_sha": "03cca0afd1117328fa1fc796a295744c802aa107",
+  "torch": {
+    "version": "2.12.0+cu130",
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 5070 Ti"
+  }
+}

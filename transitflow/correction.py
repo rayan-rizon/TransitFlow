@@ -129,6 +129,59 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     return {"phys": phys, "std": std, "w": w, "ess_fraction": float(ess)}
 
 
+def adaptive_importance_weights(
+    inference,
+    global_view,
+    local_view,
+    sigma_feat,
+    raw_flux: np.ndarray,
+    times: np.ndarray,
+    sigma: float,
+    initial_samples: int = 3000,
+    max_samples: int | None = None,
+    target_ess_fraction: float = 0.05,
+    growth: float = 2.0,
+    logprob_steps: int = 40,
+    periodogram=None,
+    ephem_feat=None,
+    dilution_grid_size: int = 9,
+) -> dict:
+    """Retry importance correction with larger proposal batches until ESS is OK.
+
+    This does not relax the ESS criterion. It only distinguishes sample-starved
+    correction from true proposal/real-likelihood mismatch. The returned object
+    is the best attempt by ESS fraction and includes an ``attempts`` list.
+    """
+    initial_samples = max(1, int(initial_samples))
+    max_samples = initial_samples if max_samples is None else max(
+        initial_samples, int(max_samples))
+    target_ess_fraction = float(target_ess_fraction)
+    growth = max(1.01, float(growth))
+
+    attempts = []
+    best = None
+    n = initial_samples
+    while True:
+        corr = importance_weights(
+            inference, global_view, local_view, sigma_feat,
+            raw_flux, times, sigma, n_samples=n, logprob_steps=logprob_steps,
+            periodogram=periodogram, ephem_feat=ephem_feat,
+            dilution_grid_size=dilution_grid_size)
+        attempts.append({
+            "n_samples": int(n),
+            "ess_fraction": float(corr["ess_fraction"]),
+        })
+        if best is None or corr["ess_fraction"] > best["ess_fraction"]:
+            best = corr
+        if corr["ess_fraction"] >= target_ess_fraction or n >= max_samples:
+            break
+        n = min(max_samples, max(n + 1, int(np.ceil(n * growth))))
+    best["attempts"] = attempts
+    best["target_ess_fraction"] = target_ess_fraction
+    best["max_samples"] = int(max_samples)
+    return best
+
+
 def weighted_rank_cdf(std_samples: np.ndarray, w: np.ndarray,
                       theta_true_std: np.ndarray) -> np.ndarray:
     """Per-dimension weighted CDF of the truth under the corrected posterior.
