@@ -548,6 +548,7 @@ def main():
     ap.add_argument("--with-mcmc", type=int, default=0,
                     help="run a per-object MCMC on the first K planets (shape agreement)")
     ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--mcmc-detect-threshold", type=float, default=0.9,
                     help="only run same-light-curve MCMC for detected planets")
     ap.add_argument("--mcmc-full-ephemeris", action="store_true",
@@ -732,6 +733,7 @@ def main():
                                 and not conditions_on_dilution)
                 mc_out = run_mcmc(mcmc_t, mcmc_f, mcmc_err, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60,
+                                  n_walkers=args.mcmc_walkers,
                                   fixed=fixed,
                                   init_std_jitter=args.mcmc_init_jitter,
                                   exposure_minutes=getattr(sc, "exposure_minutes", 0.0),
@@ -819,6 +821,7 @@ def main():
             summary["importance_correction"] = {
                 "enabled": True,
                 "n_samples": args.is_samples,
+                "mean_ess_fraction": float(np.mean(ess_vals)),
                 "median_ess_fraction": float(np.median(ess_vals)),
                 "min_ess_fraction": float(np.min(ess_vals)),
             }

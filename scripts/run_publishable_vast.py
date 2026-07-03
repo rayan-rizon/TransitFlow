@@ -118,6 +118,9 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         "speedup_ge_1000x": float(speed.get("speedup_x", 0.0)) >= min_speedup,
         "bls_baseline_regenerated": bool(bls.get("transitflow") and bls.get("bls")),
     }
+    if "importance_correction_min_ess_fraction_ge_0.05" in real_summary.get("gate_status", {}):
+        status["importance_correction_min_ess_fraction_ge_0.05"] = bool(
+            real_summary["gate_status"]["importance_correction_min_ess_fraction_ge_0.05"])
     status["final_pass"] = all(status.values())
     return {
         "synthetic": {
@@ -183,6 +186,11 @@ def main() -> None:
     ap.add_argument("--n-real-planets", type=int, default=30)
     ap.add_argument("--with-mcmc", type=int, default=16)
     ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--mcmc-walkers", type=int, default=32)
+    ap.add_argument("--is-correct-mcmc", action="store_true",
+                    help="use likelihood-corrected amortized samples for real MCMC agreement")
+    ap.add_argument("--is-samples", type=int, default=3000)
+    ap.add_argument("--speed-n-amortized", type=int, default=None)
     ap.add_argument("--steps", type=int, default=None,
                     help="override training steps; useful for fast metric checks")
     ap.add_argument("--fast-check", action="store_true",
@@ -214,7 +222,7 @@ def main() -> None:
         speed_n_amortized = 32
         speed_n_mcmc = 1
         speed_mcmc_steps = 80
-        speed_mcmc_walkers = 16
+        speed_mcmc_walkers = min(args.mcmc_walkers, 16)
     elif args.fast_check:
         n_data = 20000 if args.n_data == 1_000_000 else args.n_data
         steps = args.steps or 3000
@@ -227,7 +235,7 @@ def main() -> None:
         speed_n_amortized = min(n_detection, 64)
         speed_n_mcmc = max(1, min(with_mcmc, 2))
         speed_mcmc_steps = mcmc_steps
-        speed_mcmc_walkers = 16
+        speed_mcmc_walkers = min(args.mcmc_walkers, 16)
     else:
         n_data = args.n_data
         steps = args.steps
@@ -237,10 +245,10 @@ def main() -> None:
         n_real_planets = args.n_real_planets
         with_mcmc = args.with_mcmc
         mcmc_steps = args.mcmc_steps
-        speed_n_amortized = 256
+        speed_n_amortized = args.speed_n_amortized or 512
         speed_n_mcmc = 5
         speed_mcmc_steps = args.mcmc_steps
-        speed_mcmc_walkers = 32
+        speed_mcmc_walkers = args.mcmc_walkers
     train_steps = ["--steps", str(steps)] if steps else []
 
     write_environment(out_dir / "environment.json", repo)
@@ -294,7 +302,10 @@ def main() -> None:
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
            "--detector-ckpt", str(ckpt), "--n-planets", str(n_real_planets),
            "--n-post", str(n_posterior), "--with-mcmc", str(with_mcmc),
-           "--mcmc-steps", str(mcmc_steps), "--out", str(real_dir)]
+           "--mcmc-steps", str(mcmc_steps), "--mcmc-walkers", str(args.mcmc_walkers),
+           "--out", str(real_dir)]
+    if args.is_correct_mcmc:
+        cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples)])
     run(cmd, repo, logs / "validate_real.log")
 
     report = build_gate_report(
@@ -321,6 +332,9 @@ def main() -> None:
         "n_real_planets": int(n_real_planets),
         "with_mcmc": int(with_mcmc),
         "mcmc_steps": int(mcmc_steps),
+        "mcmc_walkers": int(args.mcmc_walkers),
+        "is_correct_mcmc": bool(args.is_correct_mcmc),
+        "is_samples": int(args.is_samples),
         "speed_n_amortized": int(speed_n_amortized),
         "speed_n_mcmc": int(speed_n_mcmc),
         "speed_mcmc_steps": int(speed_mcmc_steps),
