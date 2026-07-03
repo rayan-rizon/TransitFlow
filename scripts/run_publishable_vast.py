@@ -176,6 +176,9 @@ def main() -> None:
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-sbc", type=int, default=1000)
     ap.add_argument("--n-detection", type=int, default=5000)
+    ap.add_argument("--with-tls-baseline", action="store_true",
+                    help="include Transit Least Squares baseline on a bounded subset")
+    ap.add_argument("--tls-baseline-n", type=int, default=500)
     ap.add_argument("--n-posterior", type=int, default=2000)
     ap.add_argument("--n-real-planets", type=int, default=30)
     ap.add_argument("--with-mcmc", type=int, default=16)
@@ -275,10 +278,12 @@ def main() -> None:
          "--n-detection", str(n_detection), "--n-posterior", str(n_posterior),
          "--out", str(eval_dir), "--plots"],
         repo, logs / "evaluate.log")
-    run([args.python, "scripts/baseline_detection.py", "--ckpt", str(ckpt),
-         "--noise-lib", str(noise_lib), "--n", str(n_detection),
-         "--out", str(results / "bls_vs_transitflow.json")],
-        repo, logs / "baseline_detection.log")
+    baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt", str(ckpt),
+                    "--noise-lib", str(noise_lib), "--n", str(n_detection),
+                    "--out", str(results / "bls_vs_transitflow.json")]
+    if args.with_tls_baseline:
+        baseline_cmd.extend(["--with-tls", "--tls-n", str(args.tls_baseline_n)])
+    run(baseline_cmd, repo, logs / "baseline_detection.log")
     run([args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
          "--noise-lib", str(noise_lib), "--n-amortized", str(speed_n_amortized),
          "--n-post", str(n_posterior), "--n-mcmc", str(speed_n_mcmc),
@@ -310,6 +315,8 @@ def main() -> None:
         "steps": None if steps is None else int(steps),
         "n_sbc": int(n_sbc),
         "n_detection": int(n_detection),
+        "with_tls_baseline": bool(args.with_tls_baseline),
+        "tls_baseline_n": int(args.tls_baseline_n),
         "n_posterior": int(n_posterior),
         "n_real_planets": int(n_real_planets),
         "with_mcmc": int(with_mcmc),

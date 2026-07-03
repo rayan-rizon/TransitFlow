@@ -15,6 +15,7 @@ celerite2>=0.2           # GP noise reference (FFT synthesis used by default)
 
 # Baselines & diagnostics (optional) ----------------------------------------
 astropy>=5.3             # BoxLeastSquares detection baseline
+transitleastsquares>=1.32 # Transit Least Squares detection baseline
 corner>=2.2              # posterior corner plots
 emcee>=3.1               # MCMC baseline (native ensemble sampler otherwise)
 arviz>=0.16              # posterior diagnostics
