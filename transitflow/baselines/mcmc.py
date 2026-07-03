@@ -57,13 +57,16 @@ def _pooled_log_prob(theta_free: np.ndarray) -> float:
         dilution=theta[state["dim"]] if state["fit_dilution"] else 1.0,
         dilution_low=state["dilution_low"],
         dilution_high=state["dilution_high"],
-        fit_dilution=state["fit_dilution"])
+        fit_dilution=state["fit_dilution"],
+        likelihood=state["likelihood"],
+        student_t_nu=state["student_t_nu"])
 
 
 def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
                     n_radial: int = 100, exposure_minutes: float = 0.0,
                     n_exposure_subsamples: int = 1,
-                    dilution: float = 1.0) -> float:
+                    dilution: float = 1.0, likelihood: str = "gaussian",
+                    student_t_nu: float = 4.0) -> float:
     P, t0_phase, RpRs, aRs, b, q1, q2 = theta_phys
     u1, u2 = kipping_to_quadratic(q1, q2)
     model = exposure_integrated_transit_flux(
@@ -74,6 +77,15 @@ def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
     )[0]
     model = 1.0 + (model - 1.0) * float(dilution)
     resid = (flux - model) / flux_err
+    likelihood = str(likelihood).lower()
+    if likelihood == "student_t":
+        student_t_nu = float(student_t_nu)
+        if student_t_nu <= 0:
+            return -np.inf
+        return -0.5 * (student_t_nu + 1.0) * np.sum(
+            np.log1p((resid ** 2) / student_t_nu))
+    if likelihood != "gaussian":
+        return -np.inf
     return -0.5 * np.sum(resid ** 2)
 
 
@@ -81,7 +93,8 @@ def _log_prob(theta_phys: np.ndarray, times, flux, flux_err,
               prior: TransitPrior, n_radial: int, exposure_minutes: float,
               n_exposure_subsamples: int, dilution: float = 1.0,
               dilution_low: float = 0.5, dilution_high: float = 1.0,
-              fit_dilution: bool = False) -> float:
+              fit_dilution: bool = False, likelihood: str = "gaussian",
+              student_t_nu: float = 4.0) -> float:
     if fit_dilution and not (dilution_low <= dilution <= dilution_high):
         return -np.inf
     lp = float(prior.log_prob_physical(theta_phys[None, :])[0])
@@ -89,7 +102,8 @@ def _log_prob(theta_phys: np.ndarray, times, flux, flux_err,
         return -np.inf
     return lp + _log_likelihood(theta_phys, times, flux, flux_err, n_radial,
                                 exposure_minutes, n_exposure_subsamples,
-                                dilution=dilution)
+                                dilution=dilution, likelihood=likelihood,
+                                student_t_nu=student_t_nu)
 
 
 def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
@@ -99,7 +113,9 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              init_std_jitter: float = 0.05, exposure_minutes: float = 0.0,
              n_exposure_subsamples: int = 1, fit_dilution: bool = False,
              dilution_low: float = 0.5, dilution_high: float = 1.0,
-             init_dilution: float = 1.0, n_processes: int = 1) -> dict:
+             init_dilution: float = 1.0, n_processes: int = 1,
+             likelihood: str = "gaussian",
+             student_t_nu: float = 4.0) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
@@ -152,6 +168,12 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
 
     p0 = p0_full[:, free_idx]
     n_processes = max(1, int(n_processes))
+    likelihood = str(likelihood).lower()
+    if likelihood not in ("gaussian", "student_t"):
+        raise ValueError(f"unknown MCMC likelihood {likelihood!r}")
+    student_t_nu = float(student_t_nu)
+    if likelihood == "student_t" and student_t_nu <= 0:
+        raise ValueError("student_t_nu must be positive")
 
     def logp(th):
         theta = _expand_free(th, init, init_dilution, fit_dilution, fixed,
@@ -161,7 +183,8 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
             exposure_minutes, n_exposure_subsamples,
             dilution=theta[dim] if fit_dilution else 1.0,
             dilution_low=dilution_low, dilution_high=dilution_high,
-            fit_dilution=fit_dilution)
+            fit_dilution=fit_dilution, likelihood=likelihood,
+            student_t_nu=student_t_nu)
 
     if _HAS_EMCEE:
         if n_processes > 1:
@@ -183,6 +206,8 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
                 "n_exposure_subsamples": n_exposure_subsamples,
                 "dilution_low": dilution_low,
                 "dilution_high": dilution_high,
+                "likelihood": likelihood,
+                "student_t_nu": student_t_nu,
             }
             ctx = mp.get_context("fork")
             with ctx.Pool(n_processes, initializer=_pool_init,

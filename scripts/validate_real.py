@@ -560,6 +560,12 @@ def main():
     ap.add_argument("--mcmc-processes", type=int, default=1,
                     help="parallel worker processes for emcee real-data MCMC; "
                          "1 preserves serial behavior")
+    ap.add_argument("--mcmc-likelihood", choices=("gaussian", "student_t"),
+                    default="gaussian",
+                    help="likelihood used by the real-data MCMC reference and "
+                         "importance correction")
+    ap.add_argument("--mcmc-student-nu", type=float, default=4.0,
+                    help="degrees of freedom for --mcmc-likelihood student_t")
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
@@ -568,6 +574,9 @@ def main():
                     help="adaptively retry correction up to this many proposal samples")
     ap.add_argument("--is-target-ess-fraction", type=float, default=0.05,
                     help="target normalized ESS for adaptive correction")
+    ap.add_argument("--is-prior-mixture-fraction", type=float, default=0.0,
+                    help="optional prior-proposal fraction for real-data "
+                         "defensive mixture importance sampling")
     ap.add_argument("--resume-records", default=None,
                     help="skip the detection loop and load detection records "
                          "from this JSON checkpoint (e.g. a prior "
@@ -749,7 +758,9 @@ def main():
                                   fit_dilution=fit_dilution,
                                   dilution_low=getattr(sc, "dilution_low", 0.5),
                                   dilution_high=getattr(sc, "dilution_high", 1.0),
-                                  n_processes=args.mcmc_processes)
+                                  n_processes=args.mcmc_processes,
+                                  likelihood=args.mcmc_likelihood,
+                                  student_t_nu=args.mcmc_student_nu)
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:
@@ -758,7 +769,11 @@ def main():
                         initial_samples=args.is_samples,
                         max_samples=args.is_max_samples,
                         target_ess_fraction=args.is_target_ess_fraction,
-                        periodogram=pg, ephem_feat=eph)
+                        periodogram=pg, ephem_feat=eph,
+                        likelihood=args.mcmc_likelihood,
+                        student_t_nu=args.mcmc_student_nu,
+                        prior_mixture_fraction=args.is_prior_mixture_fraction,
+                        rng=np.random.default_rng(done + 4321))
                     amort = sir_resample(corr["phys"], corr["w"], args.n_post,
                                          np.random.default_rng(done + 1234))
                     ess = corr["ess_fraction"]
@@ -774,6 +789,8 @@ def main():
                 by_name[pl["name"]]["mcmc_wasserstein"] = wd
                 by_name[pl["name"]]["mcmc_wasserstein_width_fraction"] = wd_norm
                 by_name[pl["name"]]["mcmc_backend"] = mc_out["backend"]
+                by_name[pl["name"]]["mcmc_likelihood"] = args.mcmc_likelihood
+                by_name[pl["name"]]["mcmc_student_nu"] = float(args.mcmc_student_nu)
                 by_name[pl["name"]]["mcmc_acceptance_fraction"] = \
                     mc_out.get("acceptance_fraction")
                 by_name[pl["name"]]["mcmc_fixed"] = mc_out.get("fixed", {})
@@ -785,6 +802,8 @@ def main():
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
                     by_name[pl["name"]]["is_attempts"] = corr.get("attempts", [])
+                    by_name[pl["name"]]["is_prior_mixture_fraction"] = float(
+                        args.is_prior_mixture_fraction)
                 ess_txt = "" if ess is None else f" ESS={ess:.3f}"
                 print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}{ess_txt}")
                 done += 1
@@ -836,6 +855,8 @@ def main():
                 "mean_ess_fraction": float(np.mean(ess_vals)),
                 "median_ess_fraction": float(np.median(ess_vals)),
                 "min_ess_fraction": float(np.min(ess_vals)),
+                "prior_mixture_fraction": float(
+                    mcmc_rows[0].get("is_prior_mixture_fraction", 0.0)),
             }
         fixed_rows = [r.get("mcmc_fixed", {}) for r in mcmc_rows]
         summary["mcmc_conditioning"] = {
@@ -845,6 +866,8 @@ def main():
                 r.get("mcmc_acceptance_fraction", float("nan"))
                 for r in mcmc_rows
             ])),
+            "likelihood": mcmc_rows[0].get("mcmc_likelihood", "gaussian"),
+            "student_t_nu": float(mcmc_rows[0].get("mcmc_student_nu", 4.0)),
         }
         for k in _CMP:
             vals = [r["mcmc_wasserstein"][k] for r in mcmc_rows

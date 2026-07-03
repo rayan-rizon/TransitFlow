@@ -79,6 +79,36 @@ def test_importance_weights_and_correction():
     assert res.shape == (50, 7)
 
 
+def test_importance_weights_student_t_likelihood():
+    sc, pr, sim, inf = _setup()
+    b = sim.simulate_batch(8, np.random.default_rng(13), return_raw=True)
+    i = int(np.where(b["valid"])[0][0])
+    r = importance_weights(
+        inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
+        b["raw_flux"][i].astype(np.float64), b["times"].astype(np.float64),
+        float(b["sigma"][i]), n_samples=48, logprob_steps=10,
+        likelihood="student_t", student_t_nu=4.0)
+    assert r["phys"].shape == (48, 7)
+    assert np.isfinite(r["w"]).all()
+    assert abs(r["w"].sum() - 1.0) < 1e-5
+    assert 0.0 <= r["ess_fraction"] <= 1.0
+
+
+def test_importance_weights_prior_mixture():
+    sc, pr, sim, inf = _setup()
+    b = sim.simulate_batch(8, np.random.default_rng(14), return_raw=True)
+    i = int(np.where(b["valid"])[0][0])
+    r = importance_weights(
+        inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
+        b["raw_flux"][i].astype(np.float64), b["times"].astype(np.float64),
+        float(b["sigma"][i]), n_samples=50, logprob_steps=10,
+        prior_mixture_fraction=0.4, rng=np.random.default_rng(15))
+    assert r["phys"].shape == (50, 7)
+    assert np.isfinite(r["w"]).all()
+    assert abs(r["w"].sum() - 1.0) < 1e-5
+    assert 0.0 <= r["ess_fraction"] <= 1.0
+
+
 def test_adaptive_importance_weights_records_attempts():
     sc, pr, sim, inf = _setup()
     b = sim.simulate_batch(8, np.random.default_rng(22), return_raw=True)
