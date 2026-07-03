@@ -3,7 +3,6 @@
 import numpy as np
 
 from transitflow.correction import (
-    adaptive_importance_weights,
     importance_weights,
     render_raw_flux,
     sir_resample,
@@ -77,52 +76,6 @@ def test_importance_weights_and_correction():
     assert np.all((cdf >= -1e-9) & (cdf <= 1.0 + 1e-9))
     res = sir_resample(r["phys"], r["w"], 50, np.random.default_rng(3))
     assert res.shape == (50, 7)
-
-
-def test_importance_weights_student_t_likelihood():
-    sc, pr, sim, inf = _setup()
-    b = sim.simulate_batch(8, np.random.default_rng(13), return_raw=True)
-    i = int(np.where(b["valid"])[0][0])
-    r = importance_weights(
-        inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
-        b["raw_flux"][i].astype(np.float64), b["times"].astype(np.float64),
-        float(b["sigma"][i]), n_samples=48, logprob_steps=10,
-        likelihood="student_t", student_t_nu=4.0)
-    assert r["phys"].shape == (48, 7)
-    assert np.isfinite(r["w"]).all()
-    assert abs(r["w"].sum() - 1.0) < 1e-5
-    assert 0.0 <= r["ess_fraction"] <= 1.0
-
-
-def test_importance_weights_prior_mixture():
-    sc, pr, sim, inf = _setup()
-    b = sim.simulate_batch(8, np.random.default_rng(14), return_raw=True)
-    i = int(np.where(b["valid"])[0][0])
-    r = importance_weights(
-        inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
-        b["raw_flux"][i].astype(np.float64), b["times"].astype(np.float64),
-        float(b["sigma"][i]), n_samples=50, logprob_steps=10,
-        prior_mixture_fraction=0.4, rng=np.random.default_rng(15))
-    assert r["phys"].shape == (50, 7)
-    assert np.isfinite(r["w"]).all()
-    assert abs(r["w"].sum() - 1.0) < 1e-5
-    assert 0.0 <= r["ess_fraction"] <= 1.0
-
-
-def test_adaptive_importance_weights_records_attempts():
-    sc, pr, sim, inf = _setup()
-    b = sim.simulate_batch(8, np.random.default_rng(22), return_raw=True)
-    i = int(np.where(b["valid"])[0][0])
-    r = adaptive_importance_weights(
-        inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
-        b["raw_flux"][i].astype(np.float64), b["times"].astype(np.float64),
-        float(b["sigma"][i]), initial_samples=24, max_samples=48,
-        target_ess_fraction=2.0, logprob_steps=10)
-    assert r["phys"].shape[1] == 7
-    assert len(r["attempts"]) >= 2
-    assert r["attempts"][0]["n_samples"] == 24
-    assert r["attempts"][-1]["n_samples"] == 48
-    assert 0.0 <= r["ess_fraction"] <= 1.0
 
 
 def test_importance_weights_accepts_periodogram_model():

@@ -53,29 +53,11 @@ def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 2
     return 1.0 + (flux - 1.0) * dilution[:, None]
 
 
-def _proposal_prior_log_prob(inference, std: np.ndarray) -> np.ndarray:
-    """Prior density in the proposal dimensions used by the posterior head."""
-    z = np.asarray(std, dtype=np.float64)
-    if getattr(inference.model.cfg, "param_dim", 7) == 5 and z.shape[-1] == 7:
-        z = z[..., 2:]
-        low, high = inference.prior.std_bounds
-        low, high = low[2:], high[2:]
-    else:
-        low, high = inference.prior.std_bounds
-    inside = np.all((z >= low) & (z <= high), axis=-1)
-    lp = -np.sum(np.log(high - low))
-    return np.where(inside, lp, -np.inf)
-
-
 def importance_weights(inference, global_view, local_view, sigma_feat,
                        raw_flux: np.ndarray, times: np.ndarray, sigma: float,
                        n_samples: int = 1000, logprob_steps: int = 40,
                        periodogram=None, ephem_feat=None,
-                       dilution_grid_size: int = 9,
-                       likelihood: str = "gaussian",
-                       student_t_nu: float = 4.0,
-                       prior_mixture_fraction: float = 0.0,
-                       rng: np.random.Generator | None = None) -> dict:
+                       dilution_grid_size: int = 9) -> dict:
     """Importance-sampling weights for one object's amortized posterior.
 
     Returns physical + standardized proposal samples, normalized weights ``w``,
@@ -84,45 +66,13 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     """
     inf = inference
     e = inf.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
-    n_samples = max(1, int(n_samples))
-    prior_mixture_fraction = float(np.clip(prior_mixture_fraction, 0.0, 1.0))
-    rng = np.random.default_rng() if rng is None else rng
-    n_prior = int(round(n_samples * prior_mixture_fraction))
-    n_q = max(0, n_samples - n_prior)
-    phys_parts = []
-    std_parts = []
-    if n_q:
-        phys_q, std_q = inf.posterior_samples(
-            global_view, local_view, sigma_feat, n_samples=n_q, return_std=True,
-            periodogram=periodogram, ephem_feat=ephem_feat)
-        phys_parts.append(phys_q[0])
-        std_parts.append(std_q[0])
-    if n_prior:
-        prior_phys = inf.prior.sample(n_prior, rng)
-        prior_std = inf.prior.physical_to_std(prior_phys)
-        if getattr(inf.model.cfg, "param_dim", 7) == 5:
-            if ephem_feat is None:
-                raise ValueError("5D prior-mixture correction requires ephem_feat")
-            prior_std[:, :2] = np.asarray(ephem_feat, dtype=np.float64).reshape(2)
-            prior_phys = inf.prior.std_to_physical(prior_std)
-        phys_parts.append(prior_phys)
-        std_parts.append(prior_std)
-    phys = np.concatenate(phys_parts, axis=0)
-    std = np.concatenate(std_parts, axis=0)                         # (N, 7)
+    phys, std = inf.posterior_samples(global_view, local_view, sigma_feat,
+                                      n_samples=n_samples, return_std=True,
+                                      periodogram=periodogram,
+                                      ephem_feat=ephem_feat)
+    phys, std = phys[0], std[0]                                     # (N, 7)
     logq = inf.log_prob_std(std, e.repeat(std.shape[0], 1), )       # (N,)
     logprior = inf.prior.log_prob_std(std)                         # (N,) const in box
-    if prior_mixture_fraction > 0.0:
-        logprop_prior = _proposal_prior_log_prob(inf, std)
-        if prior_mixture_fraction >= 1.0:
-            logproposal = logprop_prior
-        elif prior_mixture_fraction <= 0.0:
-            logproposal = logq
-        else:
-            a = prior_mixture_fraction
-            logproposal = np.logaddexp(
-                np.log1p(-a) + logq, np.log(a) + logprop_prior)
-    else:
-        logproposal = logq
     raw_flux = np.asarray(raw_flux, dtype=np.float64)
     times = np.asarray(times, dtype=np.float64)
     sigma = np.asarray(sigma, dtype=np.float64)
@@ -136,21 +86,12 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
         exposure_minutes=getattr(inf.sim_cfg, "exposure_minutes", 0.0),
         n_exposure_subsamples=getattr(inf.sim_cfg, "n_exposure_subsamples", 1))
 
-    likelihood = str(likelihood).lower()
-    student_t_nu = float(student_t_nu)
-    if likelihood not in ("gaussian", "student_t"):
-        raise ValueError(f"unknown correction likelihood {likelihood!r}")
-    if likelihood == "student_t" and student_t_nu <= 0:
-        raise ValueError("student_t_nu must be positive")
-
     def _loglik(pred):
         resid = raw_flux[None, :] - pred
-        var = sigma[None, :] * sigma[None, :] if sigma.ndim \
-            else float(sigma * sigma)
-        if likelihood == "student_t":
-            return -0.5 * (student_t_nu + 1.0) * np.sum(
-                np.log1p((resid * resid) / (student_t_nu * var)), axis=1)
-        return -0.5 * np.sum(resid * resid / var, axis=1)
+        return -0.5 * np.sum(
+            resid * resid / (sigma[None, :] * sigma[None, :])
+            if sigma.ndim else resid * resid / float(sigma * sigma),
+            axis=1)
 
     dilution_fraction = float(np.clip(
         getattr(inf.sim_cfg, "dilution_fraction", 0.0), 0.0, 1.0))
@@ -175,7 +116,7 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
                                    axis=0))
     else:
         loglik = _loglik(base_pred)
-    logw = loglik + logprior - logproposal
+    logw = loglik + logprior - logq
     logw = np.where(np.isfinite(logw), logw, -np.inf)
     logw -= np.max(logw)
     w = np.exp(logw)
@@ -186,67 +127,6 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
         w = w / s
     ess = 1.0 / np.sum(w * w) / len(w)
     return {"phys": phys, "std": std, "w": w, "ess_fraction": float(ess)}
-
-
-def adaptive_importance_weights(
-    inference,
-    global_view,
-    local_view,
-    sigma_feat,
-    raw_flux: np.ndarray,
-    times: np.ndarray,
-    sigma: float,
-    initial_samples: int = 3000,
-    max_samples: int | None = None,
-    target_ess_fraction: float = 0.05,
-    growth: float = 2.0,
-    logprob_steps: int = 40,
-    periodogram=None,
-    ephem_feat=None,
-    dilution_grid_size: int = 9,
-    likelihood: str = "gaussian",
-    student_t_nu: float = 4.0,
-    prior_mixture_fraction: float = 0.0,
-    rng: np.random.Generator | None = None,
-) -> dict:
-    """Retry importance correction with larger proposal batches until ESS is OK.
-
-    This does not relax the ESS criterion. It only distinguishes sample-starved
-    correction from true proposal/real-likelihood mismatch. The returned object
-    is the best attempt by ESS fraction and includes an ``attempts`` list.
-    """
-    initial_samples = max(1, int(initial_samples))
-    max_samples = initial_samples if max_samples is None else max(
-        initial_samples, int(max_samples))
-    target_ess_fraction = float(target_ess_fraction)
-    growth = max(1.01, float(growth))
-
-    attempts = []
-    best = None
-    n = initial_samples
-    while True:
-        corr = importance_weights(
-            inference, global_view, local_view, sigma_feat,
-            raw_flux, times, sigma, n_samples=n, logprob_steps=logprob_steps,
-            periodogram=periodogram, ephem_feat=ephem_feat,
-            dilution_grid_size=dilution_grid_size,
-            likelihood=likelihood,
-            student_t_nu=student_t_nu,
-            prior_mixture_fraction=prior_mixture_fraction,
-            rng=rng)
-        attempts.append({
-            "n_samples": int(n),
-            "ess_fraction": float(corr["ess_fraction"]),
-        })
-        if best is None or corr["ess_fraction"] > best["ess_fraction"]:
-            best = corr
-        if corr["ess_fraction"] >= target_ess_fraction or n >= max_samples:
-            break
-        n = min(max_samples, max(n + 1, int(np.ceil(n * growth))))
-    best["attempts"] = attempts
-    best["target_ess_fraction"] = target_ess_fraction
-    best["max_samples"] = int(max_samples)
-    return best
 
 
 def weighted_rank_cdf(std_samples: np.ndarray, w: np.ndarray,
