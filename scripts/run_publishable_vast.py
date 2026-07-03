@@ -189,6 +189,8 @@ def main() -> None:
     ap.add_argument("--with-mcmc", type=int, default=16)
     ap.add_argument("--mcmc-steps", type=int, default=1500)
     ap.add_argument("--mcmc-walkers", type=int, default=32)
+    ap.add_argument("--mcmc-processes", type=int, default=1,
+                    help="parallel worker processes for real-data emcee MCMC")
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for real MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000)
@@ -326,6 +328,7 @@ def main() -> None:
            "--detector-ckpt", str(ckpt), "--n-planets", str(n_real_planets),
            "--n-post", str(n_posterior), "--with-mcmc", str(with_mcmc),
            "--mcmc-steps", str(mcmc_steps), "--mcmc-walkers", str(args.mcmc_walkers),
+           "--mcmc-processes", str(args.mcmc_processes),
            "--out", str(real_dir)]
     if args.is_correct_mcmc:
         cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples)])
@@ -360,6 +363,7 @@ def main() -> None:
         "with_mcmc": int(with_mcmc),
         "mcmc_steps": int(mcmc_steps),
         "mcmc_walkers": int(args.mcmc_walkers),
+        "mcmc_processes": int(args.mcmc_processes),
         "is_correct_mcmc": bool(args.is_correct_mcmc),
         "is_samples": int(args.is_samples),
         "is_max_samples": None if args.is_max_samples is None

@@ -22,6 +22,44 @@ except Exception:  # pragma: no cover
     _HAS_EMCEE = False
 
 
+_POOL_STATE = None
+
+
+def _expand_free(theta_free: np.ndarray, init: np.ndarray,
+                 init_dilution: float, fit_dilution: bool,
+                 fixed: dict[int, float], free_idx: list[int],
+                 dim: int) -> np.ndarray:
+    theta = np.concatenate([init.copy(), np.array([init_dilution])]) \
+        if fit_dilution else init.copy()
+    if free_idx:
+        theta[free_idx] = theta_free
+    for i, v in fixed.items():
+        theta[i] = v
+    return theta
+
+
+def _pool_init(state: dict) -> None:
+    global _POOL_STATE
+    _POOL_STATE = state
+
+
+def _pooled_log_prob(theta_free: np.ndarray) -> float:
+    state = _POOL_STATE
+    if state is None:  # pragma: no cover - defensive guard for worker setup
+        raise RuntimeError("MCMC worker state was not initialized")
+    theta = _expand_free(
+        theta_free, state["init"], state["init_dilution"],
+        state["fit_dilution"], state["fixed"], state["free_idx"], state["dim"])
+    return _log_prob(
+        theta[:state["dim"]], state["times"], state["flux"], state["flux_err"],
+        state["prior"], state["n_radial"], state["exposure_minutes"],
+        state["n_exposure_subsamples"],
+        dilution=theta[state["dim"]] if state["fit_dilution"] else 1.0,
+        dilution_low=state["dilution_low"],
+        dilution_high=state["dilution_high"],
+        fit_dilution=state["fit_dilution"])
+
+
 def _log_likelihood(theta_phys: np.ndarray, times, flux, flux_err,
                     n_radial: int = 100, exposure_minutes: float = 0.0,
                     n_exposure_subsamples: int = 1,
@@ -61,7 +99,7 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              init_std_jitter: float = 0.05, exposure_minutes: float = 0.0,
              n_exposure_subsamples: int = 1, fit_dilution: bool = False,
              dilution_low: float = 0.5, dilution_high: float = 1.0,
-             init_dilution: float = 1.0) -> dict:
+             init_dilution: float = 1.0, n_processes: int = 1) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
@@ -107,33 +145,60 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
         p0_full = np.concatenate([p0_full, p0_dilution], axis=1)
         free_idx.append(dim)
 
-    def expand(theta_free: np.ndarray) -> np.ndarray:
-        theta = np.concatenate([init.copy(), np.array([init_dilution])]) \
-            if fit_dilution else init.copy()
-        if free_idx:
-            theta[free_idx] = theta_free
-        for i, v in fixed.items():
-            theta[i] = v
-        return theta
-
     if not free_idx:
         return {"samples": np.tile(init[None, :], (max(n_walkers, 1), 1)),
                 "backend": "fixed", "acceptance_fraction": float("nan"),
                 "fixed": fixed, "dilution_samples": None}
 
     p0 = p0_full[:, free_idx]
-    logp = lambda th: _log_prob(  # noqa: E731
-        expand(th)[:dim], times, flux, flux_err, prior, n_radial,
-        exposure_minutes, n_exposure_subsamples,
-        dilution=expand(th)[dim] if fit_dilution else 1.0,
-        dilution_low=dilution_low, dilution_high=dilution_high,
-        fit_dilution=fit_dilution)
+    n_processes = max(1, int(n_processes))
+
+    def logp(th):
+        theta = _expand_free(th, init, init_dilution, fit_dilution, fixed,
+                             free_idx, dim)
+        return _log_prob(
+            theta[:dim], times, flux, flux_err, prior, n_radial,
+            exposure_minutes, n_exposure_subsamples,
+            dilution=theta[dim] if fit_dilution else 1.0,
+            dilution_low=dilution_low, dilution_high=dilution_high,
+            fit_dilution=fit_dilution)
 
     if _HAS_EMCEE:
-        sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
-        sampler.run_mcmc(p0, n_steps, progress=False)
-        free_chain = sampler.get_chain(discard=int(burn_frac * n_steps), flat=True)
-        acceptance = float(np.mean(sampler.acceptance_fraction))
+        if n_processes > 1:
+            import multiprocessing as mp
+
+            state = {
+                "init": init,
+                "init_dilution": init_dilution,
+                "fit_dilution": fit_dilution,
+                "fixed": fixed,
+                "free_idx": free_idx,
+                "dim": dim,
+                "times": np.asarray(times, dtype=np.float64),
+                "flux": np.asarray(flux, dtype=np.float64),
+                "flux_err": np.asarray(flux_err, dtype=np.float64),
+                "prior": prior,
+                "n_radial": n_radial,
+                "exposure_minutes": exposure_minutes,
+                "n_exposure_subsamples": n_exposure_subsamples,
+                "dilution_low": dilution_low,
+                "dilution_high": dilution_high,
+            }
+            ctx = mp.get_context("fork")
+            with ctx.Pool(n_processes, initializer=_pool_init,
+                          initargs=(state,)) as pool:
+                sampler = emcee.EnsembleSampler(
+                    n_walkers, len(free_idx), _pooled_log_prob, pool=pool)
+                sampler.run_mcmc(p0, n_steps, progress=False)
+                free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
+                                               flat=True)
+                acceptance = float(np.mean(sampler.acceptance_fraction))
+        else:
+            sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
+            sampler.run_mcmc(p0, n_steps, progress=False)
+            free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
+                                           flat=True)
+            acceptance = float(np.mean(sampler.acceptance_fraction))
     else:
         free_chain, acceptance = _native_ensemble(logp, p0, n_steps, burn_frac, rng)
     sample_chain = np.tile(

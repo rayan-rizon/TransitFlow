@@ -1,8 +1,9 @@
 import numpy as np
+import pytest
 
 from transitflow.baselines.bls import bls_detect
 from transitflow.baselines import mcmc as mcmc_module
-from transitflow.baselines.mcmc import run_mcmc
+from transitflow.baselines.mcmc import has_emcee, run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
 from transitflow.transit_model import transit_flux
 
@@ -84,3 +85,20 @@ def test_mcmc_fit_dilution_keeps_physical_samples_7d():
     assert out["dilution_samples"] is not None
     assert out["dilution_samples"].min() >= 0.5
     assert out["dilution_samples"].max() <= 1.0
+
+
+def test_mcmc_emcee_process_pool_runs():
+    if not has_emcee():
+        pytest.skip("emcee not installed")
+    P, t0p, RpRs, aRs, b = 3.0, 0.33, 0.08, 12.0, 0.2
+    prior = TransitPrior()
+    t = np.linspace(0, 9, 120)
+    u1, u2 = kipping_to_quadratic(0.4, 0.3)
+    f = transit_flux(t, P, t0p * P, RpRs, aRs, b, u1, u2,
+                     engine="native")[0]
+    init = np.array([P, t0p, RpRs, aRs, b, 0.4, 0.3])
+    out = run_mcmc(t, f, 0.0008, prior=prior, init=init, n_walkers=16,
+                   n_steps=4, n_radial=8, seed=3, fixed={0: P, 1: t0p},
+                   n_processes=2)
+    assert out["backend"] == "emcee"
+    assert out["samples"].shape[1] == 7

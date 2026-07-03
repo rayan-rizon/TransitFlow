@@ -557,6 +557,9 @@ def main():
                     help="phase-bin fixed-ephemeris MCMC to at most this many cadences; <=0 disables")
     ap.add_argument("--mcmc-init-jitter", type=float, default=0.15,
                     help="standardized-space walker initialization jitter for real-data MCMC")
+    ap.add_argument("--mcmc-processes", type=int, default=1,
+                    help="parallel worker processes for emcee real-data MCMC; "
+                         "1 preserves serial behavior")
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
@@ -745,7 +748,8 @@ def main():
                                       sc, "n_exposure_subsamples", 1),
                                   fit_dilution=fit_dilution,
                                   dilution_low=getattr(sc, "dilution_low", 0.5),
-                                  dilution_high=getattr(sc, "dilution_high", 1.0))
+                                  dilution_high=getattr(sc, "dilution_high", 1.0),
+                                  n_processes=args.mcmc_processes)
                 mc_s = mc_out["samples"]
                 ess = None
                 if args.is_correct_mcmc:

@@ -65,8 +65,8 @@
     "semantic_hash": "3b836ba8ef87d192143aa76852391f20"
   },
   "tests/test_baselines.py": {
-    "mtime": 1782628165.757434,
-    "ast_hash": "b77bed00a8de8feadabd019e0f58b6c3",
+    "mtime": 1783101441.2721627,
+    "ast_hash": "2bd7aaefa941c19247ba117f741eda31",
     "semantic_hash": ""
   },
   "tests/test_correction.py": {
@@ -165,8 +165,8 @@
     "semantic_hash": "8e56774cd3f5e6ac9ceddf60b487697e"
   },
   "transitflow/baselines/mcmc.py": {
-    "mtime": 1782628064.9457428,
-    "ast_hash": "20311e7154ca54f1d3d047bbe0f09bd2",
+    "mtime": 1783101394.0159485,
+    "ast_hash": "99b7cf2e40280f06e71bb2585fd93fdd",
     "semantic_hash": ""
   },
   "transitflow/correction.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "scripts/validate_real.py": {
-    "mtime": 1783100850.9976976,
-    "ast_hash": "68c52b5aecba1c96b94d8c0d6036f73e",
+    "mtime": 1783101361.2588434,
+    "ast_hash": "166ea219a95e86e45a03866f72d761a7",
     "semantic_hash": ""
   },
   ".agents/rules/graphify.md": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "scripts/run_publishable_vast.py": {
-    "mtime": 1783100859.1290889,
-    "ast_hash": "8fac2911dcb3db40674c6f22e6397edb",
+    "mtime": 1783101381.4092624,
+    "ast_hash": "e435737c07495f285ad92fc628e3fee0",
     "semantic_hash": ""
   },
   "configs/publishable.yaml": {
@@ -422,6 +422,11 @@
   "artifacts/vast_publishable_2026-07-03_full_03cca0a_cpu23/noise_lib.json": {
     "mtime": 1783063346.0,
     "ast_hash": "1432c0ccf5fde85af369b529aa70f5b6",
+    "semantic_hash": ""
+  },
+  "artifacts/vast_publishable_2026-07-03_full_03cca0a_cpu23/SUMMARY.md": {
+    "mtime": 1783101074.0975895,
+    "ast_hash": "82abddc24a674ee9f9a185a5dd6d6812",
     "semantic_hash": ""
   }
 }
