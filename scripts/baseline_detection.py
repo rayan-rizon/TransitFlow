@@ -140,6 +140,7 @@ def main() -> None:
             "average_precision": tf_m["average_precision"],
         },
         "auc_gain": tf_m["roc_auc"] - bls_m["roc_auc"],
+        "bls_score": "sde",
         "bls_backend": "astropy" if has_astropy() else "native",
         "tls_backend": "transitleastsquares" if tls_m is not None else None,
         "tls_requested": bool(args.with_tls),

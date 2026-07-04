@@ -194,6 +194,15 @@ def main() -> None:
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for real MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000)
+    ap.add_argument("--mcmc-fit-jitter", dest="mcmc_fit_jitter",
+                    action="store_true", default=True,
+                    help="fit per-object error-inflation (jitter) in the "
+                         "real-data MCMC likelihood (default on)")
+    ap.add_argument("--no-mcmc-fit-jitter", dest="mcmc_fit_jitter",
+                    action="store_false")
+    ap.add_argument("--is-jitter-grid", type=int, default=25)
+    ap.add_argument("--is-jitter-max", type=float, default=10.0,
+                    help="1.0 recovers the exact white-noise IS likelihood")
     ap.add_argument("--speed-n-amortized", type=int, default=None)
     ap.add_argument("--steps", type=int, default=None,
                     help="override training steps; useful for fast metric checks")
@@ -328,7 +337,11 @@ def main() -> None:
            "--mcmc-processes", str(args.mcmc_processes),
            "--out", str(real_dir)]
     if args.is_correct_mcmc:
-        cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples)])
+        cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples),
+                    "--is-jitter-grid", str(args.is_jitter_grid),
+                    "--is-jitter-max", str(args.is_jitter_max)])
+    if args.mcmc_fit_jitter:
+        cmd.append("--mcmc-fit-jitter")
     run(cmd, repo, logs / "validate_real.log")
 
     report = build_gate_report(
@@ -360,6 +373,9 @@ def main() -> None:
         "mcmc_processes": int(args.mcmc_processes),
         "is_correct_mcmc": bool(args.is_correct_mcmc),
         "is_samples": int(args.is_samples),
+        "mcmc_fit_jitter": bool(args.mcmc_fit_jitter),
+        "is_jitter_grid": int(args.is_jitter_grid),
+        "is_jitter_max": float(args.is_jitter_max),
         "speed_n_amortized": int(speed_n_amortized),
         "speed_n_mcmc": int(speed_n_mcmc),
         "speed_mcmc_steps": int(speed_mcmc_steps),

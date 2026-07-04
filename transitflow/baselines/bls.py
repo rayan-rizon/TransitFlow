@@ -12,10 +12,28 @@ except Exception:  # pragma: no cover
     _HAS_ASTROPY = False
 
 
+def _sde(power: np.ndarray) -> float:
+    """Signal Detection Efficiency of the peak (Kovacs et al. 2002).
+
+    Normalizes the peak against the power spectrum's own median/std, making
+    the score comparable across light curves with heterogeneous noise (raw
+    peak power is not: red-noise-dominated negatives outscore shallow
+    transits, driving the ROC below chance).
+    """
+    power = np.asarray(power, dtype=float)
+    power = power[np.isfinite(power)]
+    if power.size < 3:
+        return 0.0
+    spread = float(np.std(power))
+    if spread <= 0:
+        return 0.0
+    return float((np.max(power) - np.median(power)) / spread)
+
+
 def bls_detect(times: np.ndarray, flux: np.ndarray,
                period_min: float = 0.5, period_max: float = 13.0,
                n_periods: int = 2000, durations: np.ndarray | None = None) -> dict:
-    """Run BLS and return the peak power (detection score) and best period."""
+    """Run BLS; the detection score is the peak SDE, not raw peak power."""
     times = np.asarray(times, dtype=float)
     flux = np.asarray(flux, dtype=float)
     if durations is None:
@@ -24,9 +42,11 @@ def bls_detect(times: np.ndarray, flux: np.ndarray,
     if _HAS_ASTROPY:
         bls = BoxLeastSquares(times, flux)
         res = bls.power(periods, durations)
-        i = int(np.argmax(res.power))
-        return {"score": float(res.power[i]), "best_period": float(res.period[i]),
-                "power": np.asarray(res.power), "periods": periods}
+        power = np.asarray(res.power)
+        i = int(np.argmax(power))
+        return {"score": _sde(power), "peak_power": float(power[i]),
+                "best_period": float(res.period[i]),
+                "power": power, "periods": periods}
     return _bls_native(times, flux, periods, durations)
 
 
@@ -54,7 +74,8 @@ def _bls_native(times, flux, periods, durations) -> dict:
         powers[k] = best_here
         if best_here > best_power:
             best_power, best_p = best_here, P
-    return {"score": float(best_power), "best_period": float(best_p),
+    return {"score": _sde(powers), "peak_power": float(best_power),
+            "best_period": float(best_p),
             "power": powers, "periods": periods}
 
 

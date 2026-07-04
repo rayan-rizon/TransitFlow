@@ -16,6 +16,25 @@ targets the *true* posterior and restores calibration.  The normalized effective
 sample size ``ESS/N`` doubles as a misspecification diagnostic: it collapses when
 the simulator cannot reproduce the data.
 
+On real light curves the point-to-point sigma underestimates the residual
+variance (correlated noise, detrending residuals), so the exact white-noise
+likelihood is falsely peaked and the weights degenerate — worst at high SNR.
+``jitter_grid_size > 1`` marginalizes a per-object multiplicative
+error-inflation scale ``s`` over a log-spaced grid (log-uniform prior),
+
+    p(x | theta) = sum_s  w_s  exp(-chi^2(theta) / (2 s^2)) / s^N,
+
+the grid analogue of the jitter nuisance every mainstream transit-fitting
+code samples.  ``s = 1`` is always on the grid, so well-specified data
+reduce to the exact likelihood.
+
+When the amortized model *conditions* on dilution (``use_dilution_feature``)
+the flow posterior is defined at the supplied dilution (1.0 on real targets
+without CROWDSAP), so the correction likelihood must fix dilution too;
+marginalizing it would target a different posterior than both the flow and
+the like-for-like MCMC reference.  Dilution is only marginalized when the
+model does not condition on it.
+
 The raw light curve (not the period-blurred binned views) is used for the
 likelihood, which is what makes the correction sharpen the *period*.
 """
@@ -53,16 +72,67 @@ def render_raw_flux(theta_phys: np.ndarray, times: np.ndarray, n_radial: int = 2
     return 1.0 + (flux - 1.0) * dilution[:, None]
 
 
+def _gpd_khat(exceedances: np.ndarray) -> float:
+    """Generalized-Pareto shape estimate (Zhang & Stephens 2009 profile fit)."""
+    x = np.sort(np.asarray(exceedances, dtype=np.float64))
+    n = x.size
+    if n < 5 or x[-1] <= 0:
+        return float("nan")
+    m = 30 + int(np.sqrt(n))
+    bs = 1.0 - np.sqrt(m / (np.arange(1, m + 1) - 0.5))
+    x_quart = x[max(int(n / 4 + 0.5) - 1, 0)]
+    if x_quart <= 0:
+        return float("nan")
+    bs = bs / (3.0 * x_quart) + 1.0 / x[-1]
+    ks = np.array([-np.mean(np.log1p(-b * x)) for b in bs])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        L = n * (np.log(bs / ks) + ks - 1.0)
+    L = np.where(np.isfinite(L), L, -np.inf)
+    w = np.exp(L - np.max(L))
+    w = w / w.sum()
+    b_hat = float(np.sum(bs * w))
+    return float(-np.mean(np.log1p(-b_hat * x)))
+
+
+def psis_khat(logw: np.ndarray) -> float:
+    """Pareto-smoothed-IS tail-shape diagnostic (Vehtari et al. 2024).
+
+    k < 0.5: reliable; 0.5-0.7: usable; > 0.7: weights too heavy-tailed.
+    Returns NaN when there are too few finite weights to fit the tail.
+    """
+    logw = np.asarray(logw, dtype=np.float64)
+    logw = logw[np.isfinite(logw)]
+    n = logw.size
+    if n < 25:
+        return float("nan")
+    m = int(min(0.2 * n, 3.0 * np.sqrt(n)))
+    if m < 5:
+        return float("nan")
+    srt = np.sort(logw)
+    tail = np.exp(srt[-m:] - srt[-1])
+    cutoff = np.exp(srt[-m - 1] - srt[-1])
+    exceed = tail - cutoff
+    exceed = exceed[exceed > 0]
+    return _gpd_khat(exceed)
+
+
 def importance_weights(inference, global_view, local_view, sigma_feat,
                        raw_flux: np.ndarray, times: np.ndarray, sigma: float,
                        n_samples: int = 1000, logprob_steps: int = 40,
                        periodogram=None, ephem_feat=None,
-                       dilution_grid_size: int = 9) -> dict:
+                       dilution_grid_size: int = 9,
+                       jitter_grid_size: int = 25,
+                       jitter_max: float = 10.0,
+                       marginalize_dilution: bool | None = None) -> dict:
     """Importance-sampling weights for one object's amortized posterior.
 
     Returns physical + standardized proposal samples, normalized weights ``w``,
-    and the ESS fraction. ``sigma`` may be a scalar per-cadence white-noise std
-    or an array of per-point errors for binned likelihoods.
+    the ESS fraction, and the PSIS ``khat`` tail diagnostic. ``sigma`` may be a
+    scalar per-cadence white-noise std or an array of per-point errors for
+    binned likelihoods. ``jitter_grid_size > 1`` marginalizes a per-object
+    error-inflation scale in ``[1, jitter_max]`` (log-uniform); set
+    ``jitter_grid_size = 1`` or ``jitter_max = 1`` to recover the exact
+    white-noise likelihood.
     """
     inf = inference
     e = inf.embed(global_view, local_view, sigma_feat, periodogram, ephem_feat)
@@ -81,44 +151,70 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     times = times[observed]
     if sigma.ndim:
         sigma = sigma[observed]
+    n_pts = raw_flux.size
     base_pred = render_raw_flux(
         phys, times, n_radial=inf.sim_cfg.n_radial, engine=inf.sim_cfg.engine,
         exposure_minutes=getattr(inf.sim_cfg, "exposure_minutes", 0.0),
         n_exposure_subsamples=getattr(inf.sim_cfg, "n_exposure_subsamples", 1))
 
-    def _loglik(pred):
+    def _chi2(pred):
         resid = raw_flux[None, :] - pred
-        return -0.5 * np.sum(
+        return np.sum(
             resid * resid / (sigma[None, :] * sigma[None, :])
             if sigma.ndim else resid * resid / float(sigma * sigma),
             axis=1)
 
     dilution_fraction = float(np.clip(
         getattr(inf.sim_cfg, "dilution_fraction", 0.0), 0.0, 1.0))
-    if dilution_fraction > 0 and dilution_grid_size > 1:
+    conditions_on_dilution = bool(
+        getattr(inf.model.cfg, "use_dilution_feature", False))
+    if marginalize_dilution is None:
+        marginalize_dilution = (dilution_fraction > 0
+                                and not conditions_on_dilution)
+
+    # chi^2 branches over the dilution mixture (a single branch when the
+    # model conditions on dilution, matching the fixed-dilution MCMC)
+    chi2_terms = []
+    branch_logw = []
+    if marginalize_dilution and dilution_grid_size > 1:
         lo = min(float(getattr(inf.sim_cfg, "dilution_low", 0.5)),
                  float(getattr(inf.sim_cfg, "dilution_high", 1.0)))
         hi = max(float(getattr(inf.sim_cfg, "dilution_low", 0.5)),
                  float(getattr(inf.sim_cfg, "dilution_high", 1.0)))
         grid = np.linspace(lo, hi, int(dilution_grid_size))
-        log_terms = []
-        weights = []
         if dilution_fraction < 1.0:
-            log_terms.append(_loglik(base_pred))
-            weights.append(1.0 - dilution_fraction)
+            chi2_terms.append(_chi2(base_pred))
+            branch_logw.append(np.log(1.0 - dilution_fraction))
         for d in grid:
-            log_terms.append(_loglik(1.0 + (base_pred - 1.0) * d))
-            weights.append(dilution_fraction / len(grid))
-        log_terms = np.stack(log_terms, axis=0)
-        log_weights = np.log(np.asarray(weights, dtype=np.float64))[:, None]
-        z = np.max(log_terms + log_weights, axis=0)
-        loglik = z + np.log(np.sum(np.exp(log_terms + log_weights - z[None, :]),
-                                   axis=0))
+            chi2_terms.append(_chi2(1.0 + (base_pred - 1.0) * d))
+            branch_logw.append(np.log(dilution_fraction / len(grid)))
     else:
-        loglik = _loglik(base_pred)
+        chi2_terms.append(_chi2(base_pred))
+        branch_logw.append(0.0)
+    chi2_terms = np.stack(chi2_terms, axis=0)                 # (B, N)
+    branch_logw = np.asarray(branch_logw, dtype=np.float64)   # (B,)
+
+    # marginalize the error-inflation scale s on a log-spaced grid
+    jitter_max = float(max(jitter_max, 1.0))
+    if jitter_grid_size > 1 and jitter_max > 1.0:
+        s_grid = np.exp(np.linspace(0.0, np.log(jitter_max),
+                                    int(jitter_grid_size)))
+    else:
+        s_grid = np.array([1.0])
+    s_logw = -np.log(len(s_grid))                              # uniform in log s
+    log_terms = (
+        -0.5 * chi2_terms[None, :, :] / (s_grid ** 2)[:, None, None]
+        - n_pts * np.log(s_grid)[:, None, None]
+        + branch_logw[None, :, None]
+        + s_logw
+    ).reshape(-1, chi2_terms.shape[-1])                        # (S*B, N)
+    z = np.max(log_terms, axis=0)
+    loglik = z + np.log(np.sum(np.exp(log_terms - z[None, :]), axis=0))
+
     logw = loglik + logprior - logq
     logw = np.where(np.isfinite(logw), logw, -np.inf)
-    logw -= np.max(logw)
+    khat = psis_khat(logw)
+    logw = logw - np.max(logw)
     w = np.exp(logw)
     s = w.sum()
     if s <= 0 or not np.isfinite(s):
@@ -126,7 +222,16 @@ def importance_weights(inference, global_view, local_view, sigma_feat,
     else:
         w = w / s
     ess = 1.0 / np.sum(w * w) / len(w)
-    return {"phys": phys, "std": std, "w": w, "ess_fraction": float(ess)}
+    # MAP error-inflation scale under the weighted posterior (diagnostic)
+    chi2_min = chi2_terms[np.argmax(branch_logw)]
+    s_prof = np.sqrt(np.average(chi2_min, weights=w) / max(n_pts, 1))
+    return {"phys": phys, "std": std, "w": w, "ess_fraction": float(ess),
+            "khat": float(khat), "n_points": int(n_pts),
+            "jitter_grid": [float(s_grid[0]), float(s_grid[-1]),
+                            int(len(s_grid))],
+            "jitter_scale_profile": float(s_prof),
+            "marginalized_dilution": bool(marginalize_dilution
+                                          and dilution_grid_size > 1)}
 
 
 def weighted_rank_cdf(std_samples: np.ndarray, w: np.ndarray,

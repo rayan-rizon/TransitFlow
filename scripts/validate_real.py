@@ -564,6 +564,17 @@ def main():
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
                     help="proposal samples for likelihood correction")
+    ap.add_argument("--mcmc-fit-jitter", action="store_true",
+                    help="fit a per-object multiplicative error-inflation "
+                         "(jitter) nuisance in the real-data MCMC likelihood")
+    ap.add_argument("--mcmc-jitter-max", type=float, default=10.0,
+                    help="upper bound of the jitter scale (log-uniform prior)")
+    ap.add_argument("--is-jitter-grid", type=int, default=25,
+                    help="grid size for marginalizing the error-inflation "
+                         "scale in the importance correction; 1 disables")
+    ap.add_argument("--is-jitter-max", type=float, default=10.0,
+                    help="upper bound of the IS jitter grid; 1.0 disables "
+                         "(exact white-noise likelihood)")
     ap.add_argument("--resume-records", default=None,
                     help="skip the detection loop and load detection records "
                          "from this JSON checkpoint (e.g. a prior "
@@ -745,17 +756,25 @@ def main():
                                   fit_dilution=fit_dilution,
                                   dilution_low=getattr(sc, "dilution_low", 0.5),
                                   dilution_high=getattr(sc, "dilution_high", 1.0),
-                                  n_processes=args.mcmc_processes)
+                                  n_processes=args.mcmc_processes,
+                                  fit_jitter=args.mcmc_fit_jitter,
+                                  jitter_high=args.mcmc_jitter_max)
                 mc_s = mc_out["samples"]
                 ess = None
+                khat = None
+                jitter_prof = None
                 if args.is_correct_mcmc:
                     corr = importance_weights(
                         inf, gv, lv, np.array([sf]), mcmc_f, mcmc_t, mcmc_err,
                         n_samples=args.is_samples,
-                        periodogram=pg, ephem_feat=eph)
+                        periodogram=pg, ephem_feat=eph,
+                        jitter_grid_size=args.is_jitter_grid,
+                        jitter_max=args.is_jitter_max)
                     amort = sir_resample(corr["phys"], corr["w"], args.n_post,
                                          np.random.default_rng(done + 1234))
                     ess = corr["ess_fraction"]
+                    khat = corr.get("khat")
+                    jitter_prof = corr.get("jitter_scale_profile")
                 wd = {k: float(wasserstein_distance(amort[:, idx], mc_s[:, idx]))
                       for k, idx in _CMP.items()}
                 wd_norm = {}
@@ -776,9 +795,24 @@ def main():
                     by_name[pl["name"]]["mcmc_dilution_median"] = float(
                         np.median(mc_out["dilution_samples"]))
                 by_name[pl["name"]]["mcmc_cadences"] = int(len(mcmc_t))
+                if mc_out.get("jitter_samples") is not None:
+                    by_name[pl["name"]]["mcmc_jitter_median"] = float(
+                        np.median(mc_out["jitter_samples"]))
+                if mc_out.get("autocorr_time_max") is not None:
+                    by_name[pl["name"]]["mcmc_autocorr_time_max"] = float(
+                        mc_out["autocorr_time_max"])
+                if mc_out.get("n_eff") is not None:
+                    by_name[pl["name"]]["mcmc_n_eff"] = float(mc_out["n_eff"])
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
+                if khat is not None and np.isfinite(khat):
+                    by_name[pl["name"]]["is_khat"] = float(khat)
+                if jitter_prof is not None and np.isfinite(jitter_prof):
+                    by_name[pl["name"]]["is_jitter_scale_profile"] = float(
+                        jitter_prof)
                 ess_txt = "" if ess is None else f" ESS={ess:.3f}"
+                if khat is not None and np.isfinite(khat):
+                    ess_txt += f" khat={khat:.2f}"
                 print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}{ess_txt}")
                 done += 1
             except Exception as e:
@@ -829,7 +863,22 @@ def main():
                 "mean_ess_fraction": float(np.mean(ess_vals)),
                 "median_ess_fraction": float(np.median(ess_vals)),
                 "min_ess_fraction": float(np.min(ess_vals)),
+                "min_effective_samples": float(np.min(ess_vals) *
+                                               args.is_samples),
+                "jitter_grid_size": int(args.is_jitter_grid),
+                "jitter_max": float(args.is_jitter_max),
             }
+            khat_vals = [r["is_khat"] for r in mcmc_rows if "is_khat" in r]
+            if khat_vals:
+                summary["importance_correction"]["median_khat"] = float(
+                    np.median(khat_vals))
+                summary["importance_correction"]["max_khat"] = float(
+                    np.max(khat_vals))
+            jit_vals = [r["is_jitter_scale_profile"] for r in mcmc_rows
+                        if "is_jitter_scale_profile" in r]
+            if jit_vals:
+                summary["importance_correction"][
+                    "median_jitter_scale_profile"] = float(np.median(jit_vals))
         fixed_rows = [r.get("mcmc_fixed", {}) for r in mcmc_rows]
         summary["mcmc_conditioning"] = {
             "ephemeris_fixed": bool(fixed_rows and all(
@@ -838,20 +887,51 @@ def main():
                 r.get("mcmc_acceptance_fraction", float("nan"))
                 for r in mcmc_rows
             ])),
+            "fit_jitter": bool(args.mcmc_fit_jitter),
         }
+        n_eff_vals = [r["mcmc_n_eff"] for r in mcmc_rows if "mcmc_n_eff" in r]
+        if n_eff_vals:
+            summary["mcmc_conditioning"]["n_eff_median"] = float(
+                np.median(n_eff_vals))
+            summary["mcmc_conditioning"]["n_eff_min"] = float(
+                np.min(n_eff_vals))
+        mcmc_jit = [r["mcmc_jitter_median"] for r in mcmc_rows
+                    if "mcmc_jitter_median" in r]
+        if mcmc_jit:
+            summary["mcmc_conditioning"]["jitter_median"] = float(
+                np.median(mcmc_jit))
+        def _median_boot_ci(vals, n_boot=4000, seed=7,
+                            lo_pct=2.5, hi_pct=97.5):
+            """Percentile-bootstrap CI on the median (small-n gate metrics)."""
+            arr = np.asarray(vals, dtype=np.float64)
+            if arr.size < 3:
+                return [float("nan"), float("nan")]
+            rng_b = np.random.default_rng(seed)
+            meds = np.median(
+                arr[rng_b.integers(0, arr.size, size=(n_boot, arr.size))],
+                axis=1)
+            lo, hi = np.percentile(meds, [lo_pct, hi_pct])
+            return [float(lo), float(hi)]
+
         for k in _CMP:
             vals = [r["mcmc_wasserstein"][k] for r in mcmc_rows
                     if k in r["mcmc_wasserstein"]]
             norm_vals = [r["mcmc_wasserstein_width_fraction"][k] for r in mcmc_rows
                          if k in r.get("mcmc_wasserstein_width_fraction", {})]
             if vals:
+                prior_fracs = [v / ranges[k] for v in vals]
                 summary["mcmc_agreement"][k] = {
                     "n": len(vals),
                     "median_wasserstein": float(np.median(vals)),
                     "median_wasserstein_prior_fraction": float(np.median(vals) /
                                                                ranges[k]),
+                    "median_wasserstein_prior_fraction_ci95":
+                        _median_boot_ci(prior_fracs),
                     "median_wasserstein_width_fraction": float(np.median(norm_vals))
                     if norm_vals else float("nan"),
+                    "median_wasserstein_width_fraction_ci95":
+                        _median_boot_ci(norm_vals) if norm_vals
+                        else [float("nan"), float("nan")],
                 }
         for r in mcmc_rows:
             r["mcmc_wasserstein_prior_fraction"] = {

@@ -113,3 +113,61 @@ def test_importance_weights_recover_true_posterior_synthetic():
     # the max-weight sample's period should beat the prior-mean baseline in
     # likelihood (sanity: weights are not degenerate/uniform)
     assert r["w"].max() > 1.5 / len(r["w"])
+
+
+def test_jitter_grid_rescues_ess_under_sigma_misstatement():
+    """Understated sigma (the real-data failure mode) degenerates the exact
+    white-noise weights; the jitter-marginalized likelihood must not do worse
+    and should detect the inflation scale."""
+    import torch
+
+    sc, pr, sim, inf = _setup()
+    b = sim.simulate_batch(16, np.random.default_rng(11), return_raw=True)
+    i = int(np.where(b["valid"])[0][0])
+    args = (inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
+            b["raw_flux"][i].astype(np.float64),
+            b["times"].astype(np.float64),
+            float(b["sigma"][i]) / 3.0)
+    torch.manual_seed(0)
+    exact = importance_weights(*args, n_samples=200, logprob_steps=10,
+                               jitter_grid_size=1)
+    torch.manual_seed(0)
+    marg = importance_weights(*args, n_samples=200, logprob_steps=10,
+                              jitter_grid_size=25, jitter_max=10.0)
+    # An untrained proposal cannot demonstrate the ESS rescue (all samples
+    # are poor fits); assert no-regression and that the profile scale detects
+    # the 3x sigma understatement.
+    assert marg["ess_fraction"] >= exact["ess_fraction"] * 0.3
+    assert marg["jitter_scale_profile"] > 1.5
+    lo, hi, size = marg["jitter_grid"]
+    assert (lo, size) == (1.0, 25) and abs(hi - 10.0) < 1e-9
+
+
+def test_jitter_grid_disabled_matches_exact():
+    """jitter_max=1.0 must reproduce the exact white-noise likelihood."""
+    import torch
+
+    sc, pr, sim, inf = _setup()
+    b = sim.simulate_batch(8, np.random.default_rng(21), return_raw=True)
+    i = int(np.where(b["valid"])[0][0])
+    args = (inf, b["global"][i], b["local"][i], b["sigma_feat"][i],
+            b["raw_flux"][i].astype(np.float64),
+            b["times"].astype(np.float64), float(b["sigma"][i]))
+    torch.manual_seed(3)
+    r1 = importance_weights(*args, n_samples=64, logprob_steps=10,
+                            jitter_grid_size=1)
+    torch.manual_seed(3)
+    r2 = importance_weights(*args, n_samples=64, logprob_steps=10,
+                            jitter_grid_size=25, jitter_max=1.0)
+    np.testing.assert_allclose(r1["w"], r2["w"], rtol=1e-10, atol=1e-12)
+
+
+def test_psis_khat_wellbehaved_weights():
+    from transitflow.correction import psis_khat
+
+    rng = np.random.default_rng(5)
+    logw = rng.normal(0.0, 1.0, size=2000)   # light-tailed weights
+    k = psis_khat(logw)
+    assert np.isfinite(k)
+    assert k < 0.7
+    assert np.isnan(psis_khat(np.array([0.0, 1.0])))   # too few

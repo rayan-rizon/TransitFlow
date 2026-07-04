@@ -102,3 +102,53 @@ def test_mcmc_emcee_process_pool_runs():
                    n_processes=2)
     assert out["backend"] == "emcee"
     assert out["samples"].shape[1] == 7
+
+
+def test_mcmc_fit_jitter_recovers_error_inflation():
+    """White noise 3x the stated flux_err: the jitter posterior must find it."""
+    from transitflow.correction import render_raw_flux
+    from transitflow.baselines.mcmc import run_mcmc
+    from transitflow.priors import TransitPrior
+
+    rng = np.random.default_rng(3)
+    prior = TransitPrior(TransitPrior.default_specs("tess"))
+    init = np.array([3.0, 0.3, 0.08, 10.0, 0.3, 0.4, 0.3])
+    t = np.linspace(0.0, 27.0, 900)
+    model = render_raw_flux(init[None, :], t, n_radial=60)[0]
+    err = 5e-4
+    f = model + rng.normal(0.0, 3.0 * err, t.size)
+    fixed = {i: float(init[i]) for i in range(7)}
+    out = run_mcmc(t, f, err, prior=prior, init=init, n_walkers=12,
+                   n_steps=500, fixed=fixed, fit_jitter=True,
+                   jitter_high=10.0, seed=1)
+    s = out["jitter_samples"]
+    assert s is not None
+    assert 2.4 < float(np.median(s)) < 3.7
+    # all 7 physical params stay at their fixed values
+    assert np.allclose(out["samples"][0], init)
+
+
+def test_mcmc_jitter_off_keeps_legacy_return_shape():
+    from transitflow.baselines.mcmc import run_mcmc
+    from transitflow.priors import TransitPrior
+
+    prior = TransitPrior(TransitPrior.default_specs("tess"))
+    init = np.array([3.0, 0.3, 0.08, 10.0, 0.3, 0.4, 0.3])
+    t = np.linspace(0.0, 27.0, 300)
+    f = np.ones_like(t)
+    out = run_mcmc(t, f, 6e-4, prior=prior, init=init, n_walkers=16,
+                   n_steps=60, fixed={0: 3.0, 1: 0.3}, seed=2)
+    assert out["jitter_samples"] is None
+    assert out["samples"].shape[1] == 7
+    assert "autocorr_time_max" in out and "n_eff" in out
+
+
+def test_bls_score_is_sde_normalized():
+    rng = np.random.default_rng(9)
+    t = np.linspace(0.0, 27.0, 2000)
+    f = 1.0 + rng.normal(0, 5e-4, t.size)
+    res = bls_detect(t, f, period_min=0.5, period_max=6.0, n_periods=600)
+    assert "peak_power" in res
+    # SDE of pure noise stays small; raw astropy peak power would not be
+    # comparable across noise levels at all
+    assert 0.0 <= res["score"] < 25.0
