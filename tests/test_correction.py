@@ -160,14 +160,3 @@ def test_jitter_grid_disabled_matches_exact():
     r2 = importance_weights(*args, n_samples=64, logprob_steps=10,
                             jitter_grid_size=25, jitter_max=1.0)
     np.testing.assert_allclose(r1["w"], r2["w"], rtol=1e-10, atol=1e-12)
-
-
-def test_psis_khat_wellbehaved_weights():
-    from transitflow.correction import psis_khat
-
-    rng = np.random.default_rng(5)
-    logw = rng.normal(0.0, 1.0, size=2000)   # light-tailed weights
-    k = psis_khat(logw)
-    assert np.isfinite(k)
-    assert k < 0.7
-    assert np.isnan(psis_khat(np.array([0.0, 1.0])))   # too few

@@ -761,7 +761,6 @@ def main():
                                   jitter_high=args.mcmc_jitter_max)
                 mc_s = mc_out["samples"]
                 ess = None
-                khat = None
                 jitter_prof = None
                 if args.is_correct_mcmc:
                     corr = importance_weights(
@@ -773,7 +772,6 @@ def main():
                     amort = sir_resample(corr["phys"], corr["w"], args.n_post,
                                          np.random.default_rng(done + 1234))
                     ess = corr["ess_fraction"]
-                    khat = corr.get("khat")
                     jitter_prof = corr.get("jitter_scale_profile")
                 wd = {k: float(wasserstein_distance(amort[:, idx], mc_s[:, idx]))
                       for k, idx in _CMP.items()}
@@ -805,14 +803,10 @@ def main():
                     by_name[pl["name"]]["mcmc_n_eff"] = float(mc_out["n_eff"])
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
-                if khat is not None and np.isfinite(khat):
-                    by_name[pl["name"]]["is_khat"] = float(khat)
                 if jitter_prof is not None and np.isfinite(jitter_prof):
                     by_name[pl["name"]]["is_jitter_scale_profile"] = float(
                         jitter_prof)
                 ess_txt = "" if ess is None else f" ESS={ess:.3f}"
-                if khat is not None and np.isfinite(khat):
-                    ess_txt += f" khat={khat:.2f}"
                 print(f"   {pl['name']:<18} W(P)={wd['P']:.4f} W(RpRs)={wd['RpRs']:.4f}{ess_txt}")
                 done += 1
             except Exception as e:
@@ -868,12 +862,6 @@ def main():
                 "jitter_grid_size": int(args.is_jitter_grid),
                 "jitter_max": float(args.is_jitter_max),
             }
-            khat_vals = [r["is_khat"] for r in mcmc_rows if "is_khat" in r]
-            if khat_vals:
-                summary["importance_correction"]["median_khat"] = float(
-                    np.median(khat_vals))
-                summary["importance_correction"]["max_khat"] = float(
-                    np.max(khat_vals))
             jit_vals = [r["is_jitter_scale_profile"] for r in mcmc_rows
                         if "is_jitter_scale_profile" in r]
             if jit_vals:
