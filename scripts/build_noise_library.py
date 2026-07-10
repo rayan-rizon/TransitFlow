@@ -25,6 +25,27 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 
 
+def emit_logs(lines: list[str], primary=None, fallback=None) -> None:
+    """Write collected worker logs even if a downloader closed ``sys.stdout``.
+
+    Some lightkurve/astroquery download progress paths replace or close the
+    process-standard stream when called concurrently.  Worker logs are emitted
+    only after all futures finish, so falling back to ``sys.__stdout__`` keeps
+    a successful parallel archive build from failing at its final print.
+    """
+    text = "\n".join(lines) + "\n"
+    primary = sys.stdout if primary is None else primary
+    fallback = sys.__stdout__ if fallback is None else fallback
+    try:
+        primary.write(text)
+        primary.flush()
+    except (AttributeError, BrokenPipeError, ValueError):
+        if fallback is None or fallback is primary:
+            raise
+        fallback.write(text)
+        fallback.flush()
+
+
 def _collect_target_segments(tgt: str, mission: str, n_raw: int) -> tuple[str, list[np.ndarray], list[str]]:
     logs = [f"downloading {tgt} ({mission}) ..."]
     segments: list[np.ndarray] = []
@@ -103,7 +124,7 @@ def main() -> None:
         for tgt in args.targets:
             _, target_segments, logs = _collect_target_segments(
                 tgt, args.mission, args.n_raw)
-            print("\n".join(logs), flush=True)
+            emit_logs(logs)
             segments.extend(target_segments)
             target_ids.extend([tgt] * len(target_segments))
     else:
@@ -119,12 +140,12 @@ def main() -> None:
         for tgt in args.targets:
             target_segments, logs = results.get(
                 tgt, ([], [f"  skipped {tgt}: worker produced no result"]))
-            print("\n".join(logs), flush=True)
+            emit_logs(logs)
             segments.extend(target_segments)
             target_ids.extend([tgt] * len(target_segments))
 
     if not segments:
-        print("no segments collected; nothing written.")
+        emit_logs(["no segments collected; nothing written."])
         sys.exit(1)
     segments = np.asarray(segments)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
@@ -137,7 +158,7 @@ def main() -> None:
         segment_length=np.asarray(args.n_raw),
     )
     os.replace(tmp, args.out)
-    print(f"wrote {len(segments)} segments of length {args.n_raw} -> {args.out}")
+    emit_logs([f"wrote {len(segments)} segments of length {args.n_raw} -> {args.out}"])
 
 
 if __name__ == "__main__":
