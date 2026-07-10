@@ -26,13 +26,31 @@ from .views import make_views
 
 class TransitFlowInference:
     def __init__(self, model, prior: TransitPrior, sim_cfg: SimConfig,
-                 device=None, ode_steps: int = 50, ode_method: str = "rk4"):
+                 device=None, ode_steps: int = 50, ode_method: str = "rk4",
+                 amp: bool = False, amp_dtype: torch.dtype = torch.bfloat16):
+        """Amortized-inference wrapper.
+
+        ``amp`` enables autocast mixed-precision (default bfloat16) on the
+        embedding / ODE-sampling / log-prob forward passes. Default is
+        ``False`` so every existing call site is byte-for-byte unchanged;
+        pass ``amp=True`` to use it (e.g. for faster amortized-inference
+        throughput). BF16 results remain diagnostic until the controlled
+        same-checkpoint, same-input equivalence test in the publication
+        runbook has passed.
+        """
         self.model = model.eval()
         self.prior = prior
         self.sim_cfg = sim_cfg
         self.device = device or next(model.parameters()).device
         self.ode_steps = ode_steps
         self.ode_method = ode_method
+        self.amp = amp
+        self.amp_dtype = amp_dtype
+
+    def _autocast(self):
+        device_type = self.device.type if hasattr(self.device, "type") else str(self.device)
+        return torch.autocast(device_type=device_type, dtype=self.amp_dtype,
+                              enabled=self.amp)
 
     def _expand_std_samples(self, std_np: np.ndarray, ephem_feat=None) -> np.ndarray:
         if std_np.shape[-1] == 7:
@@ -83,7 +101,9 @@ class TransitFlowInference:
             dil = self._to_t(dil_feat) if dil_feat is not None else \
                 torch.zeros(g.shape[0], device=self.device)
             dil = dil.reshape(-1)
-        return self.model.embed(g, l, nf, pg, eph, dil)
+        with self._autocast():
+            e = self.model.embed(g, l, nf, pg, eph, dil)
+        return e.float()
 
     @torch.no_grad()
     def detect(self, global_view, local_view, sigma_feat=None,
@@ -91,7 +111,9 @@ class TransitFlowInference:
         with torch.inference_mode():
             e = self.embed(global_view, local_view, sigma_feat, periodogram,
                            ephem_feat, dil_feat)
-            return torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
+            with self._autocast():
+                logits = self.model.detect_logits(e)
+            return torch.sigmoid(logits.float()).cpu().numpy()
 
     @torch.no_grad()
     def posterior_samples(self, global_view, local_view, sigma_feat=None,
@@ -101,12 +123,13 @@ class TransitFlowInference:
         with torch.inference_mode():
             e = self.embed(global_view, local_view, sigma_feat, periodogram,
                            ephem_feat, dil_feat)
-            if self.model.head_type == "fmpe":
-                std = sample_ode(self.model.velocity_fn(), e, n_samples,
-                                 n_steps=self.ode_steps, method=self.ode_method)
-            else:
-                std = self.model.posterior.sample(e, n_samples)
-            std_np = std.cpu().numpy()
+            with self._autocast():
+                if self.model.head_type == "fmpe":
+                    std = sample_ode(self.model.velocity_fn(), e, n_samples,
+                                     n_steps=self.ode_steps, method=self.ode_method)
+                else:
+                    std = self.model.posterior.sample(e, n_samples)
+            std_np = std.float().cpu().numpy()
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
@@ -121,13 +144,15 @@ class TransitFlowInference:
         with torch.inference_mode():
             e = self.embed(global_view, local_view, sigma_feat, periodogram,
                            ephem_feat, dil_feat)
-            p_det = torch.sigmoid(self.model.detect_logits(e)).cpu().numpy()
-            if self.model.head_type == "fmpe":
-                std = sample_ode(self.model.velocity_fn(), e, n_samples,
-                                 n_steps=self.ode_steps, method=self.ode_method)
-            else:
-                std = self.model.posterior.sample(e, n_samples)
-            std_np = std.cpu().numpy()
+            with self._autocast():
+                logits = self.model.detect_logits(e)
+                if self.model.head_type == "fmpe":
+                    std = sample_ode(self.model.velocity_fn(), e, n_samples,
+                                     n_steps=self.ode_steps, method=self.ode_method)
+                else:
+                    std = self.model.posterior.sample(e, n_samples)
+            p_det = torch.sigmoid(logits.float()).cpu().numpy()
+            std_np = std.float().cpu().numpy()
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
@@ -141,11 +166,12 @@ class TransitFlowInference:
             ts = ts[None]
         if self.model.cfg.param_dim == 5 and ts.shape[-1] == 7:
             ts = ts[..., 2:]
-        if self.model.head_type == "fmpe":
-            lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)
-        else:
-            lp = self.model.posterior.log_prob(ts, e)
-        return lp.detach().cpu().numpy()
+        with self._autocast():
+            if self.model.head_type == "fmpe":
+                lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)
+            else:
+                lp = self.model.posterior.log_prob(ts, e)
+        return lp.detach().float().cpu().numpy()
 
     # ------------------------------------------------------------------ #
     # Importance-sampling efficiency diagnostic (approximate)

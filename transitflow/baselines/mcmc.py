@@ -249,12 +249,19 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
                           initargs=(state,)) as pool:
                 sampler = emcee.EnsembleSampler(
                     n_walkers, len(free_idx), _pooled_log_prob, pool=pool)
+                # ``seed`` previously controlled only walker initialization.
+                # emcee maintains a separate proposal RNG, so two nominally
+                # identical validation runs could produce different posterior
+                # agreement gates.  Seed that state explicitly without
+                # mutating NumPy's process-global RNG.
+                sampler.random_state = np.random.RandomState(seed).get_state()
                 sampler.run_mcmc(p0, n_steps, progress=False)
                 free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
                                                flat=True)
                 acceptance = float(np.mean(sampler.acceptance_fraction))
         else:
             sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
+            sampler.random_state = np.random.RandomState(seed).get_state()
             sampler.run_mcmc(p0, n_steps, progress=False)
             free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
                                            flat=True)

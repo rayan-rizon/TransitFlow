@@ -288,11 +288,13 @@ class TransitSimulator:
         use_pg = cfg.use_periodogram
         pg = np.empty((B, cfg.n_period_bins), dtype=np.float32) if use_pg else None
         gap_mask = self._sample_gap_masks(B, rng)
+        raw_unprocessed = flux.copy()
         raw_for_views = flux.copy()
         for i in range(B):
             valid_cad = gap_mask[i]
             ti = t[valid_cad]
             fi = flux[i][valid_cad]
+            raw_unprocessed[i, ~valid_cad] = np.nan
             raw_for_views[i, ~valid_cad] = np.nan
             if cfg.flatten_views:
                 fi = flatten_transit_preserving(
@@ -378,5 +380,11 @@ class TransitSimulator:
             # raw light curve + cadence grid, for the exact importance-sampling
             # likelihood (the views are a lossy, period-blurred reduction)
             out["raw_flux"] = raw_for_views.astype(np.float32)
+            # Preserve the pre-flattening curve as well.  Publication-grade
+            # candidate-search evaluation must derive its ephemeris and
+            # transit-preserving trend mask from the candidate itself; using
+            # ``raw_flux`` when ``flatten_views`` is enabled would leak the
+            # simulator's true ephemeris through preprocessing.
+            out["raw_flux_unprocessed"] = raw_unprocessed.astype(np.float32)
             out["times"] = self.times.astype(np.float32)
         return out

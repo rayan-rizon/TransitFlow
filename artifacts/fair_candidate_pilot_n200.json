@@ -1,0 +1,63 @@
+{
+  "seed": 123,
+  "candidate_source": "bls",
+  "checkpoint": "runs/vast_publishable_bf16_5090_20260708_v3/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 200,
+  "noise_lib": "data/noise_lib.npz",
+  "noise_lib_available": true,
+  "n_planets": 101,
+  "n_negatives": 99,
+  "bls": {
+    "roc_auc": 0.632963296329633,
+    "average_precision": 0.6065619659202717
+  },
+  "tls": null,
+  "transitflow": {
+    "roc_auc": 0.8491849184918492,
+    "average_precision": 0.810104702033271
+  },
+  "auc_gain": 0.2162216221622162,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": null,
+  "tls_requested": false,
+  "uncertainty": {
+    "method": "stratified paired percentile bootstrap",
+    "n_bootstrap": 500,
+    "seed": 10123,
+    "ci95": {
+      "bls_auc": [
+        0.5465221522152215,
+        0.7133838383838383
+      ],
+      "tf_auc": [
+        0.792916791679168,
+        0.9031103110311031
+      ],
+      "auc_gain": [
+        0.11931318131813176,
+        0.3176392639263926
+      ],
+      "bls_ap": [
+        0.5400235702248167,
+        0.6996880087586245
+      ],
+      "tf_ap": [
+        0.7435337184608435,
+        0.8812560463194118
+      ],
+      "ap_gain": [
+        0.08488022693398774,
+        0.30727423793144826
+      ]
+    }
+  },
+  "candidate_period_recovery": {
+    "n_planets": 101,
+    "median_abs_fractional_error": 1.0018001291322158,
+    "within_1pct": 0.33663366336633666
+  },
+  "score_data": "artifacts/fair_candidate_pilot_n200.scores.npz"
+}

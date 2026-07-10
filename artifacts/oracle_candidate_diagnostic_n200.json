@@ -1,0 +1,31 @@
+{
+  "seed": 123,
+  "candidate_source": "simulator",
+  "checkpoint": "runs/vast_publishable_bf16_5090_20260708_v3/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 200,
+  "noise_lib": "data/noise_lib.npz",
+  "noise_lib_available": true,
+  "n_planets": 101,
+  "n_negatives": 99,
+  "bls": {
+    "roc_auc": 0.632963296329633,
+    "average_precision": 0.6065619659202717
+  },
+  "tls": null,
+  "transitflow": {
+    "roc_auc": 0.998999899989999,
+    "average_precision": 0.9991080189099991
+  },
+  "auc_gain": 0.36603660366036606,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": null,
+  "tls_requested": false,
+  "candidate_period_recovery": {
+    "n_planets": 101,
+    "median_abs_fractional_error": 0.0,
+    "within_1pct": 1.0
+  }
+}

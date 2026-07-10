@@ -27,6 +27,8 @@ def main() -> None:
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--head", choices=["fmpe", "npe"], default=None)
     ap.add_argument("--steps", type=int, default=None)
+    ap.add_argument("--seed", type=int, default=None,
+                    help="override the training seed recorded in the config")
     ap.add_argument("--device", default=None)
     ap.add_argument("--run-dir", default=None,
                     help="directory for checkpoints, logs, status.json")
@@ -49,6 +51,8 @@ def main() -> None:
         overrides["model"]["head"] = args.head
     if args.steps:
         overrides["train"]["n_steps"] = args.steps
+    if args.seed is not None:
+        overrides["train"]["seed"] = args.seed
     if args.device:
         overrides["train"]["device"] = args.device
     if args.run_dir:

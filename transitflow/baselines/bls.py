@@ -46,6 +46,8 @@ def bls_detect(times: np.ndarray, flux: np.ndarray,
         i = int(np.argmax(power))
         return {"score": _sde(power), "peak_power": float(power[i]),
                 "best_period": float(res.period[i]),
+                "best_t0": float(res.transit_time[i]),
+                "best_duration": float(res.duration[i]),
                 "power": power, "periods": periods}
     return _bls_native(times, flux, periods, durations)
 
@@ -54,12 +56,15 @@ def _bls_native(times, flux, periods, durations) -> dict:
     """Minimal pure-numpy BLS fallback (peak depth-significance over the grid)."""
     flux = flux - np.median(flux)
     best_power, best_p = -np.inf, periods[0]
+    best_t0, best_duration = float(times[0]), float(durations[0])
     powers = np.empty(len(periods))
     for k, P in enumerate(periods):
         phase = (times / P) % 1.0
         order = np.argsort(phase)
         ph, fl = phase[order], flux[order]
         best_here = 0.0
+        best_here_t0 = float(times[0])
+        best_here_duration = float(durations[0])
         for dur in durations:
             w = dur / P
             n_steps = max(int(1.0 / max(w, 1e-3)), 4)
@@ -70,12 +75,18 @@ def _bls_native(times, flux, periods, durations) -> dict:
                     continue
                 depth = fl[~inb].mean() - fl[inb].mean()
                 snr = depth / (fl.std() / np.sqrt(max(inb.sum(), 1)) + 1e-9)
-                best_here = max(best_here, snr)
+                if snr > best_here:
+                    best_here = float(snr)
+                    best_here_t0 = float(c * P)
+                    best_here_duration = float(dur)
         powers[k] = best_here
         if best_here > best_power:
             best_power, best_p = best_here, P
+            best_t0, best_duration = best_here_t0, best_here_duration
     return {"score": _sde(powers), "peak_power": float(best_power),
             "best_period": float(best_p),
+            "best_t0": float(best_t0),
+            "best_duration": float(best_duration),
             "power": powers, "periods": periods}
 
 

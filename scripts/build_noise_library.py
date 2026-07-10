@@ -97,6 +97,7 @@ def main() -> None:
         sys.exit(1)
 
     segments = []
+    target_ids: list[str] = []
     workers = max(1, int(args.workers))
     if workers == 1:
         for tgt in args.targets:
@@ -104,6 +105,7 @@ def main() -> None:
                 tgt, args.mission, args.n_raw)
             print("\n".join(logs), flush=True)
             segments.extend(target_segments)
+            target_ids.extend([tgt] * len(target_segments))
     else:
         results: dict[str, tuple[list[np.ndarray], list[str]]] = {}
         with ThreadPoolExecutor(max_workers=workers) as ex:
@@ -119,6 +121,7 @@ def main() -> None:
                 tgt, ([], [f"  skipped {tgt}: worker produced no result"]))
             print("\n".join(logs), flush=True)
             segments.extend(target_segments)
+            target_ids.extend([tgt] * len(target_segments))
 
     if not segments:
         print("no segments collected; nothing written.")
@@ -126,7 +129,13 @@ def main() -> None:
     segments = np.asarray(segments)
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     tmp = args.out + ".tmp.npz"
-    np.savez_compressed(tmp, segments=segments)
+    np.savez_compressed(
+        tmp,
+        segments=segments,
+        target_ids=np.asarray(target_ids, dtype="U128"),
+        mission=np.asarray(args.mission),
+        segment_length=np.asarray(args.n_raw),
+    )
     os.replace(tmp, args.out)
     print(f"wrote {len(segments)} segments of length {args.n_raw} -> {args.out}")
 

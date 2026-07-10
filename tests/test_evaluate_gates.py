@@ -9,7 +9,7 @@ from scripts.validate_real import (
     real_diagnostic_status,
     real_gate_status,
 )
-from scripts.run_publishable_vast import build_gate_report
+from scripts.run_publishable_vast import build_gate_report, prepare_noise_splits
 
 
 def test_sbc_gate_controls_familywise_error():
@@ -90,6 +90,25 @@ def test_real_gate_rejects_degenerate_importance_correction():
     assert gates["importance_correction_min_ess_fraction_ge_0.05"] is False
 
 
+def test_real_gate_requires_converged_mcmc_reference():
+    summary = {
+        "detection": {"detected_fraction": 1.0},
+        "detected_per_param": {},
+        "mcmc_agreement": {
+            key: {"median_wasserstein_prior_fraction": 0.05,
+                  "median_wasserstein_width_fraction": 0.4}
+            for key in ("RpRs", "aRs", "b")
+        },
+        "mcmc_conditioning": {"tau_multiple_min": 12.0, "n_eff_min": 180.0},
+    }
+
+    gates = real_gate_status(summary)
+
+    assert gates["mcmc_characterization_prior_fraction_le_0.1"] is True
+    assert gates["mcmc_chain_length_ge_50_tau"] is False
+    assert gates["mcmc_effective_samples_ge_400"] is False
+
+
 def test_real_quality_gate_rejects_weak_or_missing_geometry_rows():
     args = SimpleNamespace(
         quality_gate=True,
@@ -159,11 +178,73 @@ def test_publishable_gate_report_schema_and_status():
             },
         }
     }
-    bls = {"bls": {"roc_auc": 0.4}, "transitflow": {"roc_auc": 0.99}}
+    bls = {
+        "candidate_source": "bls",
+        "n": 5000,
+        "bls": {"roc_auc": 0.4},
+        "transitflow": {"roc_auc": 0.99},
+        "tls_requested": True,
+        "tls": {"n": 5000, "roc_auc": 0.6},
+        "uncertainty": {
+            "ci95": {"auc_gain": [0.5, 0.7], "ap_gain": [0.4, 0.6]},
+        },
+    }
     speed = {"speedup_x": 1500.0}
 
     report = build_gate_report(synthetic, real, bls, speed)
 
     assert set(report) >= {"synthetic", "real", "baselines", "status"}
     assert report["status"]["real_mcmc_n_ge_16"] is True
+    assert report["status"]["detection_candidate_ephemeris_from_bls"] is True
     assert report["status"]["final_pass"] is True
+    assert report["diagnostic_status"][
+        "oracle_candidate_detection_auc_ge_0.99"] is True
+
+
+def test_publishable_report_preserves_real_diagnostic_provenance():
+    synthetic = {
+        "gate_status": {
+            "detection_auc_ge_0.99": True,
+            "characterization_sbc_familywise_alpha_0.05": True,
+            "characterization_coverage_error_le_0.03": True,
+        },
+    }
+    real = {
+        "summary": {
+            "detection": {"n_detected": 28},
+            "mcmc_agreement": {
+                key: {"n": 16, "median_wasserstein_prior_fraction": 0.05,
+                      "median_wasserstein_width_fraction": 0.4}
+                for key in ("RpRs", "aRs", "b")
+            },
+            "importance_correction": {"enabled": True, "min_ess_fraction": 0.01},
+            "mcmc_conditioning": {"ephemeris_fixed": True},
+            "diagnostic_status": {"archive_coverage": False},
+            "gate_status": {
+                "importance_correction_min_ess_fraction_ge_0.05": False,
+            },
+        },
+    }
+    bls = {"candidate_source": "bls", "bls": {}, "transitflow": {}}
+
+    report = build_gate_report(synthetic, real, bls, {"speedup_x": 1500.0})
+
+    assert report["real"]["importance_correction"]["min_ess_fraction"] == 0.01
+    assert report["real"]["mcmc_conditioning"]["ephemeris_fixed"] is True
+    assert report["real"]["diagnostic_status"]["archive_coverage"] is False
+    assert report["status"]["final_pass"] is False
+
+
+def test_noise_split_is_source_target_disjoint(tmp_path):
+    path = tmp_path / "noise.npz"
+    segments = np.arange(6 * 8, dtype=float).reshape(6, 8)
+    target_ids = np.array(["A", "A", "B", "B", "C", "C"])
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    train_path, eval_path, meta = prepare_noise_splits(path, tmp_path / "split", 7)
+
+    train = np.load(train_path)
+    evaluate = np.load(eval_path)
+    assert set(train["target_ids"].astype(str)).isdisjoint(
+        set(evaluate["target_ids"].astype(str)))
+    assert meta["target_overlap"] == []

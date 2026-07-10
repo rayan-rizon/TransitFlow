@@ -33,6 +33,7 @@ from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
 from transitflow.transit_model import transit_duration
+from transitflow.utils import set_seed
 from transitflow.views import (
     flatten_transit_preserving,
     make_periodogram_view,
@@ -67,7 +68,8 @@ def _val(row, key) -> float:
 
 
 def query_planets(n: int, p_lo: float, p_hi: float,
-                  rprs_lo: float, rprs_hi: float) -> list[dict]:
+                  rprs_lo: float, rprs_hi: float,
+                  seed: int = 0) -> list[dict]:
     """Confirmed TESS planets *inside the training prior*, in the P range.
 
     Bounding ``pl_ratror`` to the prior's Rp/Rs support is essential: sorting by
@@ -121,7 +123,7 @@ def query_planets(n: int, p_lo: float, p_hi: float,
     idx = sorted({int(i) for i in
                   np.linspace(0, len(out) - 1, pool_size).round()})
     pool = [out[i] for i in idx]
-    np.random.default_rng(0).shuffle(pool)
+    np.random.default_rng(seed).shuffle(pool)
     return pool
 
 
@@ -450,6 +452,12 @@ def real_gate_status(summary: dict) -> dict:
         "mcmc_characterization_width_fraction_le_0.5_diagnostic": bool(
             mcmc_char_width and max(mcmc_char_width) <= 0.5),
     }
+    if summary.get("mcmc_agreement"):
+        conditioning = summary.get("mcmc_conditioning", {})
+        gates["mcmc_chain_length_ge_50_tau"] = bool(
+            conditioning.get("tau_multiple_min", 0.0) >= 50.0)
+        gates["mcmc_effective_samples_ge_400"] = bool(
+            conditioning.get("n_eff_min", 0.0) >= 400.0)
     if summary.get("importance_correction", {}).get("enabled"):
         gates["importance_correction_min_ess_fraction_ge_0.05"] = bool(
             summary["importance_correction"].get("min_ess_fraction", 0.0) >= 0.05)
@@ -547,7 +555,7 @@ def main():
     ap.add_argument("--n-post", type=int, default=2000)
     ap.add_argument("--with-mcmc", type=int, default=0,
                     help="run a per-object MCMC on the first K planets (shape agreement)")
-    ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--mcmc-steps", type=int, default=15000)
     ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--mcmc-detect-threshold", type=float, default=0.9,
                     help="only run same-light-curve MCMC for detected planets")
@@ -564,6 +572,9 @@ def main():
                     help="use likelihood-corrected amortized samples for MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000,
                     help="proposal samples for likelihood correction")
+    ap.add_argument("--min-is-ess-fraction", type=float, default=0.05,
+                    help="minimum ESS/N for a corrected posterior to be considered "
+                         "usable; raw amortized agreement is always reported")
     ap.add_argument("--mcmc-fit-jitter", action="store_true",
                     help="fit a per-object multiplicative error-inflation "
                          "(jitter) nuisance in the real-data MCMC likelihood")
@@ -592,8 +603,14 @@ def main():
     ap.add_argument("--min-observed-snr", type=float, default=12.0)
     ap.add_argument("--max-impact", type=float, default=0.9)
     ap.add_argument("--out", default="results/real")
+    ap.add_argument("--amp", action="store_true",
+                    help="enable bfloat16 autocast for amortized inference")
+    ap.add_argument("--seed", type=int, default=0,
+                    help="reproducibility seed for target ordering, neural "
+                         "posterior draws, MCMC initialization and emcee proposals")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    set_seed(args.seed)
 
     model, mc, sc = load_checkpoint(args.ckpt)
     # Build the prior with the same a/Rs prior the simulator used for training,
@@ -607,19 +624,20 @@ def main():
         stellar_density_log10_std=getattr(sc, "stellar_density_log10_std", 0.25),
     )
     sim = TransitSimulator(sc, prior=prior)
-    inf = TransitFlowInference(model, prior, sc)
+    inf = TransitFlowInference(model, prior, sc, amp=args.amp)
     detector_inf = inf
     if args.detector_ckpt:
         detector_model, _, detector_sc = load_checkpoint(args.detector_ckpt)
         if detector_sc != sc:
             raise SystemExit("--detector-ckpt must use the same simulator config")
-        detector_inf = TransitFlowInference(detector_model, prior, sc)
+        detector_inf = TransitFlowInference(detector_model, prior, sc, amp=args.amp)
     p_lo, p_hi = prior.specs[0].low, prior.specs[0].high
     rprs_lo, rprs_hi = prior.specs[2].low, prior.specs[2].high   # training Rp/Rs support
 
     print(f"== querying archive (P in [{p_lo}, {p_hi}] d, Rp/Rs in "
           f"[{rprs_lo}, {rprs_hi}], TESS) ==")
-    pool = query_planets(args.n_planets, p_lo, p_hi, rprs_lo, rprs_hi)
+    pool = query_planets(args.n_planets, p_lo, p_hi, rprs_lo, rprs_hi,
+                         seed=args.seed)
     print(f"   {len(pool)} candidate planets")
 
     records = []
@@ -748,6 +766,7 @@ def main():
                 mc_out = run_mcmc(mcmc_t, mcmc_f, mcmc_err, prior=prior, init=init,
                                   n_steps=args.mcmc_steps, n_radial=60,
                                   n_walkers=args.mcmc_walkers,
+                                  seed=args.seed + done,
                                   fixed=fixed,
                                   init_std_jitter=args.mcmc_init_jitter,
                                   exposure_minutes=getattr(sc, "exposure_minutes", 0.0),
@@ -762,6 +781,7 @@ def main():
                 mc_s = mc_out["samples"]
                 ess = None
                 jitter_prof = None
+                amort_corrected = None
                 if args.is_correct_mcmc:
                     corr = importance_weights(
                         inf, gv, lv, np.array([sf]), mcmc_f, mcmc_t, mcmc_err,
@@ -769,10 +789,15 @@ def main():
                         periodogram=pg, ephem_feat=eph,
                         jitter_grid_size=args.is_jitter_grid,
                         jitter_max=args.is_jitter_max)
-                    amort = sir_resample(corr["phys"], corr["w"], args.n_post,
-                                         np.random.default_rng(done + 1234))
+                    amort_corrected = sir_resample(
+                        corr["phys"], corr["w"], args.n_post,
+                        np.random.default_rng(args.seed + done + 1234))
                     ess = corr["ess_fraction"]
                     jitter_prof = corr.get("jitter_scale_profile")
+                # Primary agreement is always computed from the raw amortized
+                # posterior.  Older runs overwrote it with SIR resamples even
+                # when ESS collapsed to ~1 effective draw, making the reported
+                # Wasserstein metric a correction artefact.
                 wd = {k: float(wasserstein_distance(amort[:, idx], mc_s[:, idx]))
                       for k, idx in _CMP.items()}
                 wd_norm = {}
@@ -784,7 +809,28 @@ def main():
                     wd_norm[k] = wd[k] / width
                 by_name[pl["name"]]["mcmc_wasserstein"] = wd
                 by_name[pl["name"]]["mcmc_wasserstein_width_fraction"] = wd_norm
+                if amort_corrected is not None:
+                    wd_corr = {
+                        k: float(wasserstein_distance(
+                            amort_corrected[:, idx], mc_s[:, idx]))
+                        for k, idx in _CMP.items()
+                    }
+                    wd_norm_corr = {}
+                    for k, idx in _CMP.items():
+                        q_am = np.percentile(amort_corrected[:, idx], [16, 84])
+                        q_mc = np.percentile(mc_s[:, idx], [16, 84])
+                        width = max(float(q_am[1] - q_am[0]),
+                                    float(q_mc[1] - q_mc[0]), 1e-12)
+                        wd_norm_corr[k] = wd_corr[k] / width
+                    by_name[pl["name"]]["mcmc_wasserstein_corrected"] = wd_corr
+                    by_name[pl["name"]][
+                        "mcmc_wasserstein_width_fraction_corrected"] = wd_norm_corr
+                    by_name[pl["name"]]["is_correction_valid"] = bool(
+                        ess is not None and ess >= args.min_is_ess_fraction)
                 by_name[pl["name"]]["mcmc_backend"] = mc_out["backend"]
+                by_name[pl["name"]]["mcmc_seed"] = int(args.seed + done)
+                by_name[pl["name"]]["mcmc_steps"] = int(args.mcmc_steps)
+                by_name[pl["name"]]["mcmc_walkers"] = int(args.mcmc_walkers)
                 by_name[pl["name"]]["mcmc_acceptance_fraction"] = \
                     mc_out.get("acceptance_fraction")
                 by_name[pl["name"]]["mcmc_fixed"] = mc_out.get("fixed", {})
@@ -799,6 +845,8 @@ def main():
                 if mc_out.get("autocorr_time_max") is not None:
                     by_name[pl["name"]]["mcmc_autocorr_time_max"] = float(
                         mc_out["autocorr_time_max"])
+                    by_name[pl["name"]]["mcmc_tau_multiple"] = float(
+                        args.mcmc_steps / mc_out["autocorr_time_max"])
                 if mc_out.get("n_eff") is not None:
                     by_name[pl["name"]]["mcmc_n_eff"] = float(mc_out["n_eff"])
                 if ess is not None:
@@ -830,9 +878,12 @@ def main():
 
     detected = [r for r in records if r["p_detect"] >= 0.9]
     summary = {
+        "seed": int(args.seed),
         "n_planets": len(records),
         "checkpoint": args.ckpt,
         "detector_checkpoint": args.detector_ckpt or args.ckpt,
+        "amp": args.amp,
+        "amp_dtype": "bfloat16" if args.amp else None,
         "detection": {
             "threshold": 0.9,
             "n_detected": len(detected),
@@ -854,6 +905,10 @@ def main():
             summary["importance_correction"] = {
                 "enabled": True,
                 "n_samples": args.is_samples,
+                "min_ess_fraction_required": float(args.min_is_ess_fraction),
+                "n_valid": int(np.sum(np.asarray(ess_vals) >=
+                                      args.min_is_ess_fraction)),
+                "n_total": int(len(ess_vals)),
                 "mean_ess_fraction": float(np.mean(ess_vals)),
                 "median_ess_fraction": float(np.median(ess_vals)),
                 "min_ess_fraction": float(np.min(ess_vals)),
@@ -883,6 +938,11 @@ def main():
                 np.median(n_eff_vals))
             summary["mcmc_conditioning"]["n_eff_min"] = float(
                 np.min(n_eff_vals))
+        tau_multiples = [r["mcmc_tau_multiple"] for r in mcmc_rows
+                         if "mcmc_tau_multiple" in r]
+        if tau_multiples:
+            summary["mcmc_conditioning"]["tau_multiple_min"] = float(
+                np.min(tau_multiples))
         mcmc_jit = [r["mcmc_jitter_median"] for r in mcmc_rows
                     if "mcmc_jitter_median" in r]
         if mcmc_jit:

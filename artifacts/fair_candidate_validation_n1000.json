@@ -1,0 +1,63 @@
+{
+  "seed": 123,
+  "candidate_source": "bls",
+  "checkpoint": "runs/vast_publishable_bf16_5090_20260708_v3/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 1000,
+  "noise_lib": "data/noise_lib.npz",
+  "noise_lib_available": true,
+  "n_planets": 500,
+  "n_negatives": 500,
+  "bls": {
+    "roc_auc": 0.598224,
+    "average_precision": 0.5841285139329012
+  },
+  "tls": null,
+  "transitflow": {
+    "roc_auc": 0.8074,
+    "average_precision": 0.7619071266289026
+  },
+  "auc_gain": 0.20917600000000003,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": null,
+  "tls_requested": false,
+  "uncertainty": {
+    "method": "stratified paired percentile bootstrap",
+    "n_bootstrap": 1000,
+    "seed": 10123,
+    "ci95": {
+      "bls_auc": [
+        0.5610475,
+        0.6311218
+      ],
+      "tf_auc": [
+        0.7820123999999999,
+        0.83384275
+      ],
+      "auc_gain": [
+        0.16636559999999997,
+        0.25529040000000003
+      ],
+      "bls_ap": [
+        0.550929253212358,
+        0.620219768183026
+      ],
+      "tf_ap": [
+        0.7311615891629424,
+        0.7959799779830826
+      ],
+      "ap_gain": [
+        0.12786865573754744,
+        0.22633458237112358
+      ]
+    }
+  },
+  "candidate_period_recovery": {
+    "n_planets": 500,
+    "median_abs_fractional_error": 0.9987930807539103,
+    "within_1pct": 0.32
+  },
+  "score_data": "artifacts/fair_candidate_validation_n1000.scores.npz"
+}

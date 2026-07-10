@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -20,6 +21,47 @@ from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
+from transitflow.utils import set_seed
+from transitflow.views import (
+    flatten_transit_preserving,
+    make_periodogram_view,
+    make_views,
+)
+
+
+def bootstrap_detection_metrics(labels: np.ndarray, bls_scores: np.ndarray,
+                                tf_scores: np.ndarray, n_boot: int,
+                                seed: int) -> dict:
+    """Stratified paired bootstrap intervals for AUC/AP and their differences."""
+    if n_boot <= 0:
+        return {}
+    rng = np.random.default_rng(seed)
+    pos = np.flatnonzero(labels == 1)
+    neg = np.flatnonzero(labels == 0)
+    draws = {key: [] for key in (
+        "bls_auc", "tf_auc", "auc_gain", "bls_ap", "tf_ap", "ap_gain")}
+    for _ in range(n_boot):
+        idx = np.concatenate([
+            rng.choice(pos, len(pos), replace=True),
+            rng.choice(neg, len(neg), replace=True),
+        ])
+        b = detection_metrics(labels[idx], bls_scores[idx])
+        t = detection_metrics(labels[idx], tf_scores[idx])
+        draws["bls_auc"].append(b["roc_auc"])
+        draws["tf_auc"].append(t["roc_auc"])
+        draws["auc_gain"].append(t["roc_auc"] - b["roc_auc"])
+        draws["bls_ap"].append(b["average_precision"])
+        draws["tf_ap"].append(t["average_precision"])
+        draws["ap_gain"].append(t["average_precision"] - b["average_precision"])
+    return {
+        "method": "stratified paired percentile bootstrap",
+        "n_bootstrap": int(n_boot),
+        "seed": int(seed),
+        "ci95": {
+            key: [float(x) for x in np.percentile(vals, [2.5, 97.5])]
+            for key, vals in draws.items()
+        },
+    }
 
 
 def main() -> None:
@@ -35,7 +77,19 @@ def main() -> None:
                     help="also run Transit Least Squares on a bounded subset")
     ap.add_argument("--tls-n", type=int, default=500)
     ap.add_argument("--out", default="results/detection_baseline/bls_vs_transitflow.json")
+    ap.add_argument("--seed", type=int, default=123)
+    ap.add_argument("--bootstrap", type=int, default=500,
+                    help="paired stratified bootstrap replicates for AUC/AP intervals")
+    ap.add_argument(
+        "--candidate-source", choices=("bls", "simulator"), default="bls",
+        help="candidate ephemeris supplied to TransitFlow. 'bls' is the fair "
+             "publication comparison; 'simulator' reproduces the historical "
+             "oracle-ephemeris diagnostic and must not be reported as blind detection",
+    )
+    ap.add_argument("--amp", action="store_true",
+                    help="enable bfloat16 autocast for amortized inference")
     args = ap.parse_args()
+    set_seed(args.seed)
 
     model, _, sc = load_checkpoint(args.ckpt)
     prior = TransitPrior(TransitPrior.default_specs(sc.regime))
@@ -43,8 +97,8 @@ def main() -> None:
     if args.noise_lib and not noise_library.available():
         raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
     sim = TransitSimulator(sc, prior=prior, noise_library=noise_library)
-    inf = TransitFlowInference(model, prior, sc)
-    rng = np.random.default_rng(123)
+    inf = TransitFlowInference(model, prior, sc, amp=args.amp)
+    rng = np.random.default_rng(args.seed)
 
     p_lo, p_hi = prior.specs[0].low, prior.specs[0].high
     t_full = np.asarray(sim.times, dtype=np.float64)
@@ -59,6 +113,7 @@ def main() -> None:
     run_tls = bool(args.with_tls and has_tls())
 
     labels, bls_scores, tls_labels, tls_scores, tf_scores = [], [], [], [], []
+    candidate_periods, true_periods = [], []
     t0 = time.time()
     print(
         f"== detection baseline: BLS"
@@ -66,19 +121,23 @@ def main() -> None:
     )
     while len(labels) < args.n:
         b = sim.simulate_batch(args.batch, rng, return_raw=True)
-        raw = b["raw_flux"]
+        raw = b.get("raw_flux_unprocessed", b["raw_flux"])
         pg = b.get("periodogram")
         eph = b.get("ephem_feat")
-        p_det = inf.detect(
-            b["global"],
-            b["local"],
-            b["sigma_feat"],
-            periodogram=pg,
-            ephem_feat=eph,
-        )
+        p_det = None
+        if args.candidate_source == "simulator":
+            p_det = inf.detect(
+                b["global"],
+                b["local"],
+                b["sigma_feat"],
+                periodogram=pg,
+                ephem_feat=eph,
+                dil_feat=b.get("dil_feat"),
+            )
         for i in range(len(raw)):
             f_i = raw[i][::step]
             ok = np.isfinite(t_bls) & np.isfinite(f_i)
+            res = None
             try:
                 res = bls_detect(
                     t_bls[ok],
@@ -91,6 +150,51 @@ def main() -> None:
                 bls_scores.append(float(res["score"]))
             except Exception:
                 bls_scores.append(0.0)
+            if args.candidate_source == "bls":
+                if res is None:
+                    # Candidate generation is part of the evaluated pipeline;
+                    # a failed search cannot fall back to the simulator's true
+                    # ephemeris without leaking the label.
+                    tf_scores.append(0.0)
+                    candidate_periods.append(float("nan"))
+                else:
+                    cand_p = float(res["best_period"])
+                    cand_t0 = float(res["best_t0"])
+                    cand_dur = float(res["best_duration"])
+                    full_ok = np.isfinite(t_full) & np.isfinite(raw[i])
+                    candidate_flux = flatten_transit_preserving(
+                        t_full[full_ok], raw[i][full_ok], cand_p, cand_t0, cand_dur)
+                    gv_i, lv_i = make_views(
+                        t_full[full_ok], candidate_flux, cand_p, cand_t0, cand_dur,
+                        n_global=sc.n_global, n_local=sc.n_local,
+                        n_durations=sc.n_durations, normalize=True,
+                    )
+                    ephem_phys = b["theta_phys"][i:i + 1].copy()
+                    ephem_phys[0, 0] = cand_p
+                    ephem_phys[0, 1] = (cand_t0 / max(cand_p, 1e-12)) % 1.0
+                    eph_i = prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)
+                    pg_i = None
+                    if sc.use_periodogram:
+                        n_pg = sc.pg_n_raw
+                        t_pg = t_full[full_ok]
+                        f_pg = candidate_flux
+                        if n_pg < len(t_pg):
+                            pg_step = max(1, len(t_pg) // n_pg)
+                            t_pg = t_pg[::pg_step][:n_pg]
+                            f_pg = f_pg[::pg_step][:n_pg]
+                        pg_i = make_periodogram_view(
+                            t_pg, f_pg, sim.period_grid,
+                            n_phase=sc.pg_n_phase, normalize=True,
+                        )[None, :]
+                    dil_i = b.get("dil_feat")
+                    dil_i = None if dil_i is None else dil_i[i:i + 1]
+                    score_i = inf.detect(
+                        gv_i[None, :], lv_i[None, :], b["sigma_feat"][i:i + 1],
+                        periodogram=pg_i, ephem_feat=eph_i, dil_feat=dil_i,
+                    )
+                    tf_scores.append(float(score_i[0]))
+                    candidate_periods.append(cand_p)
+                true_periods.append(float(b["theta_phys"][i, 0]))
             if run_tls and len(tls_labels) < args.tls_n:
                 try:
                     res = tls_detect(t_bls[ok], f_i[ok], sim.period_grid.astype(np.float64))
@@ -99,7 +203,10 @@ def main() -> None:
                     tls_scores.append(0.0)
                 tls_labels.append(int(b["d"][i]))
             labels.append(int(b["d"][i]))
-            tf_scores.append(float(p_det[i]))
+            if args.candidate_source == "simulator":
+                tf_scores.append(float(p_det[i]))
+                candidate_periods.append(float(b["fold_P"][i]))
+                true_periods.append(float(b["theta_phys"][i, 0]))
             if len(labels) >= args.n:
                 break
         if len(labels) % (args.batch * 4) < args.batch:
@@ -110,6 +217,8 @@ def main() -> None:
     tf_scores = np.array(tf_scores[:args.n])
     tls_labels_arr = np.array(tls_labels, dtype=int) if tls_labels else None
     tls_scores_arr = np.array(tls_scores, dtype=float) if tls_scores else None
+    candidate_periods_arr = np.asarray(candidate_periods[:args.n], dtype=float)
+    true_periods_arr = np.asarray(true_periods[:args.n], dtype=float)
 
     bls_m = detection_metrics(labels, bls_scores)
     tf_m = detection_metrics(labels, tf_scores)
@@ -120,7 +229,11 @@ def main() -> None:
     )
 
     report = {
+        "seed": int(args.seed),
+        "candidate_source": args.candidate_source,
         "checkpoint": args.ckpt,
+        "amp": args.amp,
+        "amp_dtype": "bfloat16" if args.amp else None,
         "n": int(len(labels)),
         "noise_lib": args.noise_lib,
         "noise_lib_available": noise_library.available(),
@@ -129,23 +242,57 @@ def main() -> None:
         "bls": {
             "roc_auc": bls_m["roc_auc"],
             "average_precision": bls_m["average_precision"],
+            "brier_score": bls_m["brier_score"],
+            "expected_calibration_error_10bin":
+                bls_m["expected_calibration_error_10bin"],
         },
         "tls": None if tls_m is None else {
             "n": int(len(tls_labels_arr)),
             "roc_auc": tls_m["roc_auc"],
             "average_precision": tls_m["average_precision"],
+            "brier_score": tls_m["brier_score"],
+            "expected_calibration_error_10bin":
+                tls_m["expected_calibration_error_10bin"],
         },
         "transitflow": {
             "roc_auc": tf_m["roc_auc"],
             "average_precision": tf_m["average_precision"],
+            "brier_score": tf_m["brier_score"],
+            "expected_calibration_error_10bin":
+                tf_m["expected_calibration_error_10bin"],
         },
         "auc_gain": tf_m["roc_auc"] - bls_m["roc_auc"],
         "bls_score": "sde",
         "bls_backend": "astropy" if has_astropy() else "native",
         "tls_backend": "transitleastsquares" if tls_m is not None else None,
         "tls_requested": bool(args.with_tls),
+        "uncertainty": bootstrap_detection_metrics(
+            labels, bls_scores, tf_scores, args.bootstrap, args.seed + 10000),
     }
+    planet_mask = labels == 1
+    valid_period = planet_mask & np.isfinite(candidate_periods_arr) & \
+        np.isfinite(true_periods_arr)
+    if valid_period.any():
+        frac = np.abs(candidate_periods_arr[valid_period] /
+                      true_periods_arr[valid_period] - 1.0)
+        report["candidate_period_recovery"] = {
+            "n_planets": int(valid_period.sum()),
+            "median_abs_fractional_error": float(np.median(frac)),
+            "within_1pct": float(np.mean(frac <= 0.01)),
+        }
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+    score_path = Path(args.out).with_suffix(".scores.npz")
+    np.savez_compressed(
+        score_path,
+        labels=labels,
+        bls_scores=bls_scores,
+        transitflow_scores=tf_scores,
+        candidate_periods=candidate_periods_arr,
+        true_periods=true_periods_arr,
+        tls_labels=np.asarray([]) if tls_labels_arr is None else tls_labels_arr,
+        tls_scores=np.asarray([]) if tls_scores_arr is None else tls_scores_arr,
+    )
+    report["score_data"] = str(score_path)
     with open(args.out, "w") as fh:
         json.dump(report, fh, indent=2)
 
@@ -156,6 +303,7 @@ def main() -> None:
     print(f"  TransitFlow ROC-AUC {tf_m['roc_auc']:.4f}  AP {tf_m['average_precision']:.4f}")
     print(f"  gain        {report['auc_gain']:+.4f} AUC")
     print("wrote", args.out)
+    print("wrote", score_path)
 
 
 if __name__ == "__main__":

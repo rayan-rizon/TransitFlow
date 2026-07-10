@@ -28,6 +28,8 @@ def main():
     ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--out", default="results/speed.json")
+    ap.add_argument("--amp", action="store_true",
+                    help="enable bfloat16 autocast for amortized inference")
     args = ap.parse_args()
 
     model, mc, sc = load_checkpoint(args.ckpt)
@@ -36,7 +38,7 @@ def main():
     if args.noise_lib and not noise_library.available():
         raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
     sim = TransitSimulator(sc, prior=pr, noise_library=noise_library)
-    inf = TransitFlowInference(model, pr, sc)
+    inf = TransitFlowInference(model, pr, sc, amp=args.amp)
     dev = next(model.parameters()).device
     rng = np.random.default_rng(0)
 
@@ -81,6 +83,8 @@ def main():
 
     report = {
         "device": dev.type,
+        "amp": args.amp,
+        "amp_dtype": "bfloat16" if args.amp else None,
         "noise_lib": args.noise_lib,
         "noise_lib_available": noise_library.available(),
         "amortized_ms_per_object": round(amort_per_obj * 1e3, 3),

@@ -1,0 +1,33 @@
+{
+  "seed": 123,
+  "candidate_source": "simulator",
+  "checkpoint": "runs/vast_publishable_bf16_5090_20260708_v3/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 1000,
+  "noise_lib": "data/noise_lib.npz",
+  "noise_lib_available": true,
+  "n_planets": 500,
+  "n_negatives": 500,
+  "bls": {
+    "roc_auc": 0.598224,
+    "average_precision": 0.5841285139329012
+  },
+  "tls": null,
+  "transitflow": {
+    "roc_auc": 0.999254,
+    "average_precision": 0.9992968081855899
+  },
+  "auc_gain": 0.40103,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": null,
+  "tls_requested": false,
+  "uncertainty": {},
+  "candidate_period_recovery": {
+    "n_planets": 500,
+    "median_abs_fractional_error": 0.0,
+    "within_1pct": 1.0
+  },
+  "score_data": "artifacts/oracle_candidate_diagnostic_n1000.scores.npz"
+}

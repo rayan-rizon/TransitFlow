@@ -33,6 +33,7 @@ from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
 from transitflow.transit_model import transit_duration
+from transitflow.utils import set_seed
 
 
 def detection_eval(inference, simulator, n: int, rng) -> dict:
@@ -144,14 +145,17 @@ def main() -> None:
     ap.add_argument("--out", default="results/eval")
     ap.add_argument("--plots", action="store_true")
     ap.add_argument("--seed", type=int, default=123)
+    ap.add_argument("--amp", action="store_true",
+                    help="enable bfloat16 autocast for amortized inference")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
+    set_seed(args.seed)
 
     model, mcfg, scfg = load_checkpoint(args.ckpt)
     prior = TransitPrior.from_sim_config(scfg)
     noise_library = NoiseLibrary.load(args.noise_lib)
     simulator = TransitSimulator(scfg, prior=prior, noise_library=noise_library)
-    inference = TransitFlowInference(model, prior, scfg)
+    inference = TransitFlowInference(model, prior, scfg, amp=args.amp)
     rng = np.random.default_rng(args.seed)
 
     if args.noise_lib and not noise_library.available():
@@ -225,8 +229,11 @@ def main() -> None:
     char_sbc_gate = sbc_gate(char_unif["pvalue"])
 
     report = {
+        "seed": int(args.seed),
         "checkpoint": args.ckpt,
         "head": model.head_type,
+        "amp": args.amp,
+        "amp_dtype": "bfloat16" if args.amp else None,
         "noise_lib": args.noise_lib,
         "noise_lib_available": noise_library.available(),
         "param_names": param_names,

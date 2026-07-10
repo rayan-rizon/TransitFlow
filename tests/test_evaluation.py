@@ -52,6 +52,24 @@ def test_detection_metrics_perfect():
     assert m["average_precision"] == 1.0
 
 
+def test_detection_metrics_ties_are_grouped():
+    labels = np.array([0, 1])
+    scores = np.array([0.5, 0.5])
+
+    m = detection_metrics(labels, scores)
+
+    assert m["roc_auc"] == 0.5
+    assert m["average_precision"] == 0.5
+
+
+def test_detection_metrics_reports_probability_calibration():
+    labels = np.array([0, 0, 1, 1])
+    scores = np.array([0.1, 0.2, 0.8, 0.9])
+    m = detection_metrics(labels, scores)
+    assert np.isclose(m["brier_score"], 0.025)
+    assert np.isclose(m["expected_calibration_error_10bin"], 0.15)
+
+
 def test_posterior_contraction_and_distances():
     rng = np.random.default_rng(3)
     N, L, D = 50, 1000, 3

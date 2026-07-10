@@ -68,13 +68,60 @@ def validate_noise_lib(path: Path) -> dict:
     seg = arr["segments"] if hasattr(arr, "files") and "segments" in arr.files else None
     if seg is None or seg.ndim != 2 or seg.shape[0] == 0:
         raise SystemExit(f"invalid noise library: {path}")
+    target_ids = arr["target_ids"] if "target_ids" in arr.files else None
     return {
         "path": str(path),
         "n_segments": int(seg.shape[0]),
         "segment_length": int(seg.shape[1]),
         "median": float(np.nanmedian(seg)),
         "std": float(np.nanstd(seg)),
+        "has_target_ids": target_ids is not None,
+        "n_unique_targets": 0 if target_ids is None else int(
+            len(np.unique(target_ids.astype(str)))),
     }
+
+
+def prepare_noise_splits(path: Path, out_dir: Path, seed: int,
+                         eval_fraction: float = 0.2) -> tuple[Path, Path, dict]:
+    """Create deterministic source-target-disjoint train/evaluation libraries."""
+    import numpy as np
+
+    arr = np.load(path)
+    if "target_ids" not in arr.files:
+        raise SystemExit(
+            "noise library lacks target_ids; rebuild it with "
+            "scripts/build_noise_library.py before a publication run")
+    segments = np.asarray(arr["segments"])
+    target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if len(target_ids) != len(segments):
+        raise SystemExit("noise library target_ids length does not match segments")
+    targets = np.unique(target_ids)
+    if len(targets) < 2:
+        raise SystemExit("at least two source targets are required for a group split")
+    rng = np.random.default_rng(seed)
+    targets = targets[rng.permutation(len(targets))]
+    n_eval = min(max(1, int(np.ceil(len(targets) * eval_fraction))), len(targets) - 1)
+    eval_targets = targets[:n_eval]
+    eval_mask = np.isin(target_ids, eval_targets)
+    if not eval_mask.any() or eval_mask.all():
+        raise SystemExit("source-target noise split produced an empty partition")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train_path = out_dir / "noise_train.npz"
+    eval_path = out_dir / "noise_eval.npz"
+    np.savez_compressed(
+        train_path, segments=segments[~eval_mask], target_ids=target_ids[~eval_mask])
+    np.savez_compressed(
+        eval_path, segments=segments[eval_mask], target_ids=target_ids[eval_mask])
+    meta = {
+        "seed": int(seed),
+        "eval_fraction_requested": float(eval_fraction),
+        "train_targets": sorted(np.unique(target_ids[~eval_mask]).tolist()),
+        "eval_targets": sorted(np.unique(target_ids[eval_mask]).tolist()),
+        "n_train_segments": int((~eval_mask).sum()),
+        "n_eval_segments": int(eval_mask.sum()),
+        "target_overlap": sorted(set(target_ids[~eval_mask]) & set(target_ids[eval_mask])),
+    }
+    return train_path, eval_path, meta
 
 
 def _gate_value(metrics: dict, key: str) -> bool:
@@ -90,6 +137,7 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     max_w_prior = float(thresholds.get("max_wasserstein_prior_fraction", 0.1))
     max_w_width = float(thresholds.get("max_wasserstein_width_fraction", 0.5))
     min_speedup = float(thresholds.get("min_speedup", 1000.0))
+    min_fair_detection_n = int(thresholds.get("min_fair_detection_n", 5000))
 
     real_summary = real.get("summary", real)
     mcmc = real_summary.get("mcmc_agreement", {})
@@ -103,9 +151,12 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         mcmc.get(k, {}).get("median_wasserstein_width_fraction", float("inf")) <= max_w_width
         for k in char
     )
+    uncertainty = bls.get("uncertainty", {}).get("ci95", {})
+    auc_gain_ci = uncertainty.get("auc_gain", [float("-inf"), float("inf")])
+    ap_gain_ci = uncertainty.get("ap_gain", [float("-inf"), float("inf")])
+    tls_required = bool(bls.get("tls_requested", False))
+    tls = bls.get("tls")
     status = {
-        "synthetic_detection_auc_ge_0.99":
-            _gate_value(synthetic, "detection_auc_ge_0.99"),
         "synthetic_characterization_sbc_familywise_alpha_0.05":
             _gate_value(synthetic, "characterization_sbc_familywise_alpha_0.05"),
         "synthetic_characterization_coverage_error_le_0.03":
@@ -117,11 +168,33 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         "real_mcmc_width_fraction_le_0.5": width_ok,
         "speedup_ge_1000x": float(speed.get("speedup_x", 0.0)) >= min_speedup,
         "bls_baseline_regenerated": bool(bls.get("transitflow") and bls.get("bls")),
+        "detection_candidate_ephemeris_from_bls":
+            bls.get("candidate_source") == "bls",
+        "fair_candidate_evaluation_n_ge_5000":
+            int(bls.get("n", 0)) >= min_fair_detection_n,
+        "fair_candidate_auc_gain_ci95_lower_gt_0":
+            bool(auc_gain_ci and float(auc_gain_ci[0]) > 0.0),
+        "fair_candidate_ap_gain_ci95_lower_gt_0":
+            bool(ap_gain_ci and float(ap_gain_ci[0]) > 0.0),
+        "tls_equal_sample_baseline_completed":
+            (not tls_required) or bool(
+                tls and int(tls.get("n", 0)) == int(bls.get("n", 0))),
     }
     if "importance_correction_min_ess_fraction_ge_0.05" in real_summary.get("gate_status", {}):
         status["importance_correction_min_ess_fraction_ge_0.05"] = bool(
             real_summary["gate_status"]["importance_correction_min_ess_fraction_ge_0.05"])
+    for convergence_gate in (
+        "mcmc_chain_length_ge_50_tau",
+        "mcmc_effective_samples_ge_400",
+    ):
+        if convergence_gate in real_summary.get("gate_status", {}):
+            status[convergence_gate] = bool(
+                real_summary["gate_status"][convergence_gate])
     status["final_pass"] = all(status.values())
+    diagnostic_status = {
+        "oracle_candidate_detection_auc_ge_0.99":
+            _gate_value(synthetic, "detection_auc_ge_0.99"),
+    }
     return {
         "synthetic": {
             "detection": synthetic.get("detection", {}),
@@ -132,23 +205,29 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         "real": {
             "detection": real_summary.get("detection", {}),
             "gate_status": real_summary.get("gate_status", {}),
+            "diagnostic_status": real_summary.get("diagnostic_status", {}),
             "mcmc_agreement": mcmc,
             "mcmc_stratified": real_summary.get("mcmc_stratified", {}),
+            "mcmc_conditioning": real_summary.get("mcmc_conditioning", {}),
+            "importance_correction": real_summary.get("importance_correction", {}),
         },
         "baselines": {
             "bls": bls,
             "speed": speed,
         },
         "status": status,
+        "diagnostic_status": diagnostic_status,
     }
 
 
-def write_environment(path: Path, repo: Path) -> None:
+def write_environment(path: Path, repo: Path, amp: bool = False) -> None:
     env = {
         "created_unix": time.time(),
         "python": sys.version,
         "platform": platform.platform(),
         "git_sha": git_sha(repo),
+        "amp": amp,
+        "amp_dtype": "bfloat16" if amp else None,
     }
     try:
         import torch
@@ -174,6 +253,8 @@ def main() -> None:
     ap.add_argument("--noise-workers", type=int, default=1,
                     help="parallel target downloads when building the noise library")
     ap.add_argument("--noise-targets", nargs="*", default=None)
+    ap.add_argument("--noise-eval-fraction", type=float, default=0.2,
+                    help="fraction of source targets reserved for evaluation")
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--run-dir", default=None)
     ap.add_argument("--n-data", type=int, default=1_000_000)
@@ -181,19 +262,34 @@ def main() -> None:
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-sbc", type=int, default=1000)
     ap.add_argument("--n-detection", type=int, default=5000)
-    ap.add_argument("--with-tls-baseline", action="store_true",
-                    help="include Transit Least Squares baseline on a bounded subset")
-    ap.add_argument("--tls-baseline-n", type=int, default=500)
+    ap.add_argument("--with-tls-baseline", dest="with_tls_baseline",
+                    action="store_true", default=True,
+                    help="include equal-sample Transit Least Squares baseline (default on)")
+    ap.add_argument("--no-tls-baseline", dest="with_tls_baseline",
+                    action="store_false",
+                    help="skip TLS only for diagnostics; not suitable for the full publication run")
+    ap.add_argument("--tls-baseline-n", type=int, default=None,
+                    help="TLS sample count; defaults to the full detection sample")
+    ap.add_argument("--candidate-source", choices=("bls", "simulator"),
+                    default="bls",
+                    help="candidate ephemeris for TransitFlow detection evaluation; "
+                         "the publication gate requires the fair BLS candidate path")
+    ap.add_argument("--eval-seed", type=int, default=123)
+    ap.add_argument("--real-seed", type=int, default=0)
+    ap.add_argument("--train-seed", type=int, default=0)
     ap.add_argument("--n-posterior", type=int, default=2000)
     ap.add_argument("--n-real-planets", type=int, default=30)
     ap.add_argument("--with-mcmc", type=int, default=16)
-    ap.add_argument("--mcmc-steps", type=int, default=1500)
+    ap.add_argument("--mcmc-steps", type=int, default=15000,
+                    help="full-run default targets >=50 autocorrelation times; "
+                         "fast-check mode uses a short non-publication diagnostic")
     ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--mcmc-processes", type=int, default=1,
                     help="parallel worker processes for real-data emcee MCMC")
     ap.add_argument("--is-correct-mcmc", action="store_true",
                     help="use likelihood-corrected amortized samples for real MCMC agreement")
     ap.add_argument("--is-samples", type=int, default=3000)
+    ap.add_argument("--min-is-ess-fraction", type=float, default=0.05)
     ap.add_argument("--mcmc-fit-jitter", dest="mcmc_fit_jitter",
                     action="store_true", default=True,
                     help="fit per-object error-inflation (jitter) in the "
@@ -210,6 +306,9 @@ def main() -> None:
                     help="short metric-oriented run: smaller data/eval/MCMC, same report schema")
     ap.add_argument("--smoke", action="store_true",
                     help="small structural run; not a metrics claim")
+    ap.add_argument("--amp", action="store_true",
+                    help="enable bfloat16 autocast for amortized inference in "
+                         "evaluate/baseline_detection/benchmark_speed/validate_real")
     args = ap.parse_args()
 
     repo = Path(args.repo).resolve()
@@ -248,7 +347,7 @@ def main() -> None:
         n_posterior = 512 if args.n_posterior == 2000 else args.n_posterior
         n_real_planets = 12 if args.n_real_planets == 30 else args.n_real_planets
         with_mcmc = 4 if args.with_mcmc == 16 else args.with_mcmc
-        mcmc_steps = 400 if args.mcmc_steps == 1500 else args.mcmc_steps
+        mcmc_steps = 400 if args.mcmc_steps == 15000 else args.mcmc_steps
         speed_n_amortized = args.speed_n_amortized or min(n_detection, 64)
         speed_n_mcmc = max(1, min(with_mcmc, 2))
         speed_mcmc_steps = mcmc_steps
@@ -267,16 +366,23 @@ def main() -> None:
         speed_mcmc_steps = args.mcmc_steps
         speed_mcmc_walkers = args.mcmc_walkers
     train_steps = ["--steps", str(steps)] if steps else []
+    tls_baseline_n = (
+        n_detection if args.tls_baseline_n is None
+        else min(int(args.tls_baseline_n), n_detection)
+    )
 
-    write_environment(out_dir / "environment.json", repo)
+    write_environment(out_dir / "environment.json", repo, amp=args.amp)
 
     run([args.python, "-m", "pytest", "-q", "-m", "not slow", *FAST_PYTEST],
         repo, logs / "pytest_fast.log")
 
     if args.build_noise_lib and noise_lib is None:
         raise SystemExit("--build-noise-lib requires a real --noise-lib path")
+    if noise_lib is None and not args.smoke and not args.fast_check:
+        raise SystemExit(
+            "a source-labelled --noise-lib is required for a publication run")
 
-    if noise_lib is not None and args.build_noise_lib and not noise_lib.exists():
+    if noise_lib is not None and args.build_noise_lib:
         targets = args.noise_targets or DEFAULT_TARGETS
         run([args.python, "scripts/build_noise_library.py", "--mission", "TESS",
              "--n-raw", "18000", "--out", str(noise_lib),
@@ -288,13 +394,22 @@ def main() -> None:
         {"path": None, "available": False}
     )
     (out_dir / "noise_lib.json").write_text(json.dumps(noise_meta, indent=2))
+    train_noise_lib = noise_lib
+    eval_noise_lib = noise_lib
+    split_meta = None
+    if noise_lib is not None and not args.smoke and not args.fast_check:
+        train_noise_lib, eval_noise_lib, split_meta = prepare_noise_splits(
+            noise_lib, out_dir / "noise_splits", args.eval_seed,
+            args.noise_eval_fraction)
+        (out_dir / "noise_split.json").write_text(json.dumps(split_meta, indent=2))
 
     if not list(data_dir.glob("shard_*.npz")):
         generate_cmd = [args.python, "scripts/generate_data.py", "--config", args.config,
                         "--n", str(n_data), "--workers", str(args.workers),
-                        "--shard-size", str(args.shard_size), "--out", str(data_dir)]
-        if noise_lib is not None:
-            generate_cmd.extend(["--noise-lib", str(noise_lib)])
+                        "--shard-size", str(args.shard_size), "--out", str(data_dir),
+                        "--seed", str(args.train_seed)]
+        if train_noise_lib is not None:
+            generate_cmd.extend(["--noise-lib", str(train_noise_lib)])
         run(generate_cmd, repo, logs / "generate_data.log")
 
     run([args.python, "scripts/preflight.py", "--config", args.config,
@@ -302,7 +417,8 @@ def main() -> None:
         repo, logs / "preflight.log")
     run([args.python, "scripts/train.py", "--config", args.config,
          "--run-dir", str(run_dir), "--data-dir", str(data_dir),
-         "--expect-device", "cuda", "--no-preflight", *train_steps],
+         "--expect-device", "cuda", "--no-preflight",
+         "--seed", str(args.train_seed), *train_steps],
         repo, logs / "train.log")
 
     ckpt = run_dir / "checkpoints" / "latest.pt"
@@ -310,24 +426,32 @@ def main() -> None:
     evaluate_cmd = [args.python, "scripts/evaluate.py", "--ckpt", str(ckpt),
                     "--n-sbc", str(n_sbc), "--n-detection", str(n_detection),
                     "--n-posterior", str(n_posterior), "--out", str(eval_dir),
-                    "--plots"]
-    if noise_lib is not None:
-        evaluate_cmd.extend(["--noise-lib", str(noise_lib)])
+                    "--plots", "--seed", str(args.eval_seed)]
+    if eval_noise_lib is not None:
+        evaluate_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+    if args.amp:
+        evaluate_cmd.append("--amp")
     run(evaluate_cmd, repo, logs / "evaluate.log")
     baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt", str(ckpt),
-                    "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json")]
-    if noise_lib is not None:
-        baseline_cmd.extend(["--noise-lib", str(noise_lib)])
+                    "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json"),
+                    "--seed", str(args.eval_seed),
+                    "--candidate-source", args.candidate_source]
+    if eval_noise_lib is not None:
+        baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
     if args.with_tls_baseline:
-        baseline_cmd.extend(["--with-tls", "--tls-n", str(args.tls_baseline_n)])
+        baseline_cmd.extend(["--with-tls", "--tls-n", str(tls_baseline_n)])
+    if args.amp:
+        baseline_cmd.append("--amp")
     run(baseline_cmd, repo, logs / "baseline_detection.log")
     speed_cmd = [args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
                  "--n-amortized", str(speed_n_amortized), "--n-post", str(n_posterior),
                  "--n-mcmc", str(speed_n_mcmc), "--mcmc-steps", str(speed_mcmc_steps),
                  "--mcmc-walkers", str(speed_mcmc_walkers),
                  "--out", str(results / "speed.json")]
-    if noise_lib is not None:
-        speed_cmd.extend(["--noise-lib", str(noise_lib)])
+    if eval_noise_lib is not None:
+        speed_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+    if args.amp:
+        speed_cmd.append("--amp")
     run(speed_cmd, repo, logs / "speed.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
@@ -335,13 +459,17 @@ def main() -> None:
            "--n-post", str(n_posterior), "--with-mcmc", str(with_mcmc),
            "--mcmc-steps", str(mcmc_steps), "--mcmc-walkers", str(args.mcmc_walkers),
            "--mcmc-processes", str(args.mcmc_processes),
+           "--seed", str(args.real_seed),
            "--out", str(real_dir)]
     if args.is_correct_mcmc:
         cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples),
+                    "--min-is-ess-fraction", str(args.min_is_ess_fraction),
                     "--is-jitter-grid", str(args.is_jitter_grid),
                     "--is-jitter-max", str(args.is_jitter_max)])
     if args.mcmc_fit_jitter:
         cmd.append("--mcmc-fit-jitter")
+    if args.amp:
+        cmd.append("--amp")
     run(cmd, repo, logs / "validate_real.log")
 
     report = build_gate_report(
@@ -350,12 +478,21 @@ def main() -> None:
         read_json(results / "bls_vs_transitflow.json"),
         read_json(results / "speed.json"),
     )
+    if split_meta is not None:
+        report["status"]["noise_target_split_disjoint"] = not bool(
+            split_meta["target_overlap"])
+        report["status"]["final_pass"] = all(
+            value for key, value in report["status"].items()
+            if key != "final_pass")
     report["run"] = {
         "run_name": run_name,
         "config": args.config,
         "checkpoint": str(ckpt),
         "data_dir": str(data_dir),
         "noise_lib": None if noise_lib is None else str(noise_lib),
+        "train_noise_lib": None if train_noise_lib is None else str(train_noise_lib),
+        "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
+        "noise_eval_fraction": float(args.noise_eval_fraction),
         "noise_workers": int(args.noise_workers),
         "smoke": bool(args.smoke),
         "fast_check": bool(args.fast_check),
@@ -364,7 +501,11 @@ def main() -> None:
         "n_sbc": int(n_sbc),
         "n_detection": int(n_detection),
         "with_tls_baseline": bool(args.with_tls_baseline),
-        "tls_baseline_n": int(args.tls_baseline_n),
+        "tls_baseline_n": int(tls_baseline_n),
+        "candidate_source": args.candidate_source,
+        "eval_seed": int(args.eval_seed),
+        "real_seed": int(args.real_seed),
+        "train_seed": int(args.train_seed),
         "n_posterior": int(n_posterior),
         "n_real_planets": int(n_real_planets),
         "with_mcmc": int(with_mcmc),
@@ -373,6 +514,7 @@ def main() -> None:
         "mcmc_processes": int(args.mcmc_processes),
         "is_correct_mcmc": bool(args.is_correct_mcmc),
         "is_samples": int(args.is_samples),
+        "min_is_ess_fraction": float(args.min_is_ess_fraction),
         "mcmc_fit_jitter": bool(args.mcmc_fit_jitter),
         "is_jitter_grid": int(args.is_jitter_grid),
         "is_jitter_max": float(args.is_jitter_max),

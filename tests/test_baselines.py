@@ -22,6 +22,8 @@ def test_bls_recovers_period():
     # best period near 3 d (or a low harmonic)
     ratios = [res["best_period"] / 3.0, 3.0 / res["best_period"]]
     assert any(abs(r - round(r)) < 0.05 for r in ratios)
+    assert np.isfinite(res["best_t0"])
+    assert res["best_duration"] > 0
 
 
 def test_bls_scores_planet_above_noise():
@@ -102,6 +104,25 @@ def test_mcmc_emcee_process_pool_runs():
                    n_processes=2)
     assert out["backend"] == "emcee"
     assert out["samples"].shape[1] == 7
+
+
+def test_mcmc_seed_reproduces_proposal_chain():
+    prior = TransitPrior()
+    P, t0p = 3.0, 0.33
+    init = np.array([P, t0p, 0.08, 12.0, 0.2, 0.4, 0.3])
+    t = np.linspace(0, 9, 120)
+    u1, u2 = kipping_to_quadratic(init[5], init[6])
+    f = transit_flux(t, P, t0p * P, init[2], init[3], init[4],
+                     u1, u2, engine="native")[0]
+    fixed = {0: P, 1: t0p, 2: init[2], 3: init[3], 5: init[5], 6: init[6]}
+    kwargs = dict(prior=prior, init=init, n_walkers=8, n_steps=8,
+                  n_radial=8, seed=17, fixed=fixed)
+
+    first = run_mcmc(t, f, 0.0008, **kwargs)
+    second = run_mcmc(t, f, 0.0008, **kwargs)
+
+    assert np.array_equal(first["samples"], second["samples"])
+    assert first["acceptance_fraction"] == second["acceptance_fraction"]
 
 
 def test_mcmc_fit_jitter_recovers_error_inflation():
