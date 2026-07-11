@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import multiprocessing as mp
 import os
 import sys
 import time
@@ -27,6 +28,15 @@ from transitflow.views import (
     make_periodogram_view,
     make_views,
 )
+
+
+def _tls_score_worker(payload: tuple[np.ndarray, np.ndarray, np.ndarray, int]) -> float:
+    """Top-level worker so TLS searches can be parallelized safely on Linux."""
+    times, flux, periods, use_threads = payload
+    try:
+        return float(tls_detect(times, flux, periods, use_threads=use_threads)["score"])
+    except Exception:
+        return 0.0
 
 
 def bootstrap_detection_metrics(labels: np.ndarray, bls_scores: np.ndarray,
@@ -76,6 +86,11 @@ def main() -> None:
     ap.add_argument("--with-tls", action="store_true",
                     help="also run Transit Least Squares on a bounded subset")
     ap.add_argument("--tls-n", type=int, default=500)
+    ap.add_argument("--tls-workers", type=int, default=None,
+                    help="parallel TLS curves; defaults to a bounded CPU pool")
+    ap.add_argument("--tls-threads", type=int, default=1,
+                    help="threads inside each TLS curve search; keep at one when "
+                         "using multiple TLS workers to avoid nested pools")
     ap.add_argument("--out", default="results/detection_baseline/bls_vs_transitflow.json")
     ap.add_argument("--seed", type=int, default=123)
     ap.add_argument("--bootstrap", type=int, default=500,
@@ -111,8 +126,14 @@ def main() -> None:
         dtype=np.float64,
     )
     run_tls = bool(args.with_tls and has_tls())
+    tls_workers = max(1, min(
+        int(args.tls_workers) if args.tls_workers is not None else 42,
+        os.cpu_count() or 1,
+    ))
+    tls_threads = max(1, int(args.tls_threads))
 
     labels, bls_scores, tls_labels, tls_scores, tf_scores = [], [], [], [], []
+    tls_jobs: list[tuple[np.ndarray, np.ndarray, np.ndarray, int]] = []
     candidate_periods, true_periods = [], []
     t0 = time.time()
     print(
@@ -196,11 +217,12 @@ def main() -> None:
                     candidate_periods.append(cand_p)
                 true_periods.append(float(b["theta_phys"][i, 0]))
             if run_tls and len(tls_labels) < args.tls_n:
-                try:
-                    res = tls_detect(t_bls[ok], f_i[ok], sim.period_grid.astype(np.float64))
-                    tls_scores.append(float(res["score"]))
-                except Exception:
-                    tls_scores.append(0.0)
+                tls_jobs.append((
+                    np.asarray(t_bls[ok], dtype=np.float64),
+                    np.asarray(f_i[ok], dtype=np.float64),
+                    sim.period_grid.astype(np.float64),
+                    tls_threads,
+                ))
                 tls_labels.append(int(b["d"][i]))
             labels.append(int(b["d"][i]))
             if args.candidate_source == "simulator":
@@ -215,6 +237,15 @@ def main() -> None:
     labels = np.array(labels[:args.n])
     bls_scores = np.array(bls_scores[:args.n])
     tf_scores = np.array(tf_scores[:args.n])
+    if run_tls and tls_jobs:
+        print(f"== TLS on {len(tls_jobs)} LCs with {tls_workers} workers x "
+              f"{tls_threads} thread(s) ==")
+        ctx = mp.get_context("fork" if os.name != "nt" else "spawn")
+        with ctx.Pool(tls_workers) as pool:
+            for done, score in enumerate(pool.imap(_tls_score_worker, tls_jobs), start=1):
+                tls_scores.append(score)
+                if done % max(1, min(100, len(tls_jobs) // 10)) == 0 or done == len(tls_jobs):
+                    print(f"  TLS {done}/{len(tls_jobs)}")
     tls_labels_arr = np.array(tls_labels, dtype=int) if tls_labels else None
     tls_scores_arr = np.array(tls_scores, dtype=float) if tls_scores else None
     candidate_periods_arr = np.asarray(candidate_periods[:args.n], dtype=float)
@@ -266,6 +297,8 @@ def main() -> None:
         "bls_backend": "astropy" if has_astropy() else "native",
         "tls_backend": "transitleastsquares" if tls_m is not None else None,
         "tls_requested": bool(args.with_tls),
+        "tls_workers": int(tls_workers) if run_tls else 0,
+        "tls_threads": int(tls_threads) if run_tls else 0,
         "uncertainty": bootstrap_detection_metrics(
             labels, bls_scores, tf_scores, args.bootstrap, args.seed + 10000),
     }

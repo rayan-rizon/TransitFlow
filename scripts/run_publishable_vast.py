@@ -270,6 +270,8 @@ def main() -> None:
                     help="skip TLS only for diagnostics; not suitable for the full publication run")
     ap.add_argument("--tls-baseline-n", type=int, default=None,
                     help="TLS sample count; defaults to the full detection sample")
+    ap.add_argument("--tls-workers", type=int, default=None,
+                    help="parallel one-thread TLS searches; defaults to 42 or CPU count")
     ap.add_argument("--candidate-source", choices=("bls", "simulator"),
                     default="bls",
                     help="candidate ephemeris for TransitFlow detection evaluation; "
@@ -370,6 +372,10 @@ def main() -> None:
         n_detection if args.tls_baseline_n is None
         else min(int(args.tls_baseline_n), n_detection)
     )
+    tls_workers = max(1, min(
+        int(args.tls_workers) if args.tls_workers is not None else 42,
+        os.cpu_count() or 1,
+    ))
 
     write_environment(out_dir / "environment.json", repo, amp=args.amp)
 
@@ -439,7 +445,8 @@ def main() -> None:
     if eval_noise_lib is not None:
         baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
     if args.with_tls_baseline:
-        baseline_cmd.extend(["--with-tls", "--tls-n", str(tls_baseline_n)])
+        baseline_cmd.extend(["--with-tls", "--tls-n", str(tls_baseline_n),
+                             "--tls-workers", str(tls_workers), "--tls-threads", "1"])
     if args.amp:
         baseline_cmd.append("--amp")
     run(baseline_cmd, repo, logs / "baseline_detection.log")
@@ -502,6 +509,7 @@ def main() -> None:
         "n_detection": int(n_detection),
         "with_tls_baseline": bool(args.with_tls_baseline),
         "tls_baseline_n": int(tls_baseline_n),
+        "tls_workers": int(tls_workers),
         "candidate_source": args.candidate_source,
         "eval_seed": int(args.eval_seed),
         "real_seed": int(args.real_seed),

@@ -15,7 +15,8 @@ def has_tls() -> bool:
     return _HAS_TLS
 
 
-def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray) -> dict:
+def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
+               use_threads: int = 1) -> dict:
     """Run Transit Least Squares and return the peak detection score."""
     if not _HAS_TLS:
         raise RuntimeError("transitleastsquares is not installed")
@@ -33,6 +34,7 @@ def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray) -> dict
         period_max=float(periods.max()),
         n_transits_min=2,
         show_progress_bar=False,
+        use_threads=max(1, int(use_threads)),
     )
     score = getattr(res, "SDE", None)
     if score is None:

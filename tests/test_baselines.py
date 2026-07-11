@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from transitflow.baselines.bls import bls_detect
+from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
 from transitflow.baselines.mcmc import has_emcee, run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
@@ -33,6 +34,19 @@ def test_bls_scores_planet_above_noise():
     s_planet = bls_detect(t, f_planet, n_periods=800)["score"]
     s_noise = bls_detect(t, f_noise, n_periods=800)["score"]
     assert s_planet > s_noise
+
+
+def test_tls_passes_explicit_thread_budget(monkeypatch):
+    class FakeTLS:
+        def power(self, **kwargs):
+            assert kwargs["use_threads"] == 3
+            return type("Result", (), {"SDE": 4.2, "period": 2.0})()
+
+    monkeypatch.setattr(tls_module, "_HAS_TLS", True)
+    monkeypatch.setattr(tls_module, "transitleastsquares", lambda t, f: FakeTLS())
+    result = tls_module.tls_detect(np.arange(20.0), np.ones(20),
+                                   np.array([1.0, 2.0]), use_threads=3)
+    assert result["score"] == 4.2
 
 
 def test_mcmc_all_fixed_returns_fixed_samples():
