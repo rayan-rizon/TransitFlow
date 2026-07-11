@@ -455,9 +455,11 @@ def real_gate_status(summary: dict) -> dict:
     if summary.get("mcmc_agreement"):
         conditioning = summary.get("mcmc_conditioning", {})
         gates["mcmc_chain_length_ge_50_tau"] = bool(
-            conditioning.get("tau_multiple_min", 0.0) >= 50.0)
+            conditioning.get("n_with_tau", 0) == conditioning.get("n_mcmc", -1)
+            and conditioning.get("tau_multiple_min", 0.0) >= 50.0)
         gates["mcmc_effective_samples_ge_400"] = bool(
-            conditioning.get("n_eff_min", 0.0) >= 400.0)
+            conditioning.get("n_with_n_eff", 0) == conditioning.get("n_mcmc", -1)
+            and conditioning.get("n_eff_min", 0.0) >= 400.0)
     if summary.get("importance_correction", {}).get("enabled"):
         gates["importance_correction_min_ess_fraction_ge_0.05"] = bool(
             summary["importance_correction"].get("min_ess_fraction", 0.0) >= 0.05)
@@ -924,6 +926,7 @@ def main():
                     "median_jitter_scale_profile"] = float(np.median(jit_vals))
         fixed_rows = [r.get("mcmc_fixed", {}) for r in mcmc_rows]
         summary["mcmc_conditioning"] = {
+            "n_mcmc": int(len(mcmc_rows)),
             "ephemeris_fixed": bool(fixed_rows and all(
                 set(map(int, f.keys())) == {0, 1} for f in fixed_rows)),
             "acceptance_fraction_median": float(np.nanmedian([
@@ -934,6 +937,7 @@ def main():
         }
         n_eff_vals = [r["mcmc_n_eff"] for r in mcmc_rows if "mcmc_n_eff" in r]
         if n_eff_vals:
+            summary["mcmc_conditioning"]["n_with_n_eff"] = int(len(n_eff_vals))
             summary["mcmc_conditioning"]["n_eff_median"] = float(
                 np.median(n_eff_vals))
             summary["mcmc_conditioning"]["n_eff_min"] = float(
@@ -941,6 +945,7 @@ def main():
         tau_multiples = [r["mcmc_tau_multiple"] for r in mcmc_rows
                          if "mcmc_tau_multiple" in r]
         if tau_multiples:
+            summary["mcmc_conditioning"]["n_with_tau"] = int(len(tau_multiples))
             summary["mcmc_conditioning"]["tau_multiple_min"] = float(
                 np.min(tau_multiples))
         mcmc_jit = [r["mcmc_jitter_median"] for r in mcmc_rows

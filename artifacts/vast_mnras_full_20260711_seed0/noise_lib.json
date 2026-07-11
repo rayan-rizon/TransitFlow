@@ -1,0 +1,9 @@
+{
+  "path": "/workspace/TransitFlow/data/noise_lib_mnras_20260711.npz",
+  "n_segments": 116,
+  "segment_length": 18000,
+  "median": 1.0,
+  "std": 0.002723688992004609,
+  "has_target_ids": true,
+  "n_unique_targets": 14
+}

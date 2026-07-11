@@ -1,0 +1,25 @@
+{
+  "seed": 123,
+  "eval_fraction_requested": 0.2,
+  "train_targets": [
+    "HD 101501",
+    "HD 10647",
+    "HD 136352",
+    "HD 1461",
+    "HD 190406",
+    "HD 197076",
+    "HD 26965",
+    "HD 32147",
+    "HD 36435",
+    "HD 40307",
+    "HD 85512"
+  ],
+  "eval_targets": [
+    "HD 10700",
+    "HD 20794",
+    "HD 7924"
+  ],
+  "n_train_segments": 100,
+  "n_eval_segments": 16,
+  "target_overlap": []
+}

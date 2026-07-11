@@ -9,7 +9,13 @@ from scripts.validate_real import (
     real_diagnostic_status,
     real_gate_status,
 )
-from scripts.run_publishable_vast import build_gate_report, prepare_noise_splits
+from scripts._config import build_configs
+from scripts.run_publishable_vast import (
+    build_gate_report,
+    prepare_noise_splits,
+    validate_existing_dataset,
+)
+from transitflow.data import _write_dataset_metadata
 
 
 def test_sbc_gate_controls_familywise_error():
@@ -166,6 +172,7 @@ def test_publishable_gate_report_schema_and_status():
     }
     real = {
         "summary": {
+            "n_planets": 30,
             "detection": {"n_detected": 28, "detected_fraction": 28 / 30},
             "gate_status": {},
             "mcmc_agreement": {
@@ -184,10 +191,18 @@ def test_publishable_gate_report_schema_and_status():
         "bls": {"roc_auc": 0.4},
         "transitflow": {"roc_auc": 0.99},
         "tls_requested": True,
-        "tls": {"n": 5000, "roc_auc": 0.6},
+        "tls": {"n": 5000, "roc_auc": 0.6,
+                "paired_with_transitflow": True, "n_failed": 0},
         "uncertainty": {
             "ci95": {"auc_gain": [0.5, 0.7], "ap_gain": [0.4, 0.6]},
         },
+        "tls_uncertainty": {
+            "ci95": {"auc_gain": [0.2, 0.4], "ap_gain": [0.1, 0.3]},
+        },
+    }
+    real["summary"]["gate_status"] = {
+        "mcmc_chain_length_ge_50_tau": True,
+        "mcmc_effective_samples_ge_400": True,
     }
     speed = {"speedup_x": 1500.0}
 
@@ -195,10 +210,83 @@ def test_publishable_gate_report_schema_and_status():
 
     assert set(report) >= {"synthetic", "real", "baselines", "status"}
     assert report["status"]["real_mcmc_n_ge_16"] is True
+    assert report["status"]["real_quality_gated_sample_n_ge_30"] is True
     assert report["status"]["detection_candidate_ephemeris_from_bls"] is True
     assert report["status"]["final_pass"] is True
+    assert report["status"][
+        "speedup_ge_1000x_at_converged_mcmc_reference"] is True
     assert report["diagnostic_status"][
         "oracle_candidate_detection_auc_ge_0.99"] is True
+
+
+def test_speedup_is_not_gating_without_converged_mcmc_reference():
+    synthetic = {"gate_status": {
+        "characterization_sbc_familywise_alpha_0.05": True,
+        "characterization_coverage_error_le_0.03": True,
+    }}
+    real = {"summary": {
+        "detection": {"n_detected": 28},
+        "mcmc_agreement": {
+            key: {"n": 16, "median_wasserstein_prior_fraction": 0.05,
+                  "median_wasserstein_width_fraction": 0.4}
+            for key in ("RpRs", "aRs", "b")
+        },
+        "gate_status": {
+            "mcmc_chain_length_ge_50_tau": False,
+            "mcmc_effective_samples_ge_400": True,
+        },
+    }}
+    bls = {
+        "candidate_source": "bls", "n": 5000,
+        "bls": {"roc_auc": 0.6}, "transitflow": {"roc_auc": 0.7},
+        "uncertainty": {"ci95": {
+            "auc_gain": [0.01, 0.03], "ap_gain": [0.01, 0.03]}},
+    }
+
+    report = build_gate_report(synthetic, real, bls, {"speedup_x": 13000.0})
+
+    assert report["diagnostic_status"]["raw_speedup_ge_1000x"] is True
+    assert report["status"][
+        "speedup_ge_1000x_at_converged_mcmc_reference"] is False
+    assert report["status"]["final_pass"] is False
+
+
+def test_real_detection_gate_requires_full_30_object_sample():
+    synthetic = {"gate_status": {
+        "characterization_sbc_familywise_alpha_0.05": True,
+        "characterization_coverage_error_le_0.03": True,
+    }}
+    real = {"summary": {
+        "n_planets": 27,
+        "detection": {"n_detected": 27},
+        "mcmc_agreement": {},
+        "gate_status": {},
+    }}
+
+    report = build_gate_report(synthetic, real, {}, {"speedup_x": 0.0})
+
+    assert report["status"]["real_quality_gated_sample_n_ge_30"] is False
+    assert report["status"]["real_quality_gated_detection_ge_27_of_30"] is False
+
+
+def test_mcmc_convergence_requires_diagnostics_for_every_chain():
+    summary = {
+        "detection": {"detected_fraction": 1.0},
+        "mcmc_agreement": {
+            key: {"median_wasserstein_prior_fraction": 0.05,
+                  "median_wasserstein_width_fraction": 0.4}
+            for key in ("RpRs", "aRs", "b")
+        },
+        "mcmc_conditioning": {
+            "n_mcmc": 16, "n_with_tau": 15, "tau_multiple_min": 60.0,
+            "n_with_n_eff": 16, "n_eff_min": 500.0,
+        },
+    }
+
+    gates = real_gate_status(summary)
+
+    assert gates["mcmc_chain_length_ge_50_tau"] is False
+    assert gates["mcmc_effective_samples_ge_400"] is True
 
 
 def test_publishable_report_preserves_real_diagnostic_provenance():
@@ -248,3 +336,21 @@ def test_noise_split_is_source_target_disjoint(tmp_path):
     assert set(train["target_ids"].astype(str)).isdisjoint(
         set(evaluate["target_ids"].astype(str)))
     assert meta["target_overlap"] == []
+
+
+def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    config_path = "configs/default.yaml"
+    sim = build_configs(config_path)["simulator"]
+    _write_dataset_metadata(
+        str(data_dir), sim, n_total=20, n_shards=2, shard_size=10,
+        seed=3, noise_lib_path=None)
+    (data_dir / "shard_00000.npz").write_bytes(b"complete")
+
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, None) is False
+
+    (data_dir / "shard_00001.npz").write_bytes(b"complete")
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, None) is True

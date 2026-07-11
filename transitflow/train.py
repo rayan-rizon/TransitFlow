@@ -296,6 +296,7 @@ def train(
     data_wait = 0.0          # seconds spent waiting on the data pipeline since last log
     nan_count = 0
     status = "running"
+    completed_step = start_step
     model.train()
     try:
         for step in range(start_step, train_cfg.n_steps):
@@ -328,6 +329,7 @@ def train(
             out["total"].backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), train_cfg.grad_clip)
             opt.step()
+            completed_step = step + 1
 
             if step % train_cfg.log_every == 0:
                 now = time.time()
@@ -408,7 +410,9 @@ def train(
         train_iter.close()
 
     # final checkpoint
-    final_step = train_cfg.n_steps
+    final_step = completed_step
+    final_status = "done" if status == "running" and final_step >= train_cfg.n_steps \
+        else ("error" if status == "running" else status)
     if ckpt_dir:
         save_checkpoint(model, model_cfg, sim_cfg,
                         os.path.join(ckpt_dir, "latest.pt"), opt, final_step,
@@ -421,12 +425,17 @@ def train(
         _write_status(status_path, run_dir, model.head_type, str(device),
                       count_parameters(model), final_step, train_cfg.n_steps,
                       history_tail(history), best, t_start, 0.0, 0.0,
-                      "done" if status == "running" else status,
+                      final_status,
                       best_detection=best_detection)
     if writer:
         writer.close()
     if verbose and run_dir:
-        print(f"done. checkpoints + logs in {run_dir}")
+        print(f"{final_status}. checkpoints + logs in {run_dir}")
+
+    if final_status != "done":
+        raise RuntimeError(
+            f"training did not complete: status={final_status}, "
+            f"step={final_step}/{train_cfg.n_steps}")
 
     return {"model": model, "history": history, "device": device,
             "simulator": val_simulator, "best": best, "run_dir": run_dir}

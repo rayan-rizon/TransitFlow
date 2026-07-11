@@ -10,12 +10,14 @@ real validation with fixed-ephemeris MCMC, and writes one `gate_report.json`.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
 import subprocess
 import sys
 import time
+from dataclasses import asdict
 from pathlib import Path
 
 
@@ -37,7 +39,8 @@ DEFAULT_TARGETS = [
 
 def run(cmd: list[str], cwd: Path, log_path: Path) -> None:
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("w") as log:
+    with log_path.open("a") as log:
+        log.write(f"\n== attempt {time.time():.6f} ==\n")
         log.write("$ " + " ".join(cmd) + "\n")
         log.flush()
         proc = subprocess.run(cmd, cwd=cwd, text=True, stdout=log,
@@ -79,6 +82,51 @@ def validate_noise_lib(path: Path) -> dict:
         "n_unique_targets": 0 if target_ids is None else int(
             len(np.unique(target_ids.astype(str)))),
     }
+
+
+def _sha256_file(path: Path | None) -> str | None:
+    if path is None or not path.exists():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
+                              shard_size: int, seed: int,
+                              noise_lib: Path | None) -> bool:
+    """Accept a reusable disk dataset only when its provenance is exact."""
+    try:
+        from scripts._config import build_configs
+    except ImportError:  # direct ``python scripts/run_publishable_vast.py``
+        from _config import build_configs
+
+    meta_path = data_dir / "dataset_meta.json"
+    if not meta_path.exists():
+        return False
+    try:
+        meta = read_json(meta_path)
+        expected_shards = (n_total + shard_size - 1) // shard_size
+        config_json = json.dumps(
+            asdict(build_configs(config_path)["simulator"]), sort_keys=True)
+        expected_hash = hashlib.sha256(config_json.encode("utf-8")).hexdigest()
+        expected_names = {
+            f"shard_{idx:05d}.npz" for idx in range(expected_shards)}
+        actual_names = {path.name for path in data_dir.glob("shard_*.npz")}
+        return bool(
+            int(meta.get("n_total", -1)) == n_total
+            and int(meta.get("n_shards", -1)) == expected_shards
+            and int(meta.get("shard_size", -1)) == shard_size
+            and int(meta.get("seed", -1)) == seed
+            and meta.get("config_hash") == expected_hash
+            and meta.get("noise_lib_sha256") == _sha256_file(noise_lib)
+            and actual_names == expected_names
+            and all((data_dir / name).stat().st_size > 0 for name in expected_names)
+        )
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+        return False
 
 
 def prepare_noise_splits(path: Path, out_dir: Path, seed: int,
@@ -156,18 +204,36 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     ap_gain_ci = uncertainty.get("ap_gain", [float("-inf"), float("inf")])
     tls_required = bool(bls.get("tls_requested", False))
     tls = bls.get("tls")
+    tls_uncertainty = bls.get("tls_uncertainty", {}).get("ci95", {})
+    tls_auc_gain_ci = tls_uncertainty.get("auc_gain", [float("-inf"), float("inf")])
+    tls_ap_gain_ci = tls_uncertainty.get("ap_gain", [float("-inf"), float("inf")])
+    convergence = real_summary.get("gate_status", {})
+    mcmc_converged = bool(
+        convergence.get("mcmc_chain_length_ge_50_tau", False)
+        and convergence.get("mcmc_effective_samples_ge_400", False)
+    )
+    raw_speed_pass = float(speed.get("speedup_x", 0.0)) >= min_speedup
     status = {
         "synthetic_characterization_sbc_familywise_alpha_0.05":
             _gate_value(synthetic, "characterization_sbc_familywise_alpha_0.05"),
         "synthetic_characterization_coverage_error_le_0.03":
             _gate_value(synthetic, "characterization_coverage_error_le_0.03"),
-        "real_quality_gated_detection_ge_27_of_30":
-            int(real_summary.get("detection", {}).get("n_detected", 0)) >= min_real_detected,
+        "real_quality_gated_sample_n_ge_30":
+            int(real_summary.get("n_planets", 0)) >= int(
+                thresholds.get("min_real_n", 30)),
+        "real_quality_gated_detection_ge_27_of_30": bool(
+            int(real_summary.get("n_planets", 0)) >= int(
+                thresholds.get("min_real_n", 30))
+            and int(real_summary.get("detection", {}).get("n_detected", 0))
+            >= min_real_detected),
         "real_mcmc_n_ge_16": real_mcmc_n >= min_mcmc_n,
         "real_mcmc_prior_fraction_le_0.1": prior_ok,
         "real_mcmc_width_fraction_le_0.5": width_ok,
-        "speedup_ge_1000x": float(speed.get("speedup_x", 0.0)) >= min_speedup,
-        "bls_baseline_regenerated": bool(bls.get("transitflow") and bls.get("bls")),
+        "speedup_ge_1000x_at_converged_mcmc_reference":
+            raw_speed_pass and mcmc_converged,
+        "bls_baseline_regenerated": bool(
+            bls.get("transitflow") and bls.get("bls")
+            and int(bls.get("bls", {}).get("n_failed", 0)) == 0),
         "detection_candidate_ephemeris_from_bls":
             bls.get("candidate_source") == "bls",
         "fair_candidate_evaluation_n_ge_5000":
@@ -178,8 +244,15 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
             bool(ap_gain_ci and float(ap_gain_ci[0]) > 0.0),
         "tls_equal_sample_baseline_completed":
             (not tls_required) or bool(
-                tls and int(tls.get("n", 0)) == int(bls.get("n", 0))),
+                tls and int(tls.get("n", 0)) == int(bls.get("n", 0))
+                and tls.get("paired_with_transitflow", False)
+                and int(tls.get("n_failed", -1)) == 0),
     }
+    if tls_required:
+        status["fair_candidate_auc_gain_vs_tls_ci95_lower_gt_0"] = bool(
+            tls_auc_gain_ci and float(tls_auc_gain_ci[0]) > 0.0)
+        status["fair_candidate_ap_gain_vs_tls_ci95_lower_gt_0"] = bool(
+            tls_ap_gain_ci and float(tls_ap_gain_ci[0]) > 0.0)
     if "importance_correction_min_ess_fraction_ge_0.05" in real_summary.get("gate_status", {}):
         status["importance_correction_min_ess_fraction_ge_0.05"] = bool(
             real_summary["gate_status"]["importance_correction_min_ess_fraction_ge_0.05"])
@@ -194,6 +267,7 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     diagnostic_status = {
         "oracle_candidate_detection_auc_ge_0.99":
             _gate_value(synthetic, "detection_auc_ge_0.99"),
+        "raw_speedup_ge_1000x": raw_speed_pass,
     }
     return {
         "synthetic": {
@@ -238,7 +312,11 @@ def write_environment(path: Path, repo: Path, amp: bool = False) -> None:
         }
     except Exception as exc:
         env["torch_error"] = str(exc)
-    path.write_text(json.dumps(env, indent=2))
+    if not path.exists():
+        path.write_text(json.dumps(env, indent=2))
+    attempts = path.with_name("environment_attempts.jsonl")
+    with attempts.open("a") as fh:
+        fh.write(json.dumps(env, sort_keys=True) + "\n")
 
 
 def main() -> None:
@@ -409,7 +487,14 @@ def main() -> None:
             args.noise_eval_fraction)
         (out_dir / "noise_split.json").write_text(json.dumps(split_meta, indent=2))
 
-    if not list(data_dir.glob("shard_*.npz")):
+    if not validate_existing_dataset(
+            data_dir, args.config, n_data, args.shard_size,
+            args.train_seed, train_noise_lib):
+        stale_shards = list(data_dir.glob("shard_*.npz"))
+        if stale_shards:
+            raise SystemExit(
+                f"existing dataset failed provenance validation: {data_dir}; "
+                "remove or relocate it before regenerating")
         generate_cmd = [args.python, "scripts/generate_data.py", "--config", args.config,
                         "--n", str(n_data), "--workers", str(args.workers),
                         "--shard-size", str(args.shard_size), "--out", str(data_dir),
@@ -417,15 +502,39 @@ def main() -> None:
         if train_noise_lib is not None:
             generate_cmd.extend(["--noise-lib", str(train_noise_lib)])
         run(generate_cmd, repo, logs / "generate_data.log")
+        if not validate_existing_dataset(
+                data_dir, args.config, n_data, args.shard_size,
+                args.train_seed, train_noise_lib):
+            raise SystemExit(f"generated dataset failed validation: {data_dir}")
 
     run([args.python, "scripts/preflight.py", "--config", args.config,
          "--expect", "cuda", "--data-dir", str(data_dir)],
         repo, logs / "preflight.log")
-    run([args.python, "scripts/train.py", "--config", args.config,
-         "--run-dir", str(run_dir), "--data-dir", str(data_dir),
-         "--expect-device", "cuda", "--no-preflight",
-         "--seed", str(args.train_seed), *train_steps],
-        repo, logs / "train.log")
+    try:
+        from scripts._config import build_configs
+    except ImportError:  # direct ``python scripts/run_publishable_vast.py``
+        from _config import build_configs
+    expected_steps = int(steps or build_configs(args.config)["train"].n_steps)
+    prior_status_path = run_dir / "status.json"
+    prior_status = read_json(prior_status_path) if prior_status_path.exists() else {}
+    training_already_complete = bool(
+        (run_dir / "checkpoints" / "latest.pt").exists()
+        and prior_status.get("status") == "done"
+        and int(prior_status.get("step", -1)) == expected_steps
+        and int(prior_status.get("total_steps", -2)) == expected_steps)
+    if not training_already_complete:
+        run([args.python, "scripts/train.py", "--config", args.config,
+             "--run-dir", str(run_dir), "--data-dir", str(data_dir),
+             "--expect-device", "cuda", "--no-preflight",
+             "--seed", str(args.train_seed), *train_steps],
+            repo, logs / "train.log")
+
+    train_status = read_json(run_dir / "status.json")
+    if (train_status.get("status") != "done"
+            or int(train_status.get("step", -1)) != expected_steps
+            or int(train_status.get("total_steps", -2)) != expected_steps):
+        raise SystemExit(
+            f"training did not reach a healthy terminal state: {train_status}")
 
     ckpt = run_dir / "checkpoints" / "latest.pt"
     eval_dir = results / "synthetic"

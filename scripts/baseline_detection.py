@@ -30,13 +30,16 @@ from transitflow.views import (
 )
 
 
-def _tls_score_worker(payload: tuple[np.ndarray, np.ndarray, np.ndarray, int]) -> float:
+def _tls_score_worker(
+    payload: tuple[np.ndarray, np.ndarray, np.ndarray, int],
+) -> tuple[float, str | None]:
     """Top-level worker so TLS searches can be parallelized safely on Linux."""
     times, flux, periods, use_threads = payload
     try:
-        return float(tls_detect(times, flux, periods, use_threads=use_threads)["score"])
-    except Exception:
-        return 0.0
+        score = float(tls_detect(times, flux, periods, use_threads=use_threads)["score"])
+        return score, None
+    except Exception as exc:
+        return 0.0, f"{type(exc).__name__}: {exc}"
 
 
 def bootstrap_detection_metrics(labels: np.ndarray, bls_scores: np.ndarray,
@@ -72,6 +75,27 @@ def bootstrap_detection_metrics(labels: np.ndarray, bls_scores: np.ndarray,
             for key, vals in draws.items()
         },
     }
+
+
+def bootstrap_tls_detection_metrics(labels: np.ndarray, tls_scores: np.ndarray,
+                                    tf_scores: np.ndarray, n_boot: int,
+                                    seed: int) -> dict:
+    """Paired bootstrap intervals for TLS and TransitFlow on identical curves."""
+    result = bootstrap_detection_metrics(
+        labels, tls_scores, tf_scores, n_boot=n_boot, seed=seed)
+    if not result:
+        return {}
+    ci = result["ci95"]
+    result["ci95"] = {
+        "tls_auc": ci["bls_auc"],
+        "tf_auc": ci["tf_auc"],
+        "auc_gain": ci["auc_gain"],
+        "tls_ap": ci["bls_ap"],
+        "tf_ap": ci["tf_ap"],
+        "ap_gain": ci["ap_gain"],
+    }
+    result["comparison"] = "TransitFlow minus TLS"
+    return result
 
 
 def main() -> None:
@@ -133,6 +157,10 @@ def main() -> None:
     tls_threads = max(1, int(args.tls_threads))
 
     labels, bls_scores, tls_labels, tls_scores, tf_scores = [], [], [], [], []
+    bls_failures: list[str] = []
+    bls_success: list[bool] = []
+    tls_failures: list[str] = []
+    tls_success: list[bool] = []
     tls_jobs: list[tuple[np.ndarray, np.ndarray, np.ndarray, int]] = []
     candidate_periods, true_periods = [], []
     t0 = time.time()
@@ -169,8 +197,11 @@ def main() -> None:
                     durations=bls_durations,
                 )
                 bls_scores.append(float(res["score"]))
-            except Exception:
+                bls_success.append(True)
+            except Exception as exc:
                 bls_scores.append(0.0)
+                bls_success.append(False)
+                bls_failures.append(f"{type(exc).__name__}: {exc}")
             if args.candidate_source == "bls":
                 if res is None:
                     # Candidate generation is part of the evaluated pipeline;
@@ -242,8 +273,12 @@ def main() -> None:
               f"{tls_threads} thread(s) ==")
         ctx = mp.get_context("fork" if os.name != "nt" else "spawn")
         with ctx.Pool(tls_workers) as pool:
-            for done, score in enumerate(pool.imap(_tls_score_worker, tls_jobs), start=1):
+            for done, (score, error) in enumerate(
+                    pool.imap(_tls_score_worker, tls_jobs), start=1):
                 tls_scores.append(score)
+                tls_success.append(error is None)
+                if error is not None:
+                    tls_failures.append(error)
                 if done % max(1, min(100, len(tls_jobs) // 10)) == 0 or done == len(tls_jobs):
                     print(f"  TLS {done}/{len(tls_jobs)}")
     tls_labels_arr = np.array(tls_labels, dtype=int) if tls_labels else None
@@ -258,6 +293,10 @@ def main() -> None:
         if tls_labels_arr is not None and tls_scores_arr is not None
         else None
     )
+    if tls_labels_arr is not None:
+        paired_labels = labels[:len(tls_labels_arr)]
+        if not np.array_equal(tls_labels_arr, paired_labels):
+            raise RuntimeError("TLS and TransitFlow labels are not paired")
 
     report = {
         "seed": int(args.seed),
@@ -271,6 +310,8 @@ def main() -> None:
         "n_planets": int(labels.sum()),
         "n_negatives": int((labels == 0).sum()),
         "bls": {
+            "n_failed": int(len(bls_failures)),
+            "failure_examples": bls_failures[:10],
             "roc_auc": bls_m["roc_auc"],
             "average_precision": bls_m["average_precision"],
             "brier_score": bls_m["brier_score"],
@@ -279,6 +320,10 @@ def main() -> None:
         },
         "tls": None if tls_m is None else {
             "n": int(len(tls_labels_arr)),
+            "paired_with_transitflow": True,
+            "n_failed": int(len(tls_failures)),
+            "failure_rate": float(len(tls_failures) / max(len(tls_labels_arr), 1)),
+            "failure_examples": tls_failures[:10],
             "roc_auc": tls_m["roc_auc"],
             "average_precision": tls_m["average_precision"],
             "brier_score": tls_m["brier_score"],
@@ -302,6 +347,14 @@ def main() -> None:
         "uncertainty": bootstrap_detection_metrics(
             labels, bls_scores, tf_scores, args.bootstrap, args.seed + 10000),
     }
+    if tls_m is not None:
+        report["tls_uncertainty"] = bootstrap_tls_detection_metrics(
+            tls_labels_arr,
+            tls_scores_arr,
+            tf_scores[:len(tls_labels_arr)],
+            args.bootstrap,
+            args.seed + 20000,
+        )
     planet_mask = labels == 1
     valid_period = planet_mask & np.isfinite(candidate_periods_arr) & \
         np.isfinite(true_periods_arr)
@@ -324,6 +377,8 @@ def main() -> None:
         true_periods=true_periods_arr,
         tls_labels=np.asarray([]) if tls_labels_arr is None else tls_labels_arr,
         tls_scores=np.asarray([]) if tls_scores_arr is None else tls_scores_arr,
+        bls_success=np.asarray(bls_success, dtype=bool),
+        tls_success=np.asarray(tls_success, dtype=bool),
     )
     report["score_data"] = str(score_path)
     with open(args.out, "w") as fh:

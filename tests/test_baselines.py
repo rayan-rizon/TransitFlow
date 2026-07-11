@@ -4,6 +4,7 @@ import pytest
 from transitflow.baselines.bls import bls_detect
 from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
+from scripts.baseline_detection import bootstrap_tls_detection_metrics
 from transitflow.baselines.mcmc import has_emcee, run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
 from transitflow.transit_model import transit_flux
@@ -47,6 +48,19 @@ def test_tls_passes_explicit_thread_budget(monkeypatch):
     result = tls_module.tls_detect(np.arange(20.0), np.ones(20),
                                    np.array([1.0, 2.0]), use_threads=3)
     assert result["score"] == 4.2
+
+
+def test_tls_bootstrap_reports_transitflow_minus_tls():
+    labels = np.array([0, 0, 0, 1, 1, 1])
+    tls_scores = np.array([0.1, 0.2, 0.3, 0.7, 0.8, 0.9])
+    tf_scores = np.array([0.05, 0.1, 0.2, 0.8, 0.9, 0.95])
+
+    result = bootstrap_tls_detection_metrics(
+        labels, tls_scores, tf_scores, n_boot=20, seed=7)
+
+    assert result["comparison"] == "TransitFlow minus TLS"
+    assert set(result["ci95"]) == {
+        "tls_auc", "tf_auc", "auc_gain", "tls_ap", "tf_ap", "ap_gain"}
 
 
 def test_mcmc_all_fixed_returns_fixed_samples():

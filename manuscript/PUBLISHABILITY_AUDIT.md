@@ -1,6 +1,6 @@
 # TransitFlow MNRAS publishability audit
 
-Date: 2026-07-10
+Date: 2026-07-11
 Target venue: *Monthly Notices of the Royal Astronomical Society* (MNRAS), Paper
 Verdict: **not yet submission-ready; major scientific validation remains**
 
@@ -21,7 +21,51 @@ numbers as non-publication diagnostics. Rewriting the manuscript cannot cure
 those problems. The code changes in this pass make the next experiment honest
 and reproducible; a new, frozen validation run is still required.
 
-## What the current data do support
+## Completed full-run decision (seed 0)
+
+The first frozen full-scale run completed every operational stage: 1,000,000
+simulations, 60,000 training steps, 1,000 SBC cases, a 5,000-object equal-sample
+BLS/TLS/TransitFlow benchmark, 30 real confirmed planets, 16 fixed-ephemeris
+MCMC comparisons, importance diagnostics, and timing. The train/evaluation noise
+split contains 11 versus 3 target stars with no target overlap. This is a valid
+completed experiment, not an interrupted run. Its scientific gate result is
+`final_pass=false`.
+
+| Publication test | Seed-0 result | Decision |
+|---|---:|---|
+| SBC minimum Bonferroni-aware p-value | 1.25e-266 | Fail |
+| Mean absolute coverage error | 0.09598 (limit 0.03) | Fail |
+| Nominal 95% synthetic coverage | 0.8096 | Undercoverage |
+| TransitFlow versus BLS ROC-AUC gain | +0.03585, CI [0.01661, 0.05706] | Pass |
+| TransitFlow versus BLS AP gain | +0.01653, CI [-0.00496, 0.04163] | Fail |
+| TransitFlow versus TLS ROC-AUC gain | +0.03385, CI about [0.012, 0.055] | Positive |
+| TransitFlow versus TLS AP gain | -0.03691, CI about [-0.060, -0.014] | Worse than TLS |
+| Candidate-score ECE | 0.3117 | Poor calibration |
+| Selected real-positive sensitivity | 28/30 | Pass; positive-only |
+| Minimum MCMC chain length | 8.97 autocorrelation times (limit 50) | Fail |
+| Minimum MCMC effective samples | 143.6 (limit 400) | Fail |
+| Importance correction | 0/16 valid; median ESS fraction 0.00102 | Fail |
+| Raw timing ratio | 13,003.7x | Diagnostic only; MCMC unconverged |
+
+The posterior is severely overconfident across multiple parameters and strata.
+On real data, `a/Rs` archive coverage is 0.133 at nominal 68% and 0.400 at
+nominal 95%; raw MCMC agreement also misses the `a/Rs` width and `b` prior-range
+margins. The 28/30 real result measures sensitivity on selected known positives
+and cannot establish real precision, specificity, or false-positive rate.
+
+The only publication-quality detection result presently supported is a modest
+paired ROC-AUC improvement over BLS on this simulator benchmark. Average
+precision does not significantly improve over BLS and is significantly below
+TLS. The 13,003.7x timing ratio is retained as raw engineering evidence, not an
+accuracy- or convergence-matched scientific speed claim.
+
+These results must not be repaired by relaxing thresholds, selecting a favorable
+seed, or calibrating on this test set. Seeds 1 and 2 should complete to quantify
+training instability; they cannot erase the seed-0 failure. Model/calibration
+choices must be made on separate validation data, followed by a newly frozen,
+untouched multi-seed test.
+
+## Historical pre-full-run evidence (superseded)
 
 - A working, candidate-conditioned FMPE/SBI implementation for a five-dimensional
   transit-shape posterior over `RpRs`, `aRs`, `b`, `q1`, and `q2`.
@@ -86,6 +130,17 @@ and reproducible; a new, frozen validation run is still required.
     paired-interval gate; added equal-sample TLS, probability-calibration
     diagnostics, deterministic target-level noise splits, and explicit
     multi-seed training support.
+11. Added paired TransitFlow-minus-TLS confidence intervals and explicit AUC/AP
+    gates on the identical light curves.
+12. Made the publishable speed gate conditional on a converged MCMC reference;
+    the raw timing ratio remains a labelled diagnostic.
+13. Recorded BLS/TLS search failures and success masks instead of silently
+    making zero-score fallbacks indistinguishable from successful searches.
+14. Required the complete 30-object real sample and complete tau/ESS diagnostics
+    for every MCMC comparison.
+15. Added exact dataset-provenance validation, blocked evaluation after
+    interrupted/non-finite training, preserved attempt logs, and stopped
+    zero-work resumes from overwriting completed-training provenance.
 
 ## Mandatory experiments before MNRAS submission
 
@@ -94,11 +149,12 @@ These are blocking, in order.
 1. **Freeze and archive the executed source.** Commit the current fixes; record
    the patch hash, full command, environment lock, CUDA/cuDNN versions, data and
    checkpoint SHA-256 values, and exact MAST product identifiers.
-2. **Rebuild leakage-safe noise libraries.** Split by target star and sector
-   before injection; never reuse a group between train, validation, and test.
-   The current `.npz` lacks source identities and cannot be retrospectively
-   split.
-3. **Retrain 3--5 independent seeds.** Report seed-level gates, mean, standard
+2. **Complete noise-product provenance.** The new library is split by target
+   star with no train/evaluation overlap. Preserve exact target, sector, cadence,
+   author, and MAST product identifiers so the source curves are independently
+   reconstructable; add sector-level separation where multiple sectors exist.
+3. **Retrain 3--5 independent seeds.** Seed 0 is a recorded failure. Report every
+   seed-level gate, mean, standard
    deviation, and threshold-flip frequency. Do not select a seed after seeing
    the test set.
 4. **Run the final fair detection benchmark.** Use BLS-derived candidates for
@@ -137,7 +193,7 @@ These are blocking, in order.
 | Figures/tables with units, borders, captions, and accessible descriptions | Draft figures generated |
 | Data availability statement | Present, but repository DOI/immutable release missing |
 | AI-use disclosure in manuscript and cover letter | Present |
-| Reproducible code/data supporting every conclusion | Fail; retained 115-segment library is anonymous and cannot be group-split |
+| Reproducible code/data supporting every conclusion | Partial; 116 segments have target IDs and a disjoint target split, but exact sector/product provenance is incomplete |
 | Scientific conclusions supported by frozen validation | Fail; blocking rerun required |
 | Complete author/affiliation/funding metadata | User input required |
 
