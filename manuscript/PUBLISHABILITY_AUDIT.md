@@ -93,17 +93,20 @@ This validates the implementation path only. MNRAS readiness still requires a
 fresh target-held-out strong gate and then the frozen multi-seed full suite.
 
 The first 100k/10k-step target-held-out strong gate on 2026-07-12 was stopped
-before TLS and real-data validation because characterization failed: `RpRs` and
-`aRs` SBC p-values were approximately 1.7e-166 and 2.3e-16, and coverage error
-was 0.0548 (gate <=0.03). A matched raw-posterior diagnostic failed all five SBC
-dimensions. Audit of the input library then found segment-weighted sampling:
-two source stars supplied 75/116 cached segments, so stars were not the unit of
-independence. A second diagnostic using target-uniform sampling and the
-validation-posterior-loss checkpoint reduced held-out coverage error to 0.0068,
-but still rejected SBC uniformity. Therefore the full run remains blocked; the
-next strong gate must use fresh target-uniform training data and the predeclared
-`best.pt` posterior checkpoint. None of these diagnostics may be promoted to a
-publication claim.
+because characterization failed: `RpRs` and `aRs` SBC p-values were about
+1.7e-166 and 2.3e-16, and coverage error was 0.0548 (gate <=0.03). Audit found
+segment-weighted noise sampling: two stars supplied 75/116 cached segments.
+
+The corrected v2 gate (`b1f4149`) used fresh target-uniform training data and
+the validation-posterior-loss checkpoint. Coverage passed at 0.0115, and on
+2000 paired BLS candidates TransitFlow achieved AUC/AP 0.914/0.929 versus
+BLS 0.615/0.597 and TLS 0.656/0.652; all paired gain interval lower bounds were
+positive. Characterization still rejected SBC uniformity: `RpRs` 2.1e-19,
+`aRs` 1.2e-19, `b` 2.4e-8, `q1` 6.1e-4, and `q2` 0.0376. Rank histograms show
+directional bias, not only interval-width error. The fast real-data/MCMC sizes
+(12 planets, 4 chains, <=2000 steps) are diagnostic and intentionally cannot
+pass the full sample/convergence gates. Therefore the full run remains blocked,
+and none of these diagnostics may be promoted to a publication claim.
 
 ## Historical pre-full-run evidence (superseded)
 
