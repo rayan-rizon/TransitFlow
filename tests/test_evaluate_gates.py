@@ -1,3 +1,5 @@
+import json
+
 from scripts.evaluate import sbc_gate
 from types import SimpleNamespace
 
@@ -377,3 +379,10 @@ def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
     (data_dir / "shard_00001.npz").write_bytes(b"complete")
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, None) is True
+
+    meta_path = data_dir / "dataset_meta.json"
+    metadata = json.loads(meta_path.read_text())
+    metadata["noise_sampling_unit"] = "segment_uniform_legacy"
+    meta_path.write_text(json.dumps(metadata))
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, None) is False

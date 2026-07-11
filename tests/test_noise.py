@@ -57,6 +57,25 @@ def test_noise_library_roundtrip():
     assert not empty.available()
 
 
+def test_noise_library_draws_source_targets_uniformly(tmp_path):
+    # Target A has ten cached sectors and B only one. They must still have equal
+    # probability because the source star, not the sector, is independent.
+    segments = np.concatenate([
+        np.ones((10, 16)),
+        np.full((1, 16), 2.0),
+    ])
+    target_ids = np.array(["A"] * 10 + ["B"])
+    path = tmp_path / "noise.npz"
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    lib = NoiseLibrary.load(path)
+    drawn = lib.draw(6000, 16, np.random.default_rng(7))
+    fraction_b = np.mean(drawn[:, 0] == 2.0)
+
+    assert lib.target_ids is not None
+    assert 0.47 < fraction_b < 0.53
+
+
 def test_estimate_white_sigma_ignores_slow_trend():
     rng = np.random.default_rng(3)
     sigma = 0.002

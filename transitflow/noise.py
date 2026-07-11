@@ -19,7 +19,7 @@ rather than "any dip".
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -164,9 +164,31 @@ class NoiseLibrary:
     """
 
     segments: np.ndarray | None = None  # (K, n) or None
+    target_ids: np.ndarray | None = None
+    _target_groups: tuple[np.ndarray, ...] = field(
+        init=False, repr=False, default=())
+
+    def __post_init__(self) -> None:
+        if self.segments is not None:
+            self.segments = np.asarray(self.segments, dtype=np.float64)
+        if self.target_ids is None:
+            return
+        ids = np.asarray(self.target_ids).astype(str)
+        if self.segments is None or len(ids) != len(self.segments):
+            raise ValueError("noise target_ids must match the segment count")
+        self.target_ids = ids
+        self._target_groups = tuple(
+            np.flatnonzero(ids == target) for target in np.unique(ids))
 
     def available(self) -> bool:
         return self.segments is not None and len(self.segments) > 0
+
+    @property
+    def sampling_unit(self) -> str:
+        if not self.available():
+            return "synthetic_only"
+        return "source_target_uniform_then_segment_v1" \
+            if self._target_groups else "segment_uniform_legacy"
 
     @classmethod
     def load(cls, path: str | None) -> "NoiseLibrary":
@@ -175,7 +197,9 @@ class NoiseLibrary:
         try:
             arr = np.load(path)
             seg = arr["segments"] if hasattr(arr, "files") else arr
-            return cls(np.asarray(seg, dtype=np.float64))
+            ids = arr["target_ids"] if hasattr(arr, "files") \
+                and "target_ids" in arr.files else None
+            return cls(np.asarray(seg, dtype=np.float64), ids)
         except Exception:
             return cls(None)
 
@@ -184,7 +208,19 @@ class NoiseLibrary:
         if not self.available():
             raise RuntimeError("NoiseLibrary is empty")
         K, L = self.segments.shape
-        idx = rng.integers(0, K, size=B)
+        if self._target_groups:
+            # Scientific unit of independence is the source star, not the
+            # number of cached sectors. Draw stars uniformly, then a segment
+            # within each star, so long-observed targets cannot dominate.
+            group_idx = rng.integers(0, len(self._target_groups), size=B)
+            idx = np.fromiter(
+                (group[rng.integers(0, len(group))]
+                 for group in (self._target_groups[g] for g in group_idx)),
+                dtype=np.int64,
+                count=B,
+            )
+        else:
+            idx = rng.integers(0, K, size=B)
         out = np.empty((B, n), dtype=np.float64)
         for i, k in enumerate(idx):
             if L >= n:

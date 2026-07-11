@@ -82,6 +82,8 @@ def validate_noise_lib(path: Path) -> dict:
         "has_target_ids": target_ids is not None,
         "n_unique_targets": 0 if target_ids is None else int(
             len(np.unique(target_ids.astype(str)))),
+        "sampling_unit": "source_target_uniform_then_segment_v1"
+        if target_ids is not None else "segment_uniform_legacy",
     }
 
 
@@ -116,6 +118,13 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
         expected_names = {
             f"shard_{idx:05d}.npz" for idx in range(expected_shards)}
         actual_names = {path.name for path in data_dir.glob("shard_*.npz")}
+        expected_sampling_unit = "synthetic_only"
+        if noise_lib is not None:
+            noise_description = describe_noise_library(noise_lib)
+            expected_sampling_unit = (
+                "source_target_uniform_then_segment_v1"
+                if noise_description.get("has_target_ids")
+                else "segment_uniform_legacy")
         return bool(
             int(meta.get("n_total", -1)) == n_total
             and int(meta.get("n_shards", -1)) == expected_shards
@@ -123,6 +132,7 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
             and int(meta.get("seed", -1)) == seed
             and meta.get("config_hash") == expected_hash
             and meta.get("noise_lib_sha256") == _sha256_file(noise_lib)
+            and meta.get("noise_sampling_unit") == expected_sampling_unit
             and actual_names == expected_names
             and all((data_dir / name).stat().st_size > 0 for name in expected_names)
         )
@@ -242,6 +252,7 @@ def prepare_noise_three_way_split(
         },
         "overlaps": overlaps,
         "all_disjoint": not any(overlaps.values()),
+        "sampling_unit": "source_target_uniform_then_segment_v1",
     }
     return train_path, cal_path, eval_path, meta
 
@@ -626,13 +637,24 @@ def main() -> None:
         raise SystemExit(
             f"training did not reach a healthy terminal state: {train_status}")
 
-    ckpt = run_dir / "checkpoints" / "latest.pt"
+    latest_ckpt = run_dir / "checkpoints" / "latest.pt"
+    best_posterior_ckpt = run_dir / "checkpoints" / "best.pt"
+    if best_posterior_ckpt.exists():
+        ckpt = best_posterior_ckpt
+        posterior_checkpoint_selection = "minimum_validation_posterior_loss"
+    elif args.smoke:
+        ckpt = latest_ckpt
+        posterior_checkpoint_selection = "latest_smoke_without_validation"
+    else:
+        raise SystemExit(
+            "missing best.pt: publication evaluation requires a checkpoint "
+            "selected by held-out posterior validation loss")
     detector_ckpt = run_dir / "checkpoints" / "best_detection.pt"
     if not detector_ckpt.exists():
-        detector_ckpt = ckpt
+        detector_ckpt = latest_ckpt
     calibration_path = out_dir / "posterior_calibration.json"
     if calibration_noise_lib is not None:
-        calibration_n = 100 if args.smoke else (300 if args.fast_check else 1000)
+        calibration_n = 100 if args.smoke else (600 if args.fast_check else 1000)
         calibration_post = min(n_posterior, 512) if args.smoke else n_posterior
         calibration_cmd = [
             args.python, "scripts/calibrate_posterior.py", "--ckpt", str(ckpt),
@@ -724,6 +746,8 @@ def main() -> None:
         "run_name": run_name,
         "config": args.config,
         "checkpoint": str(ckpt),
+        "posterior_checkpoint_selection": posterior_checkpoint_selection,
+        "latest_checkpoint": str(latest_ckpt),
         "detector_checkpoint": str(detector_ckpt),
         "data_dir": str(data_dir),
         "noise_lib": None if noise_lib is None else str(noise_lib),

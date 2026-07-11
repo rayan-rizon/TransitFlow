@@ -92,6 +92,19 @@ The corrected structural smoke passed: candidate-augmented ROC-AUC/AP were
 This validates the implementation path only. MNRAS readiness still requires a
 fresh target-held-out strong gate and then the frozen multi-seed full suite.
 
+The first 100k/10k-step target-held-out strong gate on 2026-07-12 was stopped
+before TLS and real-data validation because characterization failed: `RpRs` and
+`aRs` SBC p-values were approximately 1.7e-166 and 2.3e-16, and coverage error
+was 0.0548 (gate <=0.03). A matched raw-posterior diagnostic failed all five SBC
+dimensions. Audit of the input library then found segment-weighted sampling:
+two source stars supplied 75/116 cached segments, so stars were not the unit of
+independence. A second diagnostic using target-uniform sampling and the
+validation-posterior-loss checkpoint reduced held-out coverage error to 0.0068,
+but still rejected SBC uniformity. Therefore the full run remains blocked; the
+next strong gate must use fresh target-uniform training data and the predeclared
+`best.pt` posterior checkpoint. None of these diagnostics may be promoted to a
+publication claim.
+
 ## Historical pre-full-run evidence (superseded)
 
 - A working, candidate-conditioned FMPE/SBI implementation for a five-dimensional

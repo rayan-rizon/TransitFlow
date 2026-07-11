@@ -251,9 +251,10 @@ validation AUC, and a `health` block — poll it from anywhere. Checkpoints land
 detection AUC), and rotating `step_*.pt`. Each is written atomically, so a killed
 instance never leaves a corrupt file.
 
-For posterior claims, use `latest.pt` unless a calibration sweep is declared
-before testing. `best.pt` is a loss checkpoint, not automatically a calibrated
-posterior checkpoint.
+For posterior claims, use `best.pt`, selected only by held-out validation
+posterior loss, and fit any declared calibration artifact to that exact
+checkpoint. Use `latest.pt` only to resume training. Detector-only claims use
+`best_detection.pt`, selected independently by validation average precision.
 
 **Resume** after a preemption (auto-detects `latest.pt`):
 
@@ -262,13 +263,12 @@ python3 scripts/train.py --config configs/publishable.yaml --run-dir runs/fmpe -
 ```
 
 **Retrieve & evaluate**. For the ephemeris-conditioned 5-D characterization model,
-use `latest.pt` as the primary posterior checkpoint unless a calibration sweep
-predeclares another checkpoint. Use `best_detection.pt` only for detector-only
-diagnostics.
+use `best.pt` as the predeclared posterior checkpoint. Use
+`best_detection.pt` only for detector-only diagnostics.
 
 ```bash
 scp -r root@<host>:<port>:TransitFlow/runs/fmpe/checkpoints ./        # pull weights
-python3 scripts/evaluate.py --ckpt runs/fmpe/checkpoints/latest.pt --plots --out results/fmpe
+python3 scripts/evaluate.py --ckpt runs/fmpe/checkpoints/best.pt --plots --out results/fmpe
 ```
 
 > Throughput: with `--num-workers N` the simulator runs in `N` processes feeding a

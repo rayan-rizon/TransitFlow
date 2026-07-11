@@ -11,7 +11,7 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
 
-run_name="${RUN_NAME:-calibrated_candidate_strong_fast_20260712}"
+run_name="${RUN_NAME:-calibrated_candidate_strong_fast_v2_20260712}"
 
 exec python -u scripts/run_publishable_vast.py \
   --fast-check \

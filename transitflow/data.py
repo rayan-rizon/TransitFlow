@@ -152,6 +152,7 @@ def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
                             noise_lib_path: str | None) -> None:
     cfg = asdict(sim_cfg)
     cfg_json = json.dumps(cfg, sort_keys=True)
+    noise_sampling_unit = NoiseLibrary.load(noise_lib_path).sampling_unit
     metadata = {
         "created_unix": time.time(),
         "git_sha": _git_sha(),
@@ -165,6 +166,7 @@ def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
         "eval_seed": int(seed + 99991),
         "noise_lib_path": noise_lib_path,
         "noise_lib_sha256": _sha256_file(noise_lib_path),
+        "noise_sampling_unit": noise_sampling_unit,
         "realism_flags": {
             "finite_exposure": bool(
                 cfg.get("exposure_minutes", 0.0) > 0

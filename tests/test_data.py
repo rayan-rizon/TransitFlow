@@ -47,6 +47,7 @@ def test_generate_and_load_disk_dataset(tmp_path):
     assert meta["n_total"] == 600
     assert meta["n_shards"] == 3
     assert "config_hash" in meta
+    assert meta["noise_sampling_unit"] == "synthetic_only"
     assert meta["realism_flags"]["finite_exposure"] is False
 
 

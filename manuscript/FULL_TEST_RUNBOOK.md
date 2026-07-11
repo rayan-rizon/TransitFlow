@@ -14,7 +14,12 @@ reason to tune against the test partition.
 4. Confirm `noise_split.json` reports disjoint, nonempty training, calibration,
    and final-evaluation target groups. Posterior calibration is fitted only on
    the calibration group.
-5. Use the same frozen evaluation and real-data seeds for every training seed.
+5. Confirm `sampling_unit` is `source_target_uniform_then_segment_v1`; cached
+   sector counts must not weight source stars unequally.
+6. Use `best.pt` selected by validation posterior loss for characterization and
+   `best_detection.pt` selected by validation AP for detection. `latest.pt` is
+   resume-only.
+7. Use the same frozen evaluation and real-data seeds for every training seed.
 
 ## Commands
 
@@ -75,6 +80,9 @@ The top-level `gate_report.json` must retain every pass and failure. Publication
 claims remain blocked if any of these occur:
 
 - target overlap among training, calibration, and evaluation noise libraries;
+- segment-weighted rather than source-target-uniform real-noise sampling;
+- characterization from a final/resume checkpoint instead of the predeclared
+  validation-posterior-loss checkpoint;
 - non-BLS candidate ephemerides in the primary detection benchmark;
 - a non-positive lower 95% paired-bootstrap bound for either AUC or AP gain;
 - fewer than 5000 identical BLS/TLS/TransitFlow examples;
