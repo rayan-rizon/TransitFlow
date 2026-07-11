@@ -9,13 +9,34 @@ reason to tune against the test partition.
 
 1. Use a clean, committed checkout and record `git rev-parse HEAD`.
 2. Install `requirements.txt`; verify CUDA in `scripts/preflight.py`.
-3. Rebuild `data/noise_lib.npz` with `--build-noise-lib`. The retained legacy
-   file has 115 anonymous segments and is intentionally rejected by a full run.
-4. Confirm `noise_split.json` has no target overlap. The runner reserves whole
-   source targets, a stricter rule than splitting sectors from the same target.
+3. Rebuild `data/noise_lib.npz` with `--build-noise-lib`, retaining target and
+   exact product provenance.
+4. Confirm `noise_split.json` reports disjoint, nonempty training, calibration,
+   and final-evaluation target groups. Posterior calibration is fitted only on
+   the calibration group.
 5. Use the same frozen evaluation and real-data seeds for every training seed.
 
 ## Commands
+
+First run a fresh strong gate. It is a decision run, not publication evidence:
+
+```bash
+python3 scripts/run_publishable_vast.py \
+  --fast-check \
+  --run-name calibrated_candidate_strong_fast \
+  --config configs/publishable.yaml \
+  --noise-lib data/noise_lib.npz \
+  --n-data 100000 \
+  --steps 10000 \
+  --n-sbc 500 \
+  --n-detection 2000 \
+  --n-posterior 1000 \
+  --with-tls-baseline
+```
+
+Do not start the full commands unless the fresh characterization SBC/coverage
+gates pass and the paired AP comparison no longer shows a significant TLS
+disadvantage.
 
 Build the source-labelled noise library in the first run, then reuse that exact
 file for seeds 1 and 2 by omitting `--build-noise-lib`.
@@ -36,6 +57,7 @@ for seed in 0 1 2; do
     --n-real-planets 30 \
     --with-mcmc 16 \
     --mcmc-steps 15000 \
+    --mcmc-max-steps 60000 \
     --mcmc-walkers 32 \
     --is-correct-mcmc \
     --is-samples 3000 \
@@ -52,13 +74,13 @@ rebuild or alter the noise source archive between seeds.
 The top-level `gate_report.json` must retain every pass and failure. Publication
 claims remain blocked if any of these occur:
 
-- target overlap between training and evaluation noise libraries;
+- target overlap among training, calibration, and evaluation noise libraries;
 - non-BLS candidate ephemerides in the primary detection benchmark;
 - a non-positive lower 95% paired-bootstrap bound for either AUC or AP gain;
 - fewer than 5000 identical BLS/TLS/TransitFlow examples;
 - characterization SBC or expected-coverage gate failure;
-- any real reference chain shorter than 50 autocorrelation times or below 400
-  effective samples;
+- any real reference chain below 50 production autocorrelation times, split-Rhat
+  above 1.01, or bulk/tail ESS below 400;
 - importance-correction ESS fraction below 0.05 when correction is reported;
 - a failed real-posterior agreement or speed gate;
 - materially inconsistent conclusions across the three training seeds.

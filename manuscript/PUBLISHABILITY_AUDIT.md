@@ -72,6 +72,26 @@ The validation-loss-selected `best.pt` is worse at 0.1224 with the same rejectio
 pattern (100 cases). The failure is therefore not cured by FP32 inference or
 checkpoint selection; it requires model/training calibration work.
 
+## Remediation implemented after seed 0
+
+The failed seed-0 evaluation remains frozen development evidence. The next run
+uses a target-disjoint train/calibration/evaluation split, an exact-density
+conditional-centred affine posterior calibration fitted only on calibration
+targets, and BLS-like candidate augmentation for positives and negatives.
+Jittered/harmonic planet candidates train detection but are excluded from the
+characterization loss through a persisted `posterior_valid` mask.
+
+Reference MCMC is now burn-aware and adaptive, with fail-closed requirements for
+50 production autocorrelation times, split-Rhat <=1.01, bulk ESS >=400, and tail
+ESS >=400. The speed protocol matches fixed ephemeris, known dilution, finite
+exposure, phase binning, and jitter likelihood; every timed chain must converge
+and the 95% speedup lower bound must exceed the gate.
+
+The corrected structural smoke passed: candidate-augmented ROC-AUC/AP were
+0.852/0.849 and untouched-smoke coverage error improved from 0.0566 to 0.0238.
+This validates the implementation path only. MNRAS readiness still requires a
+fresh target-held-out strong gate and then the frozen multi-seed full suite.
+
 ## Historical pre-full-run evidence (superseded)
 
 - A working, candidate-conditioned FMPE/SBI implementation for a five-dimensional

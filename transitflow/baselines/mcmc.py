@@ -34,6 +34,69 @@ except Exception:  # pragma: no cover
 _POOL_STATE = None
 
 
+def _split_rhat(chain: np.ndarray) -> np.ndarray | None:
+    """Classic split-Rhat over walker chains; returns one value per parameter."""
+    chain = np.asarray(chain, dtype=np.float64)
+    n_steps, n_walkers, n_dim = chain.shape
+    half = n_steps // 2
+    if half < 4 or n_walkers < 2:
+        return None
+    split = np.concatenate([chain[:half], chain[-half:]], axis=1)
+    chain_means = split.mean(axis=0)
+    within = split.var(axis=0, ddof=1).mean(axis=0)
+    between = half * chain_means.var(axis=0, ddof=1)
+    var_hat = ((half - 1.0) / half) * within + between / half
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.sqrt(var_hat / within)
+
+
+def _emcee_diagnostics(sampler, burn_frac: float) -> dict:
+    total_steps = int(sampler.get_chain().shape[0])
+    burn = int(burn_frac * total_steps)
+    production = sampler.get_chain(discard=burn)
+    kept_steps = int(production.shape[0])
+    out = {
+        "steps_run": total_steps,
+        "production_steps": kept_steps,
+        "autocorr_time": None,
+        "autocorr_time_max": None,
+        "tau_multiple_min": None,
+        "bulk_n_eff_min": None,
+        "tail_n_eff_min": None,
+        "split_rhat_max": None,
+    }
+    try:
+        tau = np.asarray(
+            sampler.get_autocorr_time(discard=burn, quiet=True), dtype=np.float64)
+        if np.all(np.isfinite(tau)) and tau.size:
+            out["autocorr_time"] = tau.tolist()
+            out["autocorr_time_max"] = float(np.max(tau))
+            out["tau_multiple_min"] = float(kept_steps / np.max(tau))
+            bulk = kept_steps * production.shape[1] / np.maximum(tau, 1.0)
+            out["bulk_n_eff_min"] = float(np.min(bulk))
+    except Exception:
+        pass
+    rhat = _split_rhat(production)
+    if rhat is not None and np.all(np.isfinite(rhat)):
+        out["split_rhat_max"] = float(np.max(rhat))
+    try:
+        tail_ess = []
+        for dim in range(production.shape[2]):
+            values = production[:, :, dim]
+            lo, hi = np.quantile(values, [0.05, 0.95])
+            indicators = np.stack([values <= lo, values >= hi], axis=-1).astype(float)
+            tau_tail = np.asarray(
+                emcee.autocorr.integrated_time(indicators, quiet=True),
+                dtype=np.float64)
+            tail_ess.append(
+                kept_steps * production.shape[1] / max(float(np.max(tau_tail)), 1.0))
+        if tail_ess:
+            out["tail_n_eff_min"] = float(np.min(tail_ess))
+    except Exception:
+        pass
+    return out
+
+
 def _expand_free(theta_free: np.ndarray, init: np.ndarray,
                  init_dilution: float, fit_dilution: bool,
                  fixed: dict[int, float], free_idx: list[int],
@@ -73,7 +136,8 @@ def _pooled_log_prob(theta_free: np.ndarray) -> float:
         theta[:dim], state["times"], state["flux"], state["flux_err"],
         state["prior"], state["n_radial"], state["exposure_minutes"],
         state["n_exposure_subsamples"],
-        dilution=theta[dim] if state["fit_dilution"] else 1.0,
+        dilution=theta[dim] if state["fit_dilution"]
+        else state.get("fixed_dilution", 1.0),
         dilution_low=state["dilution_low"],
         dilution_high=state["dilution_high"],
         fit_dilution=state["fit_dilution"],
@@ -133,7 +197,11 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
              dilution_low: float = 0.5, dilution_high: float = 1.0,
              init_dilution: float = 1.0, n_processes: int = 1,
              fit_jitter: bool = False, jitter_low: float = 1.0,
-             jitter_high: float = 10.0, init_jitter: float = 1.5) -> dict:
+             jitter_high: float = 10.0, init_jitter: float = 1.5,
+             max_steps: int | None = None, check_every: int = 5000,
+             min_tau_multiple: float = 0.0, min_n_eff: float = 0.0,
+             max_split_rhat: float = float("inf"),
+             fixed_dilution: float = 1.0) -> dict:
     """Sample the transit-fit posterior. Returns physical samples ``(M, 7)``."""
     prior = prior or TransitPrior()
     rng = np.random.default_rng(seed)
@@ -211,7 +279,7 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
         return _log_prob(
             theta[:dim], times, flux, flux_err, prior, n_radial,
             exposure_minutes, n_exposure_subsamples,
-            dilution=theta[dim] if fit_dilution else 1.0,
+            dilution=theta[dim] if fit_dilution else float(fixed_dilution),
             dilution_low=dilution_low, dilution_high=dilution_high,
             fit_dilution=fit_dilution,
             jitter=theta[jit_idx] if fit_jitter else 1.0,
@@ -219,6 +287,34 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
             fit_jitter=fit_jitter)
 
     sampler = None
+    diagnostics = {}
+    steps_run = int(n_steps)
+
+    def run_until_ready(sampler_obj):
+        nonlocal steps_run, diagnostics
+        cap = max(int(n_steps), int(max_steps or n_steps))
+        chunk = int(n_steps)
+        state = p0
+        while steps_run <= cap:
+            sampler_obj.run_mcmc(state, chunk, progress=False)
+            state = None
+            steps_run = int(sampler_obj.get_chain().shape[0])
+            diagnostics = _emcee_diagnostics(sampler_obj, burn_frac)
+            ready = bool(
+                diagnostics.get("tau_multiple_min") is not None
+                and diagnostics.get("bulk_n_eff_min") is not None
+                and diagnostics.get("tail_n_eff_min") is not None
+                and diagnostics.get("split_rhat_max") is not None
+                and diagnostics["tau_multiple_min"] >= min_tau_multiple
+                and diagnostics["bulk_n_eff_min"] >= min_n_eff
+                and diagnostics["tail_n_eff_min"] >= min_n_eff
+                and diagnostics["split_rhat_max"] <= max_split_rhat)
+            if ready or steps_run >= cap:
+                break
+            chunk = min(max(1, int(check_every)), cap - steps_run)
+        burn = int(burn_frac * steps_run)
+        return sampler_obj.get_chain(discard=burn, flat=True)
+
     if _HAS_EMCEE:
         if n_processes > 1:
             import multiprocessing as mp
@@ -227,6 +323,7 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
                 "init": init,
                 "init_dilution": init_dilution,
                 "fit_dilution": fit_dilution,
+                "fixed_dilution": float(fixed_dilution),
                 "fixed": fixed,
                 "free_idx": free_idx,
                 "dim": dim,
@@ -255,33 +352,20 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
                 # agreement gates.  Seed that state explicitly without
                 # mutating NumPy's process-global RNG.
                 sampler.random_state = np.random.RandomState(seed).get_state()
-                sampler.run_mcmc(p0, n_steps, progress=False)
-                free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
-                                               flat=True)
+                steps_run = 0
+                free_chain = run_until_ready(sampler)
                 acceptance = float(np.mean(sampler.acceptance_fraction))
         else:
             sampler = emcee.EnsembleSampler(n_walkers, len(free_idx), logp)
             sampler.random_state = np.random.RandomState(seed).get_state()
-            sampler.run_mcmc(p0, n_steps, progress=False)
-            free_chain = sampler.get_chain(discard=int(burn_frac * n_steps),
-                                           flat=True)
+            steps_run = 0
+            free_chain = run_until_ready(sampler)
             acceptance = float(np.mean(sampler.acceptance_fraction))
     else:
         free_chain, acceptance = _native_ensemble(logp, p0, n_steps, burn_frac, rng)
 
-    autocorr_time_max = None
-    n_eff = None
-    if sampler is not None:
-        try:
-            tau = sampler.get_autocorr_time(quiet=True)
-            tau = np.asarray(tau, dtype=np.float64)
-            if np.all(np.isfinite(tau)) and tau.size:
-                autocorr_time_max = float(np.max(tau))
-                kept_steps = n_steps - int(burn_frac * n_steps)
-                n_eff = float(kept_steps * n_walkers /
-                              max(autocorr_time_max, 1.0))
-        except Exception:
-            pass
+    autocorr_time_max = diagnostics.get("autocorr_time_max")
+    n_eff = diagnostics.get("bulk_n_eff_min")
 
     extras_init = [init]
     if fit_dilution:
@@ -301,7 +385,23 @@ def run_mcmc(times, flux, flux_err, prior: TransitPrior | None = None,
             "dilution_samples": dilution_samples,
             "jitter_samples": jitter_samples,
             "autocorr_time_max": autocorr_time_max,
-            "n_eff": n_eff}
+            "n_eff": n_eff,
+            "steps_run": int(steps_run),
+            "production_steps": diagnostics.get(
+                "production_steps", int(steps_run - burn_frac * steps_run)),
+            "tau_multiple": diagnostics.get("tau_multiple_min"),
+            "bulk_n_eff_min": diagnostics.get("bulk_n_eff_min"),
+            "tail_n_eff_min": diagnostics.get("tail_n_eff_min"),
+            "split_rhat_max": diagnostics.get("split_rhat_max"),
+            "converged": bool(
+                diagnostics.get("tau_multiple_min") is not None
+                and diagnostics.get("bulk_n_eff_min") is not None
+                and diagnostics.get("tail_n_eff_min") is not None
+                and diagnostics.get("split_rhat_max") is not None
+                and diagnostics["tau_multiple_min"] >= min_tau_multiple
+                and diagnostics["bulk_n_eff_min"] >= min_n_eff
+                and diagnostics["tail_n_eff_min"] >= min_n_eff
+                and diagnostics["split_rhat_max"] <= max_split_rhat)}
 
 
 def _native_ensemble(logp, p0, n_steps, burn_frac, rng,

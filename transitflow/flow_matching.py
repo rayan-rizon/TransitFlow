@@ -66,6 +66,7 @@ def sample_ode(
     n_samples: int,
     n_steps: int = 50,
     method: str = "rk4",
+    base_samples: torch.Tensor | None = None,
 ) -> torch.Tensor:
     """Draw posterior samples in standardized space.
 
@@ -93,7 +94,14 @@ def sample_ode(
                             torch.zeros(1, 1, device=e.device, dtype=e.dtype) * 0,
                             cond[:1])
         param_dim = probe.shape[-1]
-    y = torch.randn(N, param_dim, device=e.device, dtype=e.dtype)
+    if base_samples is None:
+        y = torch.randn(N, param_dim, device=e.device, dtype=e.dtype)
+    else:
+        base = torch.as_tensor(base_samples, device=e.device, dtype=e.dtype)
+        if base.shape != (B, n_samples, param_dim):
+            raise ValueError(
+                f"base_samples must have shape {(B, n_samples, param_dim)}")
+        y = base.reshape(N, param_dim).clone()
 
     def f(tau_scalar, yy):
         tau = torch.full((N,), float(tau_scalar), device=e.device, dtype=e.dtype) \

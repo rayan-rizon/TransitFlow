@@ -190,6 +190,27 @@ def make_periodogram_view(times: np.ndarray, flux: np.ndarray,
     return pg.astype(np.float32)
 
 
+def bls_lite_candidate(times: np.ndarray, flux: np.ndarray,
+                       periods: np.ndarray, n_phase: int = 64) -> tuple[float, float, float]:
+    """Return a cheap data-selected candidate from the box-periodogram grid."""
+    times = np.asarray(times, dtype=np.float64)
+    flux = np.asarray(flux, dtype=np.float64)
+    periods = np.asarray(periods, dtype=np.float64)
+    power = box_periodogram(times, flux, periods, n_phase=n_phase)
+    period = float(periods[int(np.nanargmax(power))])
+    phase = (times / period) % 1.0
+    bins = np.clip((phase * n_phase).astype(np.int64), 0, n_phase - 1)
+    centered = flux - np.nanmedian(flux)
+    sums = np.bincount(bins, weights=centered, minlength=n_phase)
+    counts = np.bincount(bins, minlength=n_phase).astype(np.float64)
+    mean = sums / np.maximum(counts, 1.0)
+    score = (-mean) * np.sqrt(counts)
+    best_bin = int(np.nanargmax(score))
+    t0 = float(((best_bin + 0.5) / n_phase) * period)
+    duration = float(np.clip(period / n_phase, 0.04, 0.24))
+    return period, t0, duration
+
+
 def make_views(
     times: np.ndarray,
     flux: np.ndarray,

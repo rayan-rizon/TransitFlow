@@ -1,0 +1,72 @@
+# Structural smoke configuration for the research-standard remediation path.
+# These sizes verify plumbing only; they are not publication evidence.
+simulator:
+  n_global: 128
+  n_local: 65
+  n_durations: 4.0
+  baseline_days: 8.0
+  n_raw: 1600
+  planet_fraction: 0.5
+  hard_negative_fraction: 0.5
+  frac_real: 0.0
+  frac_gp: 0.3
+  frac_white: 0.7
+  sigma_white_log10_low: -3.7
+  sigma_white_log10_high: -2.6
+  gp_amp_log10_low: -3.5
+  gp_amp_log10_high: -2.3
+  gp_tau_frac_low: 0.05
+  gp_tau_frac_high: 0.3
+  gp_kernel: matern32
+  engine: native
+  n_radial: 40
+  regime: tess
+  use_periodogram: false
+  n_period_bins: 24
+  pg_n_phase: 24
+  pg_n_raw: 400
+  candidate_jitter_fraction: 0.2
+  candidate_period_jitter_log_std: 0.01
+  candidate_epoch_jitter_duration_std: 0.5
+  candidate_harmonic_fraction: 0.2
+  candidate_bls_negative_fraction: 0.5
+
+model:
+  param_dim: 5
+  embed_dim: 48
+  head: fmpe
+  use_noise_feature: true
+  use_periodogram: false
+  use_ephemeris_feature: true
+  use_dilution_feature: false
+  global_channels: [16, 32, 48]
+  local_channels: [16, 32]
+  global_dim: 48
+  local_dim: 24
+  blocks_per_stage: 1
+  det_hidden: 32
+  det_dropout: 0.1
+  fm_hidden: 64
+  fm_blocks: 2
+  fm_time_dim: 16
+
+train:
+  n_steps: 300
+  batch_size: 64
+  lr: 4.0e-4
+  weight_decay: 1.0e-5
+  lambda_det: 1.0
+  grad_clip: 5.0
+  warmup_steps: 30
+  eval_every: 0
+  log_every: 50
+  device: cpu
+  seed: 17
+  amp: false
+  tensorboard: false
+  num_workers: 0
+
+inference:
+  ode_steps: 16
+  ode_method: rk4
+  n_posterior: 128

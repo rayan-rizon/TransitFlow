@@ -27,6 +27,7 @@ from transitflow.evaluation import (
     run_sbc,
     sbc_uniformity,
 )
+from transitflow.calibration import load_for_checkpoint
 from transitflow.inference import TransitFlowInference
 from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
@@ -137,11 +138,15 @@ def stratified_characterization_diagnostics(theta_true: np.ndarray,
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
+    ap.add_argument("--detector-ckpt", default=None,
+                    help="validation-selected detector checkpoint")
     ap.add_argument("--n-sbc", type=int, default=300)
     ap.add_argument("--n-posterior", type=int, default=1000)
     ap.add_argument("--n-detection", type=int, default=1000)
     ap.add_argument("--noise-lib", default=None,
                     help="optional real-noise .npz for held-out noise-injection evaluation")
+    ap.add_argument("--calibration", default=None,
+                    help="held-out posterior affine calibration artifact")
     ap.add_argument("--out", default="results/eval")
     ap.add_argument("--plots", action="store_true")
     ap.add_argument("--seed", type=int, default=123)
@@ -155,14 +160,24 @@ def main() -> None:
     prior = TransitPrior.from_sim_config(scfg)
     noise_library = NoiseLibrary.load(args.noise_lib)
     simulator = TransitSimulator(scfg, prior=prior, noise_library=noise_library)
-    inference = TransitFlowInference(model, prior, scfg, amp=args.amp)
+    calibration = load_for_checkpoint(args.calibration, args.ckpt) \
+        if args.calibration else None
+    inference = TransitFlowInference(
+        model, prior, scfg, amp=args.amp, calibration=calibration)
+    detector_inference = inference
+    if args.detector_ckpt:
+        detector_model, _, detector_sc = load_checkpoint(args.detector_ckpt)
+        if detector_sc != scfg:
+            raise SystemExit("--detector-ckpt simulator config mismatch")
+        detector_inference = TransitFlowInference(
+            detector_model, prior, scfg, amp=args.amp)
     rng = np.random.default_rng(args.seed)
 
     if args.noise_lib and not noise_library.available():
         raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
 
     print("== detection ==")
-    det = detection_eval(inference, simulator, args.n_detection, rng)
+    det = detection_eval(detector_inference, simulator, args.n_detection, rng)
     print(det)
 
     print("== SBC ==")
@@ -185,25 +200,27 @@ def main() -> None:
 
     print("== coverage ==")
     # reuse SBC posteriors for coverage by re-sampling a fresh set
-    cov_samples, cov_true, cov_sigma = [], [], []
+    cov_samples, cov_samples_std, cov_true, cov_sigma = [], [], [], []
     got = 0
     while got < args.n_sbc:
         batch = simulator.simulate_batch(128, rng)
-        mask = batch["valid"]
+        mask = batch.get("posterior_valid", batch["valid"])
         if not mask.any():
             continue
         pg = batch["periodogram"][mask] if "periodogram" in batch else None
         eph = batch["ephem_feat"][mask] if "ephem_feat" in batch else None
         dil = batch["dil_feat"][mask] if "dil_feat" in batch else None
-        s = inference.posterior_samples(batch["global"][mask], batch["local"][mask],
-                                        batch["sigma_feat"][mask],
-                                        n_samples=args.n_posterior, periodogram=pg,
-                                        ephem_feat=eph, dil_feat=dil)
+        s, s_std = inference.posterior_samples(
+            batch["global"][mask], batch["local"][mask],
+            batch["sigma_feat"][mask], n_samples=args.n_posterior,
+            return_std=True, periodogram=pg, ephem_feat=eph, dil_feat=dil)
         cov_samples.append(s)
+        cov_samples_std.append(s_std)
         cov_true.append(batch["theta_phys"][mask])
         cov_sigma.append(batch["sigma"][mask])
         got += int(mask.sum())
     cov_samples = np.concatenate(cov_samples)[:args.n_sbc]
+    cov_samples_std = np.concatenate(cov_samples_std)[:args.n_sbc]
     cov_true = np.concatenate(cov_true)[:args.n_sbc]
     cov_sigma = np.concatenate(cov_sigma)[:args.n_sbc]
     if model.cfg.param_dim == 5:
@@ -218,6 +235,14 @@ def main() -> None:
                                          levels=cov["levels"])
     cce_char = coverage_calibration_error(cov_char["levels"],
                                           cov_char["coverage_overall"])
+    z_low, z_high = prior.std_bounds
+    if model.cfg.param_dim == 5:
+        char_std = cov_samples_std[:, :, 2:]
+        z_low, z_high = z_low[2:], z_high[2:]
+    else:
+        char_std = cov_samples_std
+    outside = (char_std < z_low) | (char_std > z_high)
+    clipping_fraction_by_param = outside.mean(axis=(0, 1))
     if cce is not None:
         print(f"coverage calibration error (lower=better): {cce:.4f}")
     if model.cfg.use_ephemeris_feature:
@@ -231,11 +256,13 @@ def main() -> None:
     report = {
         "seed": int(args.seed),
         "checkpoint": args.ckpt,
+        "detector_checkpoint": args.detector_ckpt or args.ckpt,
         "head": model.head_type,
         "amp": args.amp,
         "amp_dtype": "bfloat16" if args.amp else None,
         "noise_lib": args.noise_lib,
         "noise_lib_available": noise_library.available(),
+        "posterior_calibration": args.calibration,
         "param_names": param_names,
         "posterior_param_names": sbc_param_names,
         "ephemeris_conditioned": bool(model.cfg.use_ephemeris_feature),
@@ -253,6 +280,10 @@ def main() -> None:
         "coverage_levels": cov["levels"].tolist(),
         "coverage_overall": cov["coverage_overall"].tolist(),
         "characterization_coverage_overall": cov_char["coverage_overall"].tolist(),
+        "characterization_coverage_by_param": cov_char["coverage"].tolist(),
+        "posterior_out_of_prior_fraction_by_param":
+            clipping_fraction_by_param.tolist(),
+        "posterior_out_of_prior_fraction_any": float(outside.any(axis=-1).mean()),
         "stratified_characterization": stratified_characterization_diagnostics(
             cov_true, cov_samples, cov_sigma, scfg),
         "gate_status": {

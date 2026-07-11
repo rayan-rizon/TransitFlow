@@ -28,7 +28,12 @@ from .noise import (
 )
 from .priors import TransitPrior, kipping_to_quadratic
 from .transit_model import exposure_integrated_transit_flux, transit_duration
-from .views import flatten_transit_preserving, make_periodogram_view, make_views
+from .views import (
+    bls_lite_candidate,
+    flatten_transit_preserving,
+    make_periodogram_view,
+    make_views,
+)
 
 
 @dataclass
@@ -88,6 +93,14 @@ class SimConfig:
     # enough resolution for 256 trial periods × 64 phase bins, and reduces the
     # (P × n_raw) matrix from 4.6 M to 1.0 M floats -> ~4× faster generation)
     pg_n_raw: int = 4096
+    # Candidate-search mismatch augmentation. Exact candidates remain the only
+    # rows used for characterization; perturbed/harmonic candidates train the
+    # detector to see the same alias regime as a BLS/TLS proposal stage.
+    candidate_jitter_fraction: float = 0.0
+    candidate_period_jitter_log_std: float = 0.01
+    candidate_epoch_jitter_duration_std: float = 0.5
+    candidate_harmonic_fraction: float = 0.0
+    candidate_bls_negative_fraction: float = 0.0
 
     def normalized_regime_fracs(self, has_real: bool) -> tuple[float, float, float]:
         if has_real:
@@ -190,6 +203,39 @@ class TransitSimulator:
         fold_P = P.copy()
         fold_t0 = t0_abs.copy()
         duration = transit_duration(P, RpRs, aRs, b)
+        candidate_kind = np.zeros(B, dtype=np.int8)  # 0 exact, 1 jitter, 2 harmonic
+        bls_negative_mask = is_neg & (
+            rng.random(B) < np.clip(cfg.candidate_bls_negative_fraction, 0.0, 1.0))
+        candidate_kind[bls_negative_mask] = 3
+
+        # Planet candidate errors are part of the detection task but do not
+        # define a trustworthy characterization target. Keep those roles
+        # separate so alias robustness cannot corrupt posterior supervision.
+        if is_planet.any():
+            planet_idx = np.where(is_planet)[0]
+            harmonic_fraction = np.clip(cfg.candidate_harmonic_fraction, 0.0, 1.0)
+            jitter_fraction = np.clip(
+                cfg.candidate_jitter_fraction, 0.0, 1.0 - harmonic_fraction)
+            draw = rng.random(len(planet_idx))
+            harmonic_idx = planet_idx[draw < harmonic_fraction]
+            jitter_idx = planet_idx[(draw >= harmonic_fraction)
+                                    & (draw < harmonic_fraction + jitter_fraction)]
+            if len(harmonic_idx):
+                factors = rng.choice(np.array([0.5, 2.0]), size=len(harmonic_idx))
+                p_lo, p_hi = self.prior.specs[0].low, self.prior.specs[0].high
+                fold_P[harmonic_idx] = np.clip(
+                    fold_P[harmonic_idx] * factors, p_lo, p_hi)
+                candidate_kind[harmonic_idx] = 2
+            if len(jitter_idx):
+                p_lo, p_hi = self.prior.specs[0].low, self.prior.specs[0].high
+                fold_P[jitter_idx] = np.clip(
+                    fold_P[jitter_idx] * np.exp(rng.normal(
+                        0.0, max(cfg.candidate_period_jitter_log_std, 0.0),
+                        size=len(jitter_idx))), p_lo, p_hi)
+                fold_t0[jitter_idx] += rng.normal(
+                    0.0, max(cfg.candidate_epoch_jitter_duration_std, 0.0),
+                    size=len(jitter_idx)) * duration[jitter_idx]
+                candidate_kind[jitter_idx] = 1
 
         # ---- base (noise-free) raw flux -----------------------------
         flux = np.ones((B, cfg.n_raw), dtype=np.float64)
@@ -294,6 +340,12 @@ class TransitSimulator:
             valid_cad = gap_mask[i]
             ti = t[valid_cad]
             fi = flux[i][valid_cad]
+            if bls_negative_mask[i]:
+                n_pg = min(cfg.pg_n_raw, len(ti))
+                pg_step = max(1, len(ti) // max(n_pg, 1))
+                fold_P[i], fold_t0[i], duration[i] = bls_lite_candidate(
+                    ti[::pg_step][:n_pg], fi[::pg_step][:n_pg],
+                    self.period_grid, n_phase=cfg.pg_n_phase)
             raw_unprocessed[i, ~valid_cad] = np.nan
             raw_for_views[i, ~valid_cad] = np.nan
             if cfg.flatten_views:
@@ -363,6 +415,8 @@ class TransitSimulator:
             "theta_phys": theta_phys.astype(np.float32),
             "d": d,
             "valid": is_planet,
+            "posterior_valid": is_planet & (candidate_kind == 0),
+            "candidate_kind": candidate_kind,
             "sigma": sigma_white.astype(np.float32),
             "sigma_feat": sig_feat.astype(np.float32),
             "ephem_feat": ephem_feat,

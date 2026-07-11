@@ -13,6 +13,7 @@ from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
     prepare_noise_splits,
+    prepare_noise_three_way_split,
     validate_existing_dataset,
 )
 from transitflow.data import _write_dataset_metadata
@@ -203,8 +204,11 @@ def test_publishable_gate_report_schema_and_status():
     real["summary"]["gate_status"] = {
         "mcmc_chain_length_ge_50_tau": True,
         "mcmc_effective_samples_ge_400": True,
+        "mcmc_tail_effective_samples_ge_400": True,
+        "mcmc_split_rhat_le_1.01": True,
     }
-    speed = {"speedup_x": 1500.0}
+    speed = {"speedup_x": 1500.0, "speedup_ci95": [1200.0, 1800.0],
+             "all_mcmc_converged": True}
 
     report = build_gate_report(synthetic, real, bls, speed)
 
@@ -336,6 +340,25 @@ def test_noise_split_is_source_target_disjoint(tmp_path):
     assert set(train["target_ids"].astype(str)).isdisjoint(
         set(evaluate["target_ids"].astype(str)))
     assert meta["target_overlap"] == []
+
+
+def test_noise_three_way_split_is_target_disjoint(tmp_path):
+    path = tmp_path / "noise.npz"
+    target_ids = np.repeat(np.array(list("ABCDEF")), 2)
+    segments = np.arange(len(target_ids) * 8, dtype=float).reshape(-1, 8)
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    train_path, cal_path, eval_path, meta = prepare_noise_three_way_split(
+        path, tmp_path / "three_way", seed=9,
+        calibration_fraction=0.2, eval_fraction=0.2)
+
+    train = set(np.load(train_path)["target_ids"].astype(str))
+    calibration = set(np.load(cal_path)["target_ids"].astype(str))
+    evaluate = set(np.load(eval_path)["target_ids"].astype(str))
+    assert train.isdisjoint(calibration)
+    assert train.isdisjoint(evaluate)
+    assert calibration.isdisjoint(evaluate)
+    assert meta["all_disjoint"] is True
 
 
 def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):

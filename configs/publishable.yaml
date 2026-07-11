@@ -43,6 +43,11 @@ simulator:
   n_period_bins: 256
   pg_n_phase: 64
   pg_n_raw: 4096
+  candidate_jitter_fraction: 0.20
+  candidate_period_jitter_log_std: 0.01
+  candidate_epoch_jitter_duration_std: 0.5
+  candidate_harmonic_fraction: 0.20
+  candidate_bls_negative_fraction: 0.50
 
 model:
   param_dim: 5

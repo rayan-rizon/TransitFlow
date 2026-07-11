@@ -99,7 +99,7 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
     d = batch["d"].float()
     l_det = F.binary_cross_entropy_with_logits(det_logits, d)
 
-    mask = batch["valid"]
+    mask = batch.get("posterior_valid", batch["valid"])
     target = batch["theta_std"]
     if model.cfg.param_dim == 5:
         target = batch.get("theta_char_std", batch["theta_std"][:, 2:])
@@ -115,7 +115,7 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
 @torch.no_grad()
 def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> dict:
     """Validation losses, detection accuracy, and ROC-AUC."""
-    from sklearn.metrics import roc_auc_score
+    from .evaluation import detection_metrics
 
     model.eval()
     agg = {"posterior": 0.0, "detection": 0.0, "det_acc": 0.0}
@@ -138,7 +138,9 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> 
     out = {k: v / n_batches for k, v in agg.items()}
     d = np.concatenate(all_d)
     p = np.concatenate(all_p)
-    out["roc_auc"] = float(roc_auc_score(d, p)) if len(np.unique(d)) > 1 else float("nan")
+    metrics = detection_metrics(d, p)
+    out["roc_auc"] = metrics["roc_auc"]
+    out["average_precision"] = metrics["average_precision"]
     return out
 
 
@@ -269,7 +271,7 @@ def train(
 
     history = {"step": [], "total": [], "posterior": [], "detection": [], "val": []}
     best = {"posterior": float("inf"), "step": -1}
-    best_detection = {"roc_auc": -1.0, "step": -1}
+    best_detection = {"roc_auc": -1.0, "average_precision": -1.0, "step": -1}
     start_step = 0
 
     # resume
@@ -384,7 +386,8 @@ def train(
                         save_checkpoint(model, model_cfg, sim_cfg,
                                         os.path.join(ckpt_dir, "best.pt"), opt,
                                         step, history, best, best_detection)
-                if val.get("roc_auc", -1) > best_detection["roc_auc"]:
+                if val.get("average_precision", -1) > best_detection.get(
+                        "average_precision", -1):
                     best_detection = {"step": step, **val}
                     if ckpt_dir:
                         save_checkpoint(model, model_cfg, sim_cfg,

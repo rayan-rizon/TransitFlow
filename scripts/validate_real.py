@@ -29,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 
 from transitflow.inference import TransitFlowInference
+from transitflow.calibration import load_for_checkpoint
 from transitflow.priors import TransitPrior
 from transitflow.simulator import TransitSimulator
 from transitflow.train import load_checkpoint
@@ -460,6 +461,14 @@ def real_gate_status(summary: dict) -> dict:
         gates["mcmc_effective_samples_ge_400"] = bool(
             conditioning.get("n_with_n_eff", 0) == conditioning.get("n_mcmc", -1)
             and conditioning.get("n_eff_min", 0.0) >= 400.0)
+        gates["mcmc_tail_effective_samples_ge_400"] = bool(
+            conditioning.get("n_with_tail_n_eff", 0)
+            == conditioning.get("n_mcmc", -1)
+            and conditioning.get("tail_n_eff_min", 0.0) >= 400.0)
+        gates["mcmc_split_rhat_le_1.01"] = bool(
+            conditioning.get("n_with_split_rhat", 0)
+            == conditioning.get("n_mcmc", -1)
+            and conditioning.get("split_rhat_max", float("inf")) <= 1.01)
     if summary.get("importance_correction", {}).get("enabled"):
         gates["importance_correction_min_ess_fraction_ge_0.05"] = bool(
             summary["importance_correction"].get("min_ess_fraction", 0.0) >= 0.05)
@@ -558,6 +567,9 @@ def main():
     ap.add_argument("--with-mcmc", type=int, default=0,
                     help="run a per-object MCMC on the first K planets (shape agreement)")
     ap.add_argument("--mcmc-steps", type=int, default=15000)
+    ap.add_argument("--mcmc-max-steps", type=int, default=60000,
+                    help="adaptive convergence cap per real-data chain")
+    ap.add_argument("--mcmc-check-every", type=int, default=5000)
     ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--mcmc-detect-threshold", type=float, default=0.9,
                     help="only run same-light-curve MCMC for detected planets")
@@ -605,6 +617,8 @@ def main():
     ap.add_argument("--min-observed-snr", type=float, default=12.0)
     ap.add_argument("--max-impact", type=float, default=0.9)
     ap.add_argument("--out", default="results/real")
+    ap.add_argument("--calibration", default=None,
+                    help="held-out posterior affine calibration artifact")
     ap.add_argument("--amp", action="store_true",
                     help="enable bfloat16 autocast for amortized inference")
     ap.add_argument("--seed", type=int, default=0,
@@ -626,7 +640,10 @@ def main():
         stellar_density_log10_std=getattr(sc, "stellar_density_log10_std", 0.25),
     )
     sim = TransitSimulator(sc, prior=prior)
-    inf = TransitFlowInference(model, prior, sc, amp=args.amp)
+    calibration = load_for_checkpoint(args.calibration, args.ckpt) \
+        if args.calibration else None
+    inf = TransitFlowInference(
+        model, prior, sc, amp=args.amp, calibration=calibration)
     detector_inf = inf
     if args.detector_ckpt:
         detector_model, _, detector_sc = load_checkpoint(args.detector_ckpt)
@@ -779,7 +796,12 @@ def main():
                                   dilution_high=getattr(sc, "dilution_high", 1.0),
                                   n_processes=args.mcmc_processes,
                                   fit_jitter=args.mcmc_fit_jitter,
-                                  jitter_high=args.mcmc_jitter_max)
+                                  jitter_high=args.mcmc_jitter_max,
+                                  max_steps=args.mcmc_max_steps,
+                                  check_every=args.mcmc_check_every,
+                                  min_tau_multiple=50.0,
+                                  min_n_eff=400.0,
+                                  max_split_rhat=1.01)
                 mc_s = mc_out["samples"]
                 ess = None
                 jitter_prof = None
@@ -831,7 +853,10 @@ def main():
                         ess is not None and ess >= args.min_is_ess_fraction)
                 by_name[pl["name"]]["mcmc_backend"] = mc_out["backend"]
                 by_name[pl["name"]]["mcmc_seed"] = int(args.seed + done)
-                by_name[pl["name"]]["mcmc_steps"] = int(args.mcmc_steps)
+                by_name[pl["name"]]["mcmc_steps"] = int(
+                    mc_out.get("steps_run", args.mcmc_steps))
+                by_name[pl["name"]]["mcmc_production_steps"] = int(
+                    mc_out.get("production_steps", 0))
                 by_name[pl["name"]]["mcmc_walkers"] = int(args.mcmc_walkers)
                 by_name[pl["name"]]["mcmc_acceptance_fraction"] = \
                     mc_out.get("acceptance_fraction")
@@ -848,9 +873,17 @@ def main():
                     by_name[pl["name"]]["mcmc_autocorr_time_max"] = float(
                         mc_out["autocorr_time_max"])
                     by_name[pl["name"]]["mcmc_tau_multiple"] = float(
-                        args.mcmc_steps / mc_out["autocorr_time_max"])
+                        mc_out.get("tau_multiple") or 0.0)
                 if mc_out.get("n_eff") is not None:
                     by_name[pl["name"]]["mcmc_n_eff"] = float(mc_out["n_eff"])
+                if mc_out.get("tail_n_eff_min") is not None:
+                    by_name[pl["name"]]["mcmc_tail_n_eff"] = float(
+                        mc_out["tail_n_eff_min"])
+                if mc_out.get("split_rhat_max") is not None:
+                    by_name[pl["name"]]["mcmc_split_rhat"] = float(
+                        mc_out["split_rhat_max"])
+                by_name[pl["name"]]["mcmc_converged"] = bool(
+                    mc_out.get("converged", False))
                 if ess is not None:
                     by_name[pl["name"]]["is_ess_fraction"] = float(ess)
                 if jitter_prof is not None and np.isfinite(jitter_prof):
@@ -948,6 +981,19 @@ def main():
             summary["mcmc_conditioning"]["n_with_tau"] = int(len(tau_multiples))
             summary["mcmc_conditioning"]["tau_multiple_min"] = float(
                 np.min(tau_multiples))
+        tail_ess_vals = [r["mcmc_tail_n_eff"] for r in mcmc_rows
+                         if "mcmc_tail_n_eff" in r]
+        summary["mcmc_conditioning"]["n_with_tail_n_eff"] = int(
+            len(tail_ess_vals))
+        if tail_ess_vals:
+            summary["mcmc_conditioning"]["tail_n_eff_min"] = float(
+                np.min(tail_ess_vals))
+        rhat_vals = [r["mcmc_split_rhat"] for r in mcmc_rows
+                     if "mcmc_split_rhat" in r]
+        summary["mcmc_conditioning"]["n_with_split_rhat"] = int(len(rhat_vals))
+        if rhat_vals:
+            summary["mcmc_conditioning"]["split_rhat_max"] = float(
+                np.max(rhat_vals))
         mcmc_jit = [r["mcmc_jitter_median"] for r in mcmc_rows
                     if "mcmc_jitter_median" in r]
         if mcmc_jit:

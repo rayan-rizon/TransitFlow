@@ -5,7 +5,7 @@ from transitflow.baselines.bls import bls_detect
 from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
 from scripts.baseline_detection import bootstrap_tls_detection_metrics
-from transitflow.baselines.mcmc import has_emcee, run_mcmc
+from transitflow.baselines.mcmc import _split_rhat, has_emcee, run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
 from transitflow.transit_model import transit_flux
 
@@ -190,6 +190,20 @@ def test_mcmc_jitter_off_keeps_legacy_return_shape():
     assert out["jitter_samples"] is None
     assert out["samples"].shape[1] == 7
     assert "autocorr_time_max" in out and "n_eff" in out
+    assert out["production_steps"] == 30
+
+
+def test_split_rhat_detects_nonstationary_chains():
+    rng = np.random.default_rng(57)
+    healthy = rng.normal(size=(200, 8, 2))
+    stuck = healthy.copy()
+    stuck[100:, :, 0] += 3.0
+
+    healthy_rhat = _split_rhat(healthy)
+    stuck_rhat = _split_rhat(stuck)
+
+    assert np.all(healthy_rhat < 1.05)
+    assert stuck_rhat[0] > 1.2
 
 
 def test_bls_score_is_sde_normalized():

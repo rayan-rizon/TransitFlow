@@ -14,6 +14,8 @@ def test_batch_keys_and_shapes(fast_simulator, fast_sim_cfg, rng):
     assert np.all(np.isfinite(b["global"])) and np.all(np.isfinite(b["local"]))
     assert np.all(np.isfinite(b["ephem_feat"]))
     assert np.allclose(b["theta_char_std"], b["theta_std"][:, 2:])
+    assert b["posterior_valid"].shape == (32,)
+    assert b["candidate_kind"].shape == (32,)
 
 
 def test_valid_mask_matches_label(fast_simulator, rng):
@@ -21,6 +23,73 @@ def test_valid_mask_matches_label(fast_simulator, rng):
     assert np.array_equal(b["valid"], b["d"] == 1)
     # standardized targets zeroed for non-planets
     assert np.allclose(b["theta_std"][b["d"] == 0], 0.0)
+
+
+def test_candidate_augmentation_excludes_aliases_from_posterior_loss(prior):
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=1.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        candidate_jitter_fraction=0.4, candidate_harmonic_fraction=0.4)
+    batch = TransitSimulator(cfg, prior=prior).simulate_batch(
+        256, np.random.default_rng(47))
+
+    assert np.mean(batch["candidate_kind"] != 0) > 0.65
+    assert np.array_equal(
+        batch["posterior_valid"], batch["candidate_kind"] == 0)
+    assert np.all(batch["valid"])
+
+
+def test_bls_lite_negative_candidates_are_recorded(prior):
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=0.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        n_period_bins=24, pg_n_phase=24, pg_n_raw=400,
+        candidate_bls_negative_fraction=1.0)
+    batch = TransitSimulator(cfg, prior=prior).simulate_batch(
+        16, np.random.default_rng(48))
+
+    assert np.all(batch["candidate_kind"] == 3)
+    assert not np.any(batch["posterior_valid"])
+    assert np.isfinite(batch["global"]).all()
+    assert np.isfinite(batch["local"]).all()
+
+
+def test_posterior_loss_uses_candidate_consistency_mask(
+        prior, tiny_model_cfg, monkeypatch):
+    import importlib
+    import torch
+    from transitflow.models.transitflow import TransitFlow
+    from transitflow.simulator import SimConfig, TransitSimulator
+    from transitflow.utils import batch_to_torch
+    train_module = importlib.import_module("transitflow.train")
+
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=1.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        candidate_jitter_fraction=0.4, candidate_harmonic_fraction=0.4)
+    batch_np = TransitSimulator(cfg, prior=prior).simulate_batch(
+        32, np.random.default_rng(49))
+    batch = batch_to_torch(batch_np, torch.device("cpu"))
+    tiny_model_cfg.param_dim = 5
+    tiny_model_cfg.use_ephemeris_feature = True
+    model = TransitFlow(tiny_model_cfg)
+    captured = {}
+
+    def fake_cfm(_velocity, theta, _embedding, mask=None):
+        captured["mask"] = mask.detach().cpu().numpy()
+        return theta.sum() * 0.0
+
+    monkeypatch.setattr(train_module, "cfm_loss", fake_cfm)
+    train_module.compute_losses(model, batch, lambda_det=1.0)
+
+    assert np.array_equal(captured["mask"], batch_np["posterior_valid"])
 
 
 def test_determinism(fast_simulator):

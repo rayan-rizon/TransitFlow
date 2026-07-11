@@ -1,5 +1,6 @@
 import numpy as np
 
+from transitflow.calibration import PosteriorAffineCalibration
 from transitflow.inference import TransitFlowInference
 from transitflow.models.transitflow import TransitFlow
 
@@ -80,6 +81,33 @@ def test_log_prob_slices_characterization_target(fast_simulator, fast_sim_cfg,
     lp_char = inf.log_prob_std(b["theta_char_std"], e)
     assert lp_full.shape == (4,)
     assert np.allclose(lp_full, lp_char)
+
+
+def test_calibrated_log_prob_obeys_affine_change_of_variables(
+        fast_simulator, fast_sim_cfg, tiny_model_cfg, prior, rng):
+    tiny_model_cfg.use_ephemeris_feature = True
+    tiny_model_cfg.param_dim = 5
+    model = TransitFlow(tiny_model_cfg)
+    raw_inf = TransitFlowInference(model, prior, fast_sim_cfg, ode_steps=10)
+    calibration = PosteriorAffineCalibration(
+        np.array([1.2, 1.4, 0.8, 1.1, 1.3]),
+        np.array([0.1, -0.2, 0.05, 0.0, 0.15]),
+        np.array([0.9, 1.1, 1.0, 0.8, 1.2]))
+    cal_inf = TransitFlowInference(
+        model, prior, fast_sim_cfg, ode_steps=10, calibration=calibration)
+    batch = fast_simulator.simulate_batch(4, rng)
+    e = raw_inf.embed(
+        batch["global"], batch["local"], batch["sigma_feat"],
+        ephem_feat=batch["ephem_feat"])
+    raw_theta = batch["theta_char_std"]
+    center = raw_inf.posterior_center_std(e)
+    calibrated_theta = calibration.apply(raw_theta, center)
+
+    raw_lp = raw_inf.log_prob_std(raw_theta, e)
+    calibrated_lp = cal_inf.log_prob_std(calibrated_theta, e)
+
+    assert np.allclose(
+        calibrated_lp, raw_lp - calibration.log_abs_det, atol=1e-5)
 
 
 def test_sbc_uses_characterization_dims_for_5d_ephemeris_model(

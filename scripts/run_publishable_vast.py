@@ -22,6 +22,7 @@ from pathlib import Path
 
 
 FAST_PYTEST = [
+    "tests/test_calibration.py",
     "tests/test_evaluate_gates.py",
     "tests/test_inference.py",
     "tests/test_simulator.py",
@@ -141,8 +142,8 @@ def prepare_noise_splits(path: Path, out_dir: Path, seed: int,
             "scripts/build_noise_library.py before a publication run")
     segments = np.asarray(arr["segments"])
     target_ids = np.asarray(arr["target_ids"]).astype(str)
-    if len(target_ids) != len(segments):
-        raise SystemExit("noise library target_ids length does not match segments")
+    if len(target_ids) != len(segments) or len(segments) == 0:
+        raise SystemExit("noise target_ids must be nonempty and match segments")
     targets = np.unique(target_ids)
     if len(targets) < 2:
         raise SystemExit("at least two source targets are required for a group split")
@@ -170,6 +171,79 @@ def prepare_noise_splits(path: Path, out_dir: Path, seed: int,
         "target_overlap": sorted(set(target_ids[~eval_mask]) & set(target_ids[eval_mask])),
     }
     return train_path, eval_path, meta
+
+
+def prepare_noise_three_way_split(
+    path: Path,
+    out_dir: Path,
+    seed: int,
+    calibration_fraction: float = 0.2,
+    eval_fraction: float = 0.2,
+) -> tuple[Path, Path, Path, dict]:
+    """Create deterministic target-disjoint train/calibration/evaluation sets."""
+    import numpy as np
+
+    arr = np.load(path)
+    if "target_ids" not in arr.files:
+        raise SystemExit("noise library lacks target_ids for three-way splitting")
+    segments = np.asarray(arr["segments"])
+    target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if len(target_ids) != len(segments) or len(segments) == 0:
+        raise SystemExit("noise target_ids must be nonempty and match segments")
+    targets = np.unique(target_ids)
+    if len(targets) < 5:
+        raise SystemExit("at least five source targets are required for a three-way split")
+    rng = np.random.default_rng(seed)
+    targets = targets[rng.permutation(len(targets))]
+    n_eval = max(1, int(np.ceil(len(targets) * eval_fraction)))
+    n_cal = max(1, int(np.ceil(len(targets) * calibration_fraction)))
+    if n_eval + n_cal >= len(targets):
+        raise SystemExit("calibration/evaluation fractions leave no training targets")
+    eval_targets = targets[:n_eval]
+    cal_targets = targets[n_eval:n_eval + n_cal]
+    train_targets = targets[n_eval + n_cal:]
+    eval_mask = np.isin(target_ids, eval_targets)
+    cal_mask = np.isin(target_ids, cal_targets)
+    train_mask = np.isin(target_ids, train_targets)
+    if not np.all(train_mask | cal_mask | eval_mask):
+        raise SystemExit("three-way noise split did not assign every segment")
+    if not train_mask.any() or not cal_mask.any() or not eval_mask.any():
+        raise SystemExit("three-way noise split produced an empty partition")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train_path = out_dir / "noise_train.npz"
+    cal_path = out_dir / "noise_calibration.npz"
+    eval_path = out_dir / "noise_eval.npz"
+    np.savez_compressed(train_path, segments=segments[train_mask],
+                        target_ids=target_ids[train_mask])
+    np.savez_compressed(cal_path, segments=segments[cal_mask],
+                        target_ids=target_ids[cal_mask])
+    np.savez_compressed(eval_path, segments=segments[eval_mask],
+                        target_ids=target_ids[eval_mask])
+    sets = {
+        "train": sorted(train_targets.tolist()),
+        "calibration": sorted(cal_targets.tolist()),
+        "evaluation": sorted(eval_targets.tolist()),
+    }
+    overlaps = {
+        "train_calibration": sorted(set(sets["train"]) & set(sets["calibration"])),
+        "train_evaluation": sorted(set(sets["train"]) & set(sets["evaluation"])),
+        "calibration_evaluation": sorted(
+            set(sets["calibration"]) & set(sets["evaluation"])),
+    }
+    meta = {
+        "seed": int(seed),
+        "calibration_fraction_requested": float(calibration_fraction),
+        "eval_fraction_requested": float(eval_fraction),
+        "targets": sets,
+        "n_segments": {
+            "train": int(train_mask.sum()),
+            "calibration": int(cal_mask.sum()),
+            "evaluation": int(eval_mask.sum()),
+        },
+        "overlaps": overlaps,
+        "all_disjoint": not any(overlaps.values()),
+    }
+    return train_path, cal_path, eval_path, meta
 
 
 def _gate_value(metrics: dict, key: str) -> bool:
@@ -211,8 +285,13 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     mcmc_converged = bool(
         convergence.get("mcmc_chain_length_ge_50_tau", False)
         and convergence.get("mcmc_effective_samples_ge_400", False)
+        and convergence.get("mcmc_tail_effective_samples_ge_400", False)
+        and convergence.get("mcmc_split_rhat_le_1.01", False)
     )
     raw_speed_pass = float(speed.get("speedup_x", 0.0)) >= min_speedup
+    matched_speed_pass = bool(
+        speed.get("all_mcmc_converged", False)
+        and float(speed.get("speedup_ci95", [0.0])[0]) >= min_speedup)
     status = {
         "synthetic_characterization_sbc_familywise_alpha_0.05":
             _gate_value(synthetic, "characterization_sbc_familywise_alpha_0.05"),
@@ -230,7 +309,7 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         "real_mcmc_prior_fraction_le_0.1": prior_ok,
         "real_mcmc_width_fraction_le_0.5": width_ok,
         "speedup_ge_1000x_at_converged_mcmc_reference":
-            raw_speed_pass and mcmc_converged,
+            matched_speed_pass and mcmc_converged,
         "bls_baseline_regenerated": bool(
             bls.get("transitflow") and bls.get("bls")
             and int(bls.get("bls", {}).get("n_failed", 0)) == 0),
@@ -259,6 +338,8 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     for convergence_gate in (
         "mcmc_chain_length_ge_50_tau",
         "mcmc_effective_samples_ge_400",
+        "mcmc_tail_effective_samples_ge_400",
+        "mcmc_split_rhat_le_1.01",
     ):
         if convergence_gate in real_summary.get("gate_status", {}):
             status[convergence_gate] = bool(
@@ -333,6 +414,8 @@ def main() -> None:
     ap.add_argument("--noise-targets", nargs="*", default=None)
     ap.add_argument("--noise-eval-fraction", type=float, default=0.2,
                     help="fraction of source targets reserved for evaluation")
+    ap.add_argument("--noise-calibration-fraction", type=float, default=0.2,
+                    help="fraction of source targets reserved for posterior calibration")
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--run-dir", default=None)
     ap.add_argument("--n-data", type=int, default=1_000_000)
@@ -363,6 +446,8 @@ def main() -> None:
     ap.add_argument("--mcmc-steps", type=int, default=15000,
                     help="full-run default targets >=50 autocorrelation times; "
                          "fast-check mode uses a short non-publication diagnostic")
+    ap.add_argument("--mcmc-max-steps", type=int, default=60000,
+                    help="full adaptive convergence cap per real object")
     ap.add_argument("--mcmc-walkers", type=int, default=32)
     ap.add_argument("--mcmc-processes", type=int, default=1,
                     help="parallel worker processes for real-data emcee MCMC")
@@ -415,6 +500,7 @@ def main() -> None:
         n_real_planets = min(args.n_real_planets, 8)
         with_mcmc = 0
         mcmc_steps = args.mcmc_steps
+        mcmc_max_steps = mcmc_steps
         speed_n_amortized = args.speed_n_amortized or 32
         speed_n_mcmc = 1
         speed_mcmc_steps = 80
@@ -428,6 +514,7 @@ def main() -> None:
         n_real_planets = 12 if args.n_real_planets == 30 else args.n_real_planets
         with_mcmc = 4 if args.with_mcmc == 16 else args.with_mcmc
         mcmc_steps = 400 if args.mcmc_steps == 15000 else args.mcmc_steps
+        mcmc_max_steps = max(mcmc_steps, min(args.mcmc_max_steps, 2000))
         speed_n_amortized = args.speed_n_amortized or min(n_detection, 64)
         speed_n_mcmc = max(1, min(with_mcmc, 2))
         speed_mcmc_steps = mcmc_steps
@@ -441,6 +528,7 @@ def main() -> None:
         n_real_planets = args.n_real_planets
         with_mcmc = args.with_mcmc
         mcmc_steps = args.mcmc_steps
+        mcmc_max_steps = max(mcmc_steps, args.mcmc_max_steps)
         speed_n_amortized = args.speed_n_amortized or 512
         speed_n_mcmc = 5
         speed_mcmc_steps = args.mcmc_steps
@@ -479,12 +567,14 @@ def main() -> None:
     )
     (out_dir / "noise_lib.json").write_text(json.dumps(noise_meta, indent=2))
     train_noise_lib = noise_lib
+    calibration_noise_lib = noise_lib
     eval_noise_lib = noise_lib
     split_meta = None
-    if noise_lib is not None and not args.smoke and not args.fast_check:
-        train_noise_lib, eval_noise_lib, split_meta = prepare_noise_splits(
-            noise_lib, out_dir / "noise_splits", args.eval_seed,
-            args.noise_eval_fraction)
+    if noise_lib is not None and not args.smoke:
+        train_noise_lib, calibration_noise_lib, eval_noise_lib, split_meta = \
+            prepare_noise_three_way_split(
+                noise_lib, out_dir / "noise_splits", args.eval_seed,
+                args.noise_calibration_fraction, args.noise_eval_fraction)
         (out_dir / "noise_split.json").write_text(json.dumps(split_meta, indent=2))
 
     if not validate_existing_dataset(
@@ -537,17 +627,37 @@ def main() -> None:
             f"training did not reach a healthy terminal state: {train_status}")
 
     ckpt = run_dir / "checkpoints" / "latest.pt"
+    detector_ckpt = run_dir / "checkpoints" / "best_detection.pt"
+    if not detector_ckpt.exists():
+        detector_ckpt = ckpt
+    calibration_path = out_dir / "posterior_calibration.json"
+    if calibration_noise_lib is not None:
+        calibration_n = 100 if args.smoke else (300 if args.fast_check else 1000)
+        calibration_post = min(n_posterior, 512) if args.smoke else n_posterior
+        calibration_cmd = [
+            args.python, "scripts/calibrate_posterior.py", "--ckpt", str(ckpt),
+            "--noise-lib", str(calibration_noise_lib), "--out", str(calibration_path),
+            "--n-calibration", str(calibration_n), "--n-posterior",
+            str(calibration_post), "--seed", str(args.eval_seed + 7000),
+        ]
+        if args.amp:
+            calibration_cmd.append("--amp")
+        run(calibration_cmd, repo, logs / "calibrate_posterior.log")
     eval_dir = results / "synthetic"
     evaluate_cmd = [args.python, "scripts/evaluate.py", "--ckpt", str(ckpt),
+                    "--detector-ckpt", str(detector_ckpt),
                     "--n-sbc", str(n_sbc), "--n-detection", str(n_detection),
                     "--n-posterior", str(n_posterior), "--out", str(eval_dir),
                     "--plots", "--seed", str(args.eval_seed)]
+    if calibration_path.exists():
+        evaluate_cmd.extend(["--calibration", str(calibration_path)])
     if eval_noise_lib is not None:
         evaluate_cmd.extend(["--noise-lib", str(eval_noise_lib)])
     if args.amp:
         evaluate_cmd.append("--amp")
     run(evaluate_cmd, repo, logs / "evaluate.log")
-    baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt", str(ckpt),
+    baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt",
+                    str(detector_ckpt),
                     "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json"),
                     "--seed", str(args.eval_seed),
                     "--candidate-source", args.candidate_source]
@@ -562,8 +672,12 @@ def main() -> None:
     speed_cmd = [args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
                  "--n-amortized", str(speed_n_amortized), "--n-post", str(n_posterior),
                  "--n-mcmc", str(speed_n_mcmc), "--mcmc-steps", str(speed_mcmc_steps),
+                 "--mcmc-max-steps", str(mcmc_max_steps),
                  "--mcmc-walkers", str(speed_mcmc_walkers),
+                 "--seed", str(args.eval_seed + 8000),
                  "--out", str(results / "speed.json")]
+    if calibration_path.exists():
+        speed_cmd.extend(["--calibration", str(calibration_path)])
     if eval_noise_lib is not None:
         speed_cmd.extend(["--noise-lib", str(eval_noise_lib)])
     if args.amp:
@@ -571,12 +685,16 @@ def main() -> None:
     run(speed_cmd, repo, logs / "speed.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
-           "--detector-ckpt", str(ckpt), "--n-planets", str(n_real_planets),
+           "--detector-ckpt", str(detector_ckpt),
+           "--n-planets", str(n_real_planets),
            "--n-post", str(n_posterior), "--with-mcmc", str(with_mcmc),
            "--mcmc-steps", str(mcmc_steps), "--mcmc-walkers", str(args.mcmc_walkers),
+           "--mcmc-max-steps", str(mcmc_max_steps),
            "--mcmc-processes", str(args.mcmc_processes),
            "--seed", str(args.real_seed),
            "--out", str(real_dir)]
+    if calibration_path.exists():
+        cmd.extend(["--calibration", str(calibration_path)])
     if args.is_correct_mcmc:
         cmd.extend(["--is-correct-mcmc", "--is-samples", str(args.is_samples),
                     "--min-is-ess-fraction", str(args.min_is_ess_fraction),
@@ -595,8 +713,10 @@ def main() -> None:
         read_json(results / "speed.json"),
     )
     if split_meta is not None:
-        report["status"]["noise_target_split_disjoint"] = not bool(
-            split_meta["target_overlap"])
+        report["status"]["noise_target_split_disjoint"] = bool(
+            split_meta.get("all_disjoint", False))
+        report["status"]["posterior_calibration_disjoint"] = bool(
+            calibration_path.exists() and split_meta.get("all_disjoint", False))
         report["status"]["final_pass"] = all(
             value for key, value in report["status"].items()
             if key != "final_pass")
@@ -604,10 +724,16 @@ def main() -> None:
         "run_name": run_name,
         "config": args.config,
         "checkpoint": str(ckpt),
+        "detector_checkpoint": str(detector_ckpt),
         "data_dir": str(data_dir),
         "noise_lib": None if noise_lib is None else str(noise_lib),
         "train_noise_lib": None if train_noise_lib is None else str(train_noise_lib),
+        "calibration_noise_lib": None if calibration_noise_lib is None else str(
+            calibration_noise_lib),
+        "posterior_calibration": str(calibration_path)
+        if calibration_path.exists() else None,
         "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
+        "noise_calibration_fraction": float(args.noise_calibration_fraction),
         "noise_eval_fraction": float(args.noise_eval_fraction),
         "noise_workers": int(args.noise_workers),
         "smoke": bool(args.smoke),
@@ -627,6 +753,7 @@ def main() -> None:
         "n_real_planets": int(n_real_planets),
         "with_mcmc": int(with_mcmc),
         "mcmc_steps": int(mcmc_steps),
+        "mcmc_max_steps": int(mcmc_max_steps),
         "mcmc_walkers": int(args.mcmc_walkers),
         "mcmc_processes": int(args.mcmc_processes),
         "is_correct_mcmc": bool(args.is_correct_mcmc),

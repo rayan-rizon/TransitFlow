@@ -16,6 +16,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
+from .calibration import PosteriorAffineCalibration
 from .flow_matching import log_prob as fm_log_prob
 from .flow_matching import sample_ode
 from .priors import TransitPrior, kipping_to_quadratic
@@ -27,7 +28,8 @@ from .views import make_views
 class TransitFlowInference:
     def __init__(self, model, prior: TransitPrior, sim_cfg: SimConfig,
                  device=None, ode_steps: int = 50, ode_method: str = "rk4",
-                 amp: bool = False, amp_dtype: torch.dtype = torch.bfloat16):
+                 amp: bool = False, amp_dtype: torch.dtype = torch.bfloat16,
+                 calibration=None):
         """Amortized-inference wrapper.
 
         ``amp`` enables autocast mixed-precision (default bfloat16) on the
@@ -46,6 +48,28 @@ class TransitFlowInference:
         self.ode_method = ode_method
         self.amp = amp
         self.amp_dtype = amp_dtype
+        self.calibration = PosteriorAffineCalibration.load(calibration)
+        if self.calibration is not None and self.calibration.dim != model.cfg.param_dim:
+            raise ValueError(
+                "posterior calibration dimension does not match model param_dim")
+
+    def _calibrate_std(self, std_np: np.ndarray, center_std: np.ndarray) -> np.ndarray:
+        if self.calibration is None:
+            return std_np
+        return self.calibration.apply(std_np, center_std)
+
+    def posterior_center_std(self, e: torch.Tensor) -> np.ndarray:
+        """Deterministic conditional center: FMPE transport of base point zero."""
+        if self.model.head_type != "fmpe":
+            raise RuntimeError("posterior calibration currently requires the FMPE head")
+        base = torch.zeros(
+            (e.shape[0], 1, self.model.cfg.param_dim),
+            device=e.device, dtype=e.dtype)
+        with torch.inference_mode(), self._autocast():
+            center = sample_ode(
+                self.model.velocity_fn(), e, 1, n_steps=self.ode_steps,
+                method=self.ode_method, base_samples=base)
+        return center[:, 0].float().cpu().numpy()
 
     def _autocast(self):
         device_type = self.device.type if hasattr(self.device, "type") else str(self.device)
@@ -130,6 +154,8 @@ class TransitFlowInference:
                 else:
                     std = self.model.posterior.sample(e, n_samples)
             std_np = std.float().cpu().numpy()
+            if self.calibration is not None:
+                std_np = self._calibrate_std(std_np, self.posterior_center_std(e))
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
@@ -153,6 +179,8 @@ class TransitFlowInference:
                     std = self.model.posterior.sample(e, n_samples)
             p_det = torch.sigmoid(logits.float()).cpu().numpy()
             std_np = std.float().cpu().numpy()
+            if self.calibration is not None:
+                std_np = self._calibrate_std(std_np, self.posterior_center_std(e))
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
@@ -166,12 +194,18 @@ class TransitFlowInference:
             ts = ts[None]
         if self.model.cfg.param_dim == 5 and ts.shape[-1] == 7:
             ts = ts[..., 2:]
+        log_abs_det = 0.0
+        if self.calibration is not None:
+            center = self.posterior_center_std(e)
+            raw = self.calibration.inverse(ts.detach().cpu().numpy(), center)
+            ts = torch.as_tensor(raw, device=self.device, dtype=torch.float32)
+            log_abs_det = self.calibration.log_abs_det
         with self._autocast():
             if self.model.head_type == "fmpe":
                 lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)
             else:
                 lp = self.model.posterior.log_prob(ts, e)
-        return lp.detach().float().cpu().numpy()
+        return lp.detach().float().cpu().numpy() - log_abs_det
 
     # ------------------------------------------------------------------ #
     # Importance-sampling efficiency diagnostic (approximate)

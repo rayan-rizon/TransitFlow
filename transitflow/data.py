@@ -31,7 +31,8 @@ from .simulator import SimConfig, TransitSimulator
 from .utils import batch_to_torch
 
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
-_OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std", "dil_feat")
+_OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std", "dil_feat",
+                  "posterior_valid", "candidate_kind")
 
 
 def _gen_shard(args) -> str:
@@ -42,7 +43,8 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, thc, d, sf, pg, ef, df = [], [], [], [], [], [], [], [], []
+    g, l, th, thc, d, sf, pg, ef, df, pv, ck = (
+        [], [], [], [], [], [], [], [], [], [], [])
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -59,12 +61,16 @@ def _gen_shard(args) -> str:
             ef.append(b["ephem_feat"].astype(np.float16))
         if "dil_feat" in b:
             df.append(b["dil_feat"].astype(np.float16))
+        pv.append(b["posterior_valid"].astype(np.int8))
+        ck.append(b["candidate_kind"].astype(np.int8))
         done += bs
     payload = {
         "global": np.concatenate(g), "local": np.concatenate(l),
         "theta_std": np.concatenate(th), "d": np.concatenate(d),
         "sigma_feat": np.concatenate(sf),
         "theta_char_std": np.concatenate(thc),
+        "posterior_valid": np.concatenate(pv),
+        "candidate_kind": np.concatenate(ck),
     }
     if pg:
         payload["periodogram"] = np.concatenate(pg)
@@ -272,6 +278,8 @@ class DiskIterator:
             raw["dil_feat"] = raw["dil_feat"].astype(np.float32)
         raw["d"] = raw["d"].astype(np.int64)
         raw["valid"] = raw["d"] == 1
+        if "posterior_valid" in raw:
+            raw["posterior_valid"] = raw["posterior_valid"].astype(bool)
         return batch_to_torch(raw, self.device)
 
     def close(self):

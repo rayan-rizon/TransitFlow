@@ -73,7 +73,7 @@ def run_sbc(inference, simulator, n_sims: int = 500, n_posterior: int = 1000,
     collected = 0
     while collected < n_sims:
         batch = simulator.simulate_batch(batch_size, rng)
-        mask = batch["valid"]
+        mask = batch.get("posterior_valid", batch["valid"])
         if not mask.any():
             continue
         g = batch["global"][mask]
