@@ -1,0 +1,14 @@
+{
+  "device": "cuda",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "noise_lib": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/noise_splits/noise_eval.npz",
+  "noise_lib_available": true,
+  "amortized_ms_per_object": 36.382,
+  "amortized_posterior_samples": 2000,
+  "mcmc_backend": "emcee",
+  "mcmc_s_per_object": 473.1,
+  "mcmc_steps": 15000,
+  "mcmc_walkers": 32,
+  "speedup_x": 13003.7
+}

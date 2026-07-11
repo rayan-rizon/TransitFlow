@@ -1,0 +1,75 @@
+{
+  "seed": 123,
+  "candidate_source": "bls",
+  "checkpoint": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 5000,
+  "noise_lib": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/noise_splits/noise_eval.npz",
+  "noise_lib_available": true,
+  "n_planets": 2463,
+  "n_negatives": 2537,
+  "bls": {
+    "roc_auc": 0.6864049101315152,
+    "average_precision": 0.6313120479725782,
+    "brier_score": NaN,
+    "expected_calibration_error_10bin": NaN
+  },
+  "tls": {
+    "n": 5000,
+    "roc_auc": 0.6884076688157774,
+    "average_precision": 0.6847515253063983,
+    "brier_score": NaN,
+    "expected_calibration_error_10bin": NaN
+  },
+  "transitflow": {
+    "roc_auc": 0.722254362595583,
+    "average_precision": 0.6478452414097757,
+    "brier_score": 0.3162540036278595,
+    "expected_calibration_error_10bin": 0.3117140934012158
+  },
+  "auc_gain": 0.03584945246406779,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": "transitleastsquares",
+  "tls_requested": true,
+  "tls_workers": 42,
+  "tls_threads": 1,
+  "uncertainty": {
+    "method": "stratified paired percentile bootstrap",
+    "n_bootstrap": 500,
+    "seed": 10123,
+    "ci95": {
+      "bls_auc": [
+        0.6707912221092908,
+        0.7007991630486742
+      ],
+      "tf_auc": [
+        0.7084677027656138,
+        0.7360395821100654
+      ],
+      "auc_gain": [
+        0.016613607044487045,
+        0.057060028428626966
+      ],
+      "bls_ap": [
+        0.6145904132943528,
+        0.6466899925953491
+      ],
+      "tf_ap": [
+        0.6345389816208579,
+        0.6610705526243535
+      ],
+      "ap_gain": [
+        -0.0049579944567547125,
+        0.041628221267568835
+      ]
+    }
+  },
+  "candidate_period_recovery": {
+    "n_planets": 2463,
+    "median_abs_fractional_error": 0.8442669235968672,
+    "within_1pct": 0.3987007714169712
+  },
+  "score_data": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/bls_vs_transitflow.scores.npz"
+}
