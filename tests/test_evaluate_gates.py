@@ -386,3 +386,24 @@ def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
     meta_path.write_text(json.dumps(metadata))
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, None) is False
+
+
+def test_existing_dataset_accepts_target_uniform_noise_provenance(tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    noise_path = tmp_path / "noise.npz"
+    np.savez_compressed(
+        noise_path,
+        segments=np.ones((4, 8)),
+        target_ids=np.array(["A", "A", "B", "B"]),
+    )
+    config_path = "configs/default.yaml"
+    sim = build_configs(config_path)["simulator"]
+    _write_dataset_metadata(
+        str(data_dir), sim, n_total=20, n_shards=2, shard_size=10,
+        seed=3, noise_lib_path=str(noise_path))
+    (data_dir / "shard_00000.npz").write_bytes(b"complete")
+    (data_dir / "shard_00001.npz").write_bytes(b"complete")
+
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, noise_path) is True

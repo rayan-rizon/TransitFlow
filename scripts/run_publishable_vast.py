@@ -120,7 +120,7 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
         actual_names = {path.name for path in data_dir.glob("shard_*.npz")}
         expected_sampling_unit = "synthetic_only"
         if noise_lib is not None:
-            noise_description = describe_noise_library(noise_lib)
+            noise_description = validate_noise_lib(noise_lib)
             expected_sampling_unit = (
                 "source_target_uniform_then_segment_v1"
                 if noise_description.get("has_target_ids")
