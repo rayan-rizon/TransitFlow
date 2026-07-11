@@ -24,7 +24,7 @@ exec python -u scripts/run_publishable_vast.py \
   --real-seed 20260712 \
   --n-data 100000 \
   --workers 40 \
-  --shard-size 10000 \
+  --shard-size 2500 \
   --steps 10000 \
   --n-sbc 500 \
   --n-detection 2000 \
