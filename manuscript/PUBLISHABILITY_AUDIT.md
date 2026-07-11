@@ -65,6 +65,13 @@ training instability; they cannot erase the seed-0 failure. Model/calibration
 choices must be made on separate validation data, followed by a newly frozen,
 untouched multi-seed test.
 
+Focused post-run diagnostics also exclude two simple numerical explanations.
+With BF16 disabled, `latest.pt` still gives coverage error 0.1006 and rejects SBC
+uniformity for `RpRs`, `aRs`, `b`, and `q1` (200 cases, 512 draws, seed 4242).
+The validation-loss-selected `best.pt` is worse at 0.1224 with the same rejection
+pattern (100 cases). The failure is therefore not cured by FP32 inference or
+checkpoint selection; it requires model/training calibration work.
+
 ## Historical pre-full-run evidence (superseded)
 
 - A working, candidate-conditioned FMPE/SBI implementation for a five-dimensional
