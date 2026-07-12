@@ -197,9 +197,10 @@ class TransitFlowInference:
         log_abs_det = 0.0
         if self.calibration is not None:
             center = self.posterior_center_std(e)
-            raw = self.calibration.inverse(ts.detach().cpu().numpy(), center)
+            calibrated = ts.detach().cpu().numpy()
+            raw = self.calibration.inverse(calibrated, center)
             ts = torch.as_tensor(raw, device=self.device, dtype=torch.float32)
-            log_abs_det = self.calibration.log_abs_det
+            log_abs_det = self.calibration.log_abs_det_at(calibrated)
         with self._autocast():
             if self.model.head_type == "fmpe":
                 lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)

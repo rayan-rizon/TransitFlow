@@ -278,14 +278,26 @@ python3 scripts/evaluate.py --ckpt runs/fmpe/checkpoints/best.pt --plots --out r
 
 ## Real data
 
-The pipeline runs fully on synthetic GP + white noise out of the box. To train on
-**real** out-of-transit noise (the §2.2 primary regime), build a noise library:
+The pipeline runs fully on synthetic GP + white noise out of the box. For the
+publication path, select a reproducible catalog-defined quiet-star candidate
+pool and build a source-labelled, quality-screened TESS noise library:
 
 ```bash
+python3 scripts/select_noise_targets.py \
+    --n-targets 120 \
+    --out data/noise_targets.txt \
+    --metadata data/noise_targets.json
 python3 scripts/build_noise_library.py --mission TESS \
-    --targets TIC307210830 TIC150428135 --out data/noise_lib.npz
-# then point the simulator at it (frac_real > 0)
+    --targets $(grep -v '^#' data/noise_targets.txt) \
+    --target-provenance data/noise_targets.json \
+    --min-targets 30 --workers 4 --out data/noise_lib.npz
 ```
+
+The publishability runner enforces at least 30 successful independent source
+targets, then performs target-disjoint training/calibration/evaluation splits.
+The builder records the target query, quality metrics, and provenance hash in
+`data/noise_lib.npz.metadata.json`. The segments are quiet-target light curves,
+not guaranteed planet-free data; the manuscript must retain that limitation.
 
 ## Tests
 

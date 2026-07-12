@@ -16,6 +16,7 @@ from scripts.run_publishable_vast import (
     build_gate_report,
     prepare_noise_splits,
     prepare_noise_three_way_split,
+    require_noise_target_count,
     validate_existing_dataset,
 )
 from transitflow.data import _write_dataset_metadata
@@ -27,6 +28,16 @@ def test_sbc_gate_controls_familywise_error():
     assert gate["bonferroni_alpha_per_test"] == 0.01
     assert gate["pass"] is True
     assert gate["all_raw_p_gt_0.05"] is False
+
+
+def test_noise_target_count_gate_fails_closed():
+    require_noise_target_count({"n_unique_targets": 30}, 30)
+    try:
+        require_noise_target_count({"n_unique_targets": 14}, 30)
+    except SystemExit as exc:
+        assert "14 independent targets" in str(exc)
+    else:
+        raise AssertionError("underpowered noise library did not fail")
 
 
 def test_sbc_gate_rejects_clear_miscalibration():

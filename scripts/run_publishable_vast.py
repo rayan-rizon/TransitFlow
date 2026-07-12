@@ -23,18 +23,14 @@ from pathlib import Path
 
 FAST_PYTEST = [
     "tests/test_calibration.py",
+    "tests/test_build_noise_library.py",
     "tests/test_evaluate_gates.py",
     "tests/test_inference.py",
+    "tests/test_noise.py",
+    "tests/test_select_noise_targets.py",
     "tests/test_simulator.py",
     "tests/test_data.py",
     "tests/test_baselines.py",
-]
-
-
-DEFAULT_TARGETS = [
-    "HD 10700", "HD 197076", "HD 1461", "HD 36435", "HD 101501",
-    "HD 26965", "HD 32147", "HD 40307", "HD 20794", "HD 85512",
-    "HD 7924", "HD 136352", "HD 190406", "HD 131977", "HD 10647",
 ]
 
 
@@ -85,6 +81,14 @@ def validate_noise_lib(path: Path) -> dict:
         "sampling_unit": "source_target_uniform_then_segment_v1"
         if target_ids is not None else "segment_uniform_legacy",
     }
+
+
+def require_noise_target_count(metadata: dict, minimum: int) -> None:
+    count = int(metadata.get("n_unique_targets", 0))
+    if count < int(minimum):
+        raise SystemExit(
+            f"noise library has {count} independent targets; at least {minimum} "
+            "are required before a research gate")
 
 
 def _sha256_file(path: Path | None) -> str | None:
@@ -423,6 +427,9 @@ def main() -> None:
     ap.add_argument("--noise-workers", type=int, default=1,
                     help="parallel target downloads when building the noise library")
     ap.add_argument("--noise-targets", nargs="*", default=None)
+    ap.add_argument("--noise-target-file", default=None,
+                    help="one archive-resolvable target per line")
+    ap.add_argument("--min-noise-targets", type=int, default=30)
     ap.add_argument("--noise-eval-fraction", type=float, default=0.2,
                     help="fraction of source targets reserved for evaluation")
     ap.add_argument("--noise-calibration-fraction", type=float, default=0.2,
@@ -566,16 +573,40 @@ def main() -> None:
             "a source-labelled --noise-lib is required for a publication run")
 
     if noise_lib is not None and args.build_noise_lib:
-        targets = args.noise_targets or DEFAULT_TARGETS
+        if args.noise_targets and args.noise_target_file:
+            raise SystemExit("use either --noise-targets or --noise-target-file")
+        if args.noise_target_file:
+            target_file = (repo / args.noise_target_file).resolve()
+            targets = [line.strip() for line in target_file.read_text().splitlines()
+                       if line.strip() and not line.lstrip().startswith("#")]
+        elif args.noise_targets:
+            target_file = None
+            targets = args.noise_targets
+        else:
+            target_file = out_dir / "noise_targets.txt"
+            target_metadata = out_dir / "noise_targets.json"
+            run([args.python, "scripts/select_noise_targets.py",
+                 "--out", str(target_file), "--metadata", str(target_metadata),
+                 "--n-targets", str(max(120, 3 * args.min_noise_targets)),
+                 "--seed", str(args.eval_seed)],
+                repo, logs / "noise_target_selection.log")
+            targets = [line.strip() for line in target_file.read_text().splitlines()
+                       if line.strip()]
         run([args.python, "scripts/build_noise_library.py", "--mission", "TESS",
              "--n-raw", "18000", "--out", str(noise_lib),
-             "--workers", str(args.noise_workers), "--targets", *targets],
+             "--workers", str(args.noise_workers),
+             "--min-targets", str(args.min_noise_targets),
+             *([] if target_file is None else [
+                 "--target-provenance", str(target_file.with_suffix(".json"))]),
+             "--targets", *targets],
             repo, logs / "noise_lib.log")
     noise_meta = (
         validate_noise_lib(noise_lib)
         if noise_lib is not None else
         {"path": None, "available": False}
     )
+    if noise_lib is not None and not args.smoke:
+        require_noise_target_count(noise_meta, args.min_noise_targets)
     (out_dir / "noise_lib.json").write_text(json.dumps(noise_meta, indent=2))
     train_noise_lib = noise_lib
     calibration_noise_lib = noise_lib

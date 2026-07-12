@@ -2,8 +2,8 @@
 
 Three regimes are mixed per batch (Sec. 2.2 of the plan):
 
-1. **Real-noise injection** -- transits injected into out-of-transit segments of
-   real Kepler/TESS light curves.  Implemented via :class:`NoiseLibrary`, which
+1. **Real-noise injection** -- transits injected into quality-screened segments
+   of quiet-target Kepler/TESS light curves. Implemented via :class:`NoiseLibrary`, which
    serves cached real segments if any have been downloaded with ``lightkurve``;
    otherwise this regime is skipped and its probability mass is redistributed.
 2. **GP-correlated synthetic noise** -- a stationary Gaussian process (stellar
@@ -151,11 +151,11 @@ def sinusoid_signal(times: np.ndarray, amp: float, period: float,
 
 
 # --------------------------------------------------------------------------- #
-# Real out-of-transit segment library (optional, populated via lightkurve)
+# Real quiet-target segment library (optional, populated via lightkurve)
 # --------------------------------------------------------------------------- #
 @dataclass
 class NoiseLibrary:
-    """Holds cached, unit-normalized real out-of-transit flux segments.
+    """Holds cached, unit-normalized real quiet-target flux segments.
 
     Each row is a length-``n`` segment with median ~1.  Populated offline by
     ``scripts/build_noise_library.py`` (which uses ``lightkurve``); when empty,

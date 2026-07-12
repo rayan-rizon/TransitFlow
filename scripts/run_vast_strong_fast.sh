@@ -11,14 +11,15 @@ export OPENBLAS_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export NUMEXPR_NUM_THREADS=1
 
-run_name="${RUN_NAME:-calibrated_candidate_strong_fast_v2_20260712}"
+run_name="${RUN_NAME:-calibrated_candidate_strong_fast_v3_20260712}"
 
 exec python -u scripts/run_publishable_vast.py \
   --fast-check \
   --run-name "${run_name}" \
   --out-root results/publishable_runs \
   --config configs/publishable.yaml \
-  --noise-lib data/noise_lib_mnras_20260711.npz \
+  --noise-lib data/noise_lib_gaia_tess_20260712.npz \
+  --min-noise-targets 60 \
   --train-seed 17 \
   --eval-seed 20260712 \
   --real-seed 20260712 \

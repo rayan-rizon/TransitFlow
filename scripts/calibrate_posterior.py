@@ -82,7 +82,12 @@ def main() -> None:
     theta = np.concatenate(truths)[:args.n_calibration]
     posterior = np.concatenate(samples)[:args.n_calibration]
     center = np.concatenate(centers)[:args.n_calibration]
-    calibration, diagnostics = fit_affine_calibration(theta, posterior, center)
+    lower, upper = prior.std_bounds
+    if model.cfg.param_dim == 5:
+        lower, upper = lower[2:], upper[2:]
+    calibration, diagnostics = fit_affine_calibration(
+        theta, posterior, center, bounds=(lower, upper),
+        optimizer_seed=args.seed)
     metadata = {
         **calibration.metadata,
         "seed": int(args.seed),
@@ -94,11 +99,21 @@ def main() -> None:
         "fit_set_role": "calibration_only_not_final_evaluation",
     }
     calibration = type(calibration)(
-        calibration.scale, calibration.offset, calibration.center_slope, metadata)
+        calibration.scale,
+        calibration.offset,
+        calibration.center_slope,
+        calibration.lower,
+        calibration.upper,
+        calibration.space,
+        metadata,
+    )
     calibration.save(args.out)
     print(json.dumps({"scale": calibration.scale.tolist(),
                       "offset": calibration.offset.tolist(),
                       "center_slope": calibration.center_slope.tolist(),
+                      "space": calibration.space,
+                      "lower": calibration.lower.tolist(),
+                      "upper": calibration.upper.tolist(),
                       **diagnostics}, indent=2))
     print("wrote", args.out)
 
