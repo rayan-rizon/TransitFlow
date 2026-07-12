@@ -290,7 +290,7 @@ python3 scripts/select_noise_targets.py \
 python3 scripts/build_noise_library.py --mission TESS \
     --targets $(grep -v '^#' data/noise_targets.txt) \
     --target-provenance data/noise_targets.json \
-    --min-targets 30 --workers 4 --out data/noise_lib.npz
+    --min-targets 30 --workers 1 --out data/noise_lib.npz
 ```
 
 The publishability runner enforces at least 30 successful independent source

@@ -16,7 +16,7 @@ exec python -u scripts/build_noise_library.py \
   --mission TESS \
   --targets "${targets[@]}" \
   --n-raw 18000 \
-  --workers 4 \
+  --workers 1 \
   --min-targets 60 \
   --max-segments-per-target 8 \
   --max-point-to-point-ppm 2500 \

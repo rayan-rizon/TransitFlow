@@ -73,7 +73,8 @@ for seed in 0 1 2; do
 done
 ```
 
-Add `--build-noise-lib --noise-workers 4` only to the seed-0 command. This writes
+Add `--build-noise-lib --noise-workers 1` only to the seed-0 command. Serial
+archive access avoids Lightkurve/Astroquery progress-stream and cache races. This writes
 the catalog query and selected targets inside the run directory and the library
 quality/provenance sidecar beside the archive. Do not rebuild or alter the noise
 source archive between seeds.
