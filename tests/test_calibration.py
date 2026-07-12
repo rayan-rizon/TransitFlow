@@ -28,6 +28,8 @@ def test_bounded_calibration_round_trip_support_and_logdet():
         lower=np.array([-np.sqrt(3.0)]),
         upper=np.array([np.sqrt(3.0)]),
         space="bounded_tanh",
+        center_quadratic=np.array([0.12]),
+        log_scale_slope=np.array([-0.18]),
     )
     raw = np.array([[-2.5], [0.3], [3.2]])
     center = np.array([[0.1], [0.2], [-0.4]])
@@ -42,10 +44,29 @@ def test_bounded_calibration_round_trip_support_and_logdet():
     y_hi = cal.apply(raw + eps, center)
     y_lo = cal.apply(raw - eps, center)
     numerical = np.log(np.abs((y_hi - y_lo) / (2.0 * eps)))[:, 0]
-    assert np.allclose(cal.log_abs_det_at(calibrated), numerical, atol=1e-5)
+    assert np.allclose(cal.log_abs_det_at(calibrated, center), numerical, atol=1e-5)
     loaded = PosteriorAffineCalibration.load(cal.to_dict())
     assert loaded.space == "bounded_tanh"
     assert np.allclose(loaded.apply(raw, center), calibrated)
+
+
+def test_bounded_nonlinear_calibration_recovers_conditional_bias():
+    rng = np.random.default_rng(77)
+    n, n_post = 320, 128
+    bound = np.sqrt(3.0)
+    center = rng.uniform(-1.2, 1.2, size=(n, 1))
+    truth_latent = -0.35 + 0.15 * center + 0.95 * center ** 2
+    truth = bound * np.tanh(truth_latent + rng.normal(0.0, 0.04, size=(n, 1)))
+    posterior = center[:, None, :] + rng.normal(
+        0.0, 0.11 * np.exp(0.35 * center[:, None, :]), size=(n, n_post, 1))
+
+    calibration, diagnostics = fit_affine_calibration(
+        truth, posterior, center,
+        bounds=(np.array([-bound]), np.array([bound])), optimizer_seed=29)
+
+    assert abs(calibration.center_quadratic[0]) > 0.05
+    assert diagnostics["rank_cvm_after_by_dim"][0] < 0.05
+    assert diagnostics["coverage_error_after_mean"] < 0.04
 
 
 def test_fit_affine_calibration_improves_heldout_coverage_objective():

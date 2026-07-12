@@ -106,12 +106,16 @@ def main() -> None:
         calibration.upper,
         calibration.space,
         metadata,
+        calibration.center_quadratic,
+        calibration.log_scale_slope,
     )
     calibration.save(args.out)
     print(json.dumps({"scale": calibration.scale.tolist(),
                       "offset": calibration.offset.tolist(),
                       "center_slope": calibration.center_slope.tolist(),
+                      "center_quadratic": calibration.center_quadratic.tolist(),
                       "space": calibration.space,
+                      "log_scale_slope": calibration.log_scale_slope.tolist(),
                       "lower": calibration.lower.tolist(),
                       "upper": calibration.upper.tolist(),
                       **diagnostics}, indent=2))
