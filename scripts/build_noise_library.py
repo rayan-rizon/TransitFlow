@@ -59,6 +59,59 @@ def robust_point_to_point_ppm(flux: np.ndarray) -> float:
     return float(1e6 * sigma_diff / np.sqrt(2.0))
 
 
+def segment_flux_products(
+        flux_products: list[np.ndarray], n_raw: int, max_segments: int,
+        max_point_to_point_ppm: float) -> tuple[list[np.ndarray], list[dict]]:
+    """Quality-screen and segment products without crossing their boundaries."""
+    segments: list[np.ndarray] = []
+    product_metrics: list[dict] = []
+    for product_index, raw in enumerate(flux_products):
+        flux_raw = np.asarray(raw, dtype=np.float64)
+        flux_raw = flux_raw[np.isfinite(flux_raw)]
+        metric: dict = {
+            "product_index": int(product_index),
+            "n_cadences": int(len(flux_raw)),
+            "accepted": False,
+            "n_segments": 0,
+        }
+        if len(flux_raw) < n_raw:
+            metric["rejection"] = "too_few_cadences"
+            product_metrics.append(metric)
+            continue
+        med = np.nanmedian(flux_raw)
+        if not np.isfinite(med) or abs(med) < 0.1:
+            metric["rejection"] = "zero_centered_or_invalid_flux"
+            product_metrics.append(metric)
+            continue
+        flux = flux_raw / med
+        center, scatter = np.nanmedian(flux), np.nanstd(flux)
+        if np.isfinite(scatter) and scatter > 0:
+            flux = np.clip(flux, center - 5 * scatter, center + 5 * scatter)
+        point_to_point_ppm = robust_point_to_point_ppm(flux)
+        metric["point_to_point_ppm"] = point_to_point_ppm
+        if (not np.isfinite(point_to_point_ppm)
+                or point_to_point_ppm > max_point_to_point_ppm):
+            metric["rejection"] = "point_to_point_scatter"
+            product_metrics.append(metric)
+            continue
+        remaining = max_segments - len(segments)
+        for start in range(0, len(flux) - n_raw + 1, n_raw):
+            if remaining <= 0:
+                break
+            segment = flux[start:start + n_raw]
+            if np.all(np.isfinite(segment)):
+                segments.append(segment)
+                metric["n_segments"] += 1
+                remaining -= 1
+        metric["accepted"] = metric["n_segments"] > 0
+        if not metric["accepted"]:
+            metric["rejection"] = "no_complete_segment"
+        product_metrics.append(metric)
+        if len(segments) >= max_segments:
+            break
+    return segments, product_metrics
+
+
 def _collect_target_segments(
         tgt: str, mission: str, n_raw: int, max_segments: int,
         max_point_to_point_ppm: float) \
@@ -86,48 +139,39 @@ def _collect_target_segments(
             logs.append(f"  skipped {tgt}: no data found")
             return tgt, segments, logs, metrics
 
+        # At most two products per desired segment: enough headroom for gaps or
+        # short sectors without downloading every sector of polar targets.
+        sr = sr[:max(2, 2 * max_segments)]
         lc_col = sr.download_all()
         if lc_col is None or len(lc_col) == 0:
             logs.append(f"  skipped {tgt}: download returned empty")
             return tgt, segments, logs, metrics
 
-        # Stitch and clean; normalize() divides by median -> relative flux ~= 1
-        lc = lc_col.stitch().remove_nans()
-        flux_raw = np.asarray(lc.flux.value, dtype=np.float64)
-        med = np.nanmedian(flux_raw)
-        # Guard against zero-centered ppm data (median ~= 0)
-        if abs(med) < 0.1:
-            logs.append(f"  skipped {tgt}: flux appears zero-centered "
-                        f"(median={med:.3g}), likely ppm product")
-            return tgt, segments, logs, metrics
-        flux = flux_raw / med
-        flux = flux[np.isfinite(flux)]
-        # Limit extreme excursions. This is not a planet-catalog transit mask;
-        # target-level quietness and robust scatter gates provide the primary
-        # contamination control, and their provenance is recorded separately.
-        m, s = np.nanmedian(flux), np.nanstd(flux)
-        flux = np.clip(flux, m - 5 * s, m + 5 * s)
-        point_to_point_ppm = robust_point_to_point_ppm(flux)
+        flux_products = [
+            np.asarray(lc.remove_nans().flux.value, dtype=np.float64)
+            for lc in lc_col
+        ]
+        segments, product_metrics = segment_flux_products(
+            flux_products, n_raw, max_segments, max_point_to_point_ppm)
+        accepted_ppm = [
+            product["point_to_point_ppm"] for product in product_metrics
+            if product.get("accepted")
+        ]
         metrics.update({
-            "n_cadences": int(len(flux)),
-            "point_to_point_ppm": point_to_point_ppm,
+            "n_products_downloaded": len(flux_products),
+            "n_cadences": int(sum(len(product) for product in flux_products)),
+            "point_to_point_ppm": (
+                float(np.median(accepted_ppm)) if accepted_ppm else None),
+            "products": product_metrics,
         })
-        if (not np.isfinite(point_to_point_ppm)
-                or point_to_point_ppm > max_point_to_point_ppm):
-            logs.append(
-                f"  skipped {tgt}: point-to-point scatter "
-                f"{point_to_point_ppm:.0f} ppm exceeds "
-                f"{max_point_to_point_ppm:.0f} ppm")
+        if not segments:
+            logs.append(f"  skipped {tgt}: no product passed quality/length gates")
             return tgt, segments, logs, metrics
-        for start in range(0, len(flux) - n_raw + 1, n_raw):
-            seg = flux[start:start + n_raw]
-            if np.all(np.isfinite(seg)):
-                segments.append(seg)
-                if len(segments) >= max_segments:
-                    break
         metrics.update({"accepted": bool(segments),
                         "n_segments": int(len(segments))})
-        logs.append(f"  {tgt}: {len(segments)} segments from {len(flux)} cadences")
+        logs.append(
+            f"  {tgt}: {len(segments)} segments from "
+            f"{len(flux_products)} independent products")
         return tgt, segments, logs, metrics
     except Exception as e:  # pragma: no cover - network dependent
         logs.append(f"  skipped {tgt}: {e}")
