@@ -247,17 +247,36 @@ def main() -> None:
             segments.extend(target_segments)
             target_ids.extend([tgt] * len(target_segments))
 
-    if not segments:
-        emit_logs(["no segments collected; nothing written."])
-        sys.exit(1)
     successful_targets = sorted(set(target_ids))
-    if len(successful_targets) < int(args.min_targets):
+    enough_targets = len(successful_targets) >= int(args.min_targets)
+    metadata = {
+        "status": "complete" if enough_targets else "insufficient_targets",
+        "mission": args.mission,
+        "n_raw": int(args.n_raw),
+        "requested_targets": list(args.targets),
+        "successful_targets": successful_targets,
+        "n_successful_targets": len(successful_targets),
+        "minimum_targets": int(args.min_targets),
+        "n_segments": len(segments),
+        "max_segments_per_target": int(args.max_segments_per_target),
+        "max_point_to_point_ppm": float(args.max_point_to_point_ppm),
+        "target_provenance": args.target_provenance,
+        "target_provenance_sha256": _sha256(args.target_provenance),
+        "quality": quality,
+    }
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+    metadata_path = args.out + ".metadata.json"
+    metadata_tmp = metadata_path + ".tmp"
+    if not enough_targets:
+        with open(metadata_tmp, "w") as fh:
+            json.dump(metadata, fh, indent=2, sort_keys=True)
+        os.replace(metadata_tmp, metadata_path)
         emit_logs([
             f"only {len(successful_targets)} targets passed; "
-            f"minimum is {args.min_targets}; nothing written."])
+            f"minimum is {args.min_targets}; archive not written; "
+            f"attempt report={metadata_path}"])
         sys.exit(1)
     segments = np.asarray(segments)
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     tmp = args.out + ".tmp.npz"
     np.savez_compressed(
         tmp,
@@ -267,22 +286,8 @@ def main() -> None:
         segment_length=np.asarray(args.n_raw),
     )
     os.replace(tmp, args.out)
-    metadata_path = args.out + ".metadata.json"
-    metadata_tmp = metadata_path + ".tmp"
     with open(metadata_tmp, "w") as fh:
-        json.dump({
-            "mission": args.mission,
-            "n_raw": int(args.n_raw),
-            "requested_targets": list(args.targets),
-            "successful_targets": successful_targets,
-            "n_successful_targets": len(successful_targets),
-            "n_segments": len(segments),
-            "max_segments_per_target": int(args.max_segments_per_target),
-            "max_point_to_point_ppm": float(args.max_point_to_point_ppm),
-            "target_provenance": args.target_provenance,
-            "target_provenance_sha256": _sha256(args.target_provenance),
-            "quality": quality,
-        }, fh, indent=2, sort_keys=True)
+        json.dump(metadata, fh, indent=2, sort_keys=True)
     os.replace(metadata_tmp, metadata_path)
     emit_logs([f"wrote {len(segments)} segments of length {args.n_raw} -> {args.out}"])
 
