@@ -12,7 +12,7 @@ python -u scripts/select_noise_targets.py \
   --metadata data/noise_targets_gaia_20260712.json
 
 mapfile -t targets < data/noise_targets_gaia_20260712.txt
-python -u scripts/build_noise_library.py \
+exec python -u scripts/build_noise_library.py \
   --mission TESS \
   --targets "${targets[@]}" \
   --n-raw 18000 \
