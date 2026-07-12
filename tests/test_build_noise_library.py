@@ -1,9 +1,11 @@
 import io
+import json
 
 from scripts.build_noise_library import (
     emit_logs,
     robust_point_to_point_ppm,
     segment_flux_products,
+    load_extension_archive,
 )
 
 import numpy as np
@@ -39,6 +41,35 @@ def test_product_quality_rejection_is_recorded():
 
     assert segments == []
     assert metrics[0]["rejection"] == "point_to_point_scatter"
+
+
+def test_extension_archive_requires_matching_provenance(tmp_path):
+    archive = tmp_path / "old.npz"
+    np.savez_compressed(
+        archive,
+        segments=np.ones((2, 8)),
+        target_ids=np.array(["HIP 1", "HIP 2"]),
+    )
+    (tmp_path / "old.npz.metadata.json").write_text(json.dumps({
+        "quality": [
+            {"target": "HIP 1", "accepted": True},
+            {"target": "HIP 2", "accepted": True},
+        ]
+    }))
+
+    segments, target_ids, quality = load_extension_archive(
+        str(archive), 8, ["HIP 1", "HIP 2", "HIP 3"])
+
+    assert len(segments) == 2
+    assert target_ids == ["HIP 1", "HIP 2"]
+    assert set(quality) == {"HIP 1", "HIP 2"}
+
+    try:
+        load_extension_archive(str(archive), 8, ["HIP 1"])
+    except ValueError as exc:
+        assert "absent" in str(exc)
+    else:
+        raise AssertionError("extension outside new provenance did not fail")
 
 
 def test_emit_logs_uses_fallback_after_closed_primary_stream():

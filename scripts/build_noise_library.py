@@ -189,6 +189,36 @@ def _sha256(path: str | None) -> str | None:
     return digest.hexdigest()
 
 
+def load_extension_archive(
+        path: str, n_raw: int, requested_targets: list[str]) \
+        -> tuple[list[np.ndarray], list[str], dict[str, dict]]:
+    """Load verified segments for incremental, provenance-preserving extension."""
+    with np.load(path) as arr:
+        if "segments" not in arr.files or "target_ids" not in arr.files:
+            raise ValueError("extension archive must contain segments and target_ids")
+        prior_segments = np.asarray(arr["segments"], dtype=np.float64)
+        prior_ids = arr["target_ids"].astype(str).tolist()
+    if prior_segments.ndim != 2 or prior_segments.shape[1] != n_raw:
+        raise ValueError("extension archive segment length does not match --n-raw")
+    if len(prior_ids) != len(prior_segments):
+        raise ValueError("extension archive target_ids do not match segments")
+    unexpected = sorted(set(prior_ids) - set(requested_targets))
+    if unexpected:
+        raise ValueError(
+            "extension targets are absent from the new target provenance: "
+            + ", ".join(unexpected[:5]))
+    quality_by_target: dict[str, dict] = {}
+    metadata_path = path + ".metadata.json"
+    if os.path.exists(metadata_path):
+        with open(metadata_path) as fh:
+            prior_metadata = json.load(fh)
+        quality_by_target = {
+            str(item["target"]): item for item in prior_metadata.get("quality", [])
+            if item.get("accepted") and item.get("target") in set(prior_ids)
+        }
+    return list(prior_segments), prior_ids, quality_by_target
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mission", default="TESS", choices=["TESS", "Kepler"])
@@ -202,6 +232,8 @@ def main() -> None:
     ap.add_argument("--max-segments-per-target", type=int, default=8)
     ap.add_argument("--max-point-to-point-ppm", type=float, default=2500.0)
     ap.add_argument("--target-provenance", default=None)
+    ap.add_argument("--extend-from", default=None,
+                    help="reuse verified source-labelled segments from this archive")
     args = ap.parse_args()
 
     try:
@@ -212,17 +244,23 @@ def main() -> None:
               "synthetic GP noise.")
         sys.exit(1)
 
-    segments = []
+    segments: list[np.ndarray] = []
     target_ids: list[str] = []
-    quality: list[dict] = []
+    quality_by_target: dict[str, dict] = {}
+    if args.extend_from:
+        segments, target_ids, quality_by_target = load_extension_archive(
+            args.extend_from, args.n_raw, list(args.targets))
+    completed_targets = set(target_ids)
+    pending_targets = [
+        target for target in args.targets if target not in completed_targets]
     workers = max(1, int(args.workers))
     if workers == 1:
-        for tgt in args.targets:
+        for tgt in pending_targets:
             _, target_segments, logs, metrics = _collect_target_segments(
                 tgt, args.mission, args.n_raw, args.max_segments_per_target,
                 args.max_point_to_point_ppm)
             emit_logs(logs)
-            quality.append(metrics)
+            quality_by_target[tgt] = metrics
             segments.extend(target_segments)
             target_ids.extend([tgt] * len(target_segments))
     else:
@@ -232,22 +270,30 @@ def main() -> None:
                 ex.submit(
                     _collect_target_segments, tgt, args.mission, args.n_raw,
                     args.max_segments_per_target, args.max_point_to_point_ppm): tgt
-                for tgt in args.targets
+                for tgt in pending_targets
             }
             for fut in as_completed(futures):
                 tgt, target_segments, logs, metrics = fut.result()
                 results[tgt] = (target_segments, logs, metrics)
-        for tgt in args.targets:
+        for tgt in pending_targets:
             target_segments, logs, metrics = results.get(
                 tgt, ([], [f"  skipped {tgt}: worker produced no result"],
                       {"target": tgt, "accepted": False,
                        "error": "worker produced no result"}))
             emit_logs(logs)
-            quality.append(metrics)
+            quality_by_target[tgt] = metrics
             segments.extend(target_segments)
             target_ids.extend([tgt] * len(target_segments))
 
     successful_targets = sorted(set(target_ids))
+    quality = [
+        quality_by_target.get(target, {
+            "target": target,
+            "accepted": target in successful_targets,
+            "error": "missing quality record from extension archive",
+        })
+        for target in args.targets
+    ]
     enough_targets = len(successful_targets) >= int(args.min_targets)
     metadata = {
         "status": "complete" if enough_targets else "insufficient_targets",
@@ -262,6 +308,8 @@ def main() -> None:
         "max_point_to_point_ppm": float(args.max_point_to_point_ppm),
         "target_provenance": args.target_provenance,
         "target_provenance_sha256": _sha256(args.target_provenance),
+        "extended_from": args.extend_from,
+        "extended_from_sha256": _sha256(args.extend_from),
         "quality": quality,
     }
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)

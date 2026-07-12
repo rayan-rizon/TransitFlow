@@ -44,7 +44,7 @@ gates pass and the paired AP comparison no longer shows a significant TLS
 disadvantage.
 
 Build the source-labelled noise library in the first run from the automatic,
-seeded catalog selector, requiring at least 30 successful independent targets.
+seeded catalog selector, requiring at least 120 successful independent targets.
 Then reuse that exact file for seeds 1 and 2 by omitting `--build-noise-lib`.
 
 ```bash
@@ -53,7 +53,7 @@ for seed in 0 1 2; do
     --run-name "mnras_seed_${seed}" \
     --config configs/publishable.yaml \
     --noise-lib data/noise_lib.npz \
-    --min-noise-targets 30 \
+    --min-noise-targets 120 \
     --train-seed "$seed" \
     --eval-seed 123 \
     --real-seed 20260710 \
@@ -85,7 +85,7 @@ The top-level `gate_report.json` must retain every pass and failure. Publication
 claims remain blocked if any of these occur:
 
 - target overlap among training, calibration, and evaluation noise libraries;
-- fewer than 30 successful independent source targets in the noise archive;
+- fewer than 120 successful independent source targets in the noise archive;
 - segment-weighted rather than source-target-uniform real-noise sampling;
 - characterization from a final/resume checkpoint instead of the predeclared
   validation-posterior-loss checkpoint;

@@ -290,10 +290,10 @@ python3 scripts/select_noise_targets.py \
 python3 scripts/build_noise_library.py --mission TESS \
     --targets $(grep -v '^#' data/noise_targets.txt) \
     --target-provenance data/noise_targets.json \
-    --min-targets 30 --workers 1 --out data/noise_lib.npz
+    --min-targets 120 --workers 1 --out data/noise_lib.npz
 ```
 
-The publishability runner enforces at least 30 successful independent source
+The publishability runner enforces at least 120 successful independent source
 targets, then performs target-disjoint training/calibration/evaluation splits.
 The builder records the target query, quality metrics, and provenance hash in
 `data/noise_lib.npz.metadata.json`. The segments are quiet-target light curves,

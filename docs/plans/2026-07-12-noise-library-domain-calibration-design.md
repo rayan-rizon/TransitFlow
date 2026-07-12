@@ -32,8 +32,9 @@ segment counts and robust photometric diagnostics, rejects targets that fail the
 predeclared quality threshold, and fails closed unless the requested minimum
 number of independent targets is reached.
 
-The publication runner must reject a real-noise archive with fewer than 30
-unique targets. Target identities remain disjoint across training, calibration,
+The publication runner must reject a real-noise archive with fewer than 120
+unique targets, leaving approximately 24 independent stars in each of the
+calibration and evaluation splits. Target identities remain disjoint across training, calibration,
 and evaluation, and stars—not sectors—remain the sampling unit. The already
 inspected v2 evaluation targets are development-only; a later decision run must
 freeze a newly generated split before metrics are inspected.

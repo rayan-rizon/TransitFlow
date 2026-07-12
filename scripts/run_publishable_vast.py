@@ -429,7 +429,7 @@ def main() -> None:
     ap.add_argument("--noise-targets", nargs="*", default=None)
     ap.add_argument("--noise-target-file", default=None,
                     help="one archive-resolvable target per line")
-    ap.add_argument("--min-noise-targets", type=int, default=30)
+    ap.add_argument("--min-noise-targets", type=int, default=120)
     ap.add_argument("--noise-eval-fraction", type=float, default=0.2,
                     help="fraction of source targets reserved for evaluation")
     ap.add_argument("--noise-calibration-fraction", type=float, default=0.2,
