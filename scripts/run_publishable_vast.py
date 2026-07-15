@@ -277,6 +277,96 @@ def prepare_noise_train_calibration_split(
     return train_path, calibration_path, meta
 
 
+def prepare_noise_train_validation_calibration_split(
+    path: Path,
+    out_dir: Path,
+    seed: int,
+    validation_fraction: float = 0.1,
+    calibration_fraction: float = 0.2,
+) -> tuple[Path, Path, Path, dict]:
+    """Split development targets while reserving evaluation externally.
+
+    Gradient training, checkpoint selection, and posterior calibration must use
+    different source targets.  The publication evaluation role is supplied by
+    a separately frozen archive and is therefore not carved from ``path``.
+    """
+    import numpy as np
+
+    if not 0.0 < validation_fraction < 1.0:
+        raise SystemExit("validation fraction must be strictly between 0 and 1")
+    if not 0.0 < calibration_fraction < 1.0:
+        raise SystemExit("calibration fraction must be strictly between 0 and 1")
+    if validation_fraction + calibration_fraction >= 1.0:
+        raise SystemExit(
+            "validation/calibration fractions leave no training targets")
+    with np.load(path) as arr:
+        if "target_ids" not in arr.files:
+            raise SystemExit("development noise library lacks target_ids")
+        segments = np.asarray(arr["segments"])
+        target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if len(target_ids) != len(segments) or len(segments) == 0:
+        raise SystemExit("noise target_ids must be nonempty and match segments")
+    targets = np.unique(target_ids)
+    if len(targets) < 4:
+        raise SystemExit("at least four development targets are required")
+    rng = np.random.default_rng(seed)
+    targets = targets[rng.permutation(len(targets))]
+    n_cal = max(1, int(np.ceil(len(targets) * calibration_fraction)))
+    n_val = max(1, int(np.ceil(len(targets) * validation_fraction)))
+    if n_cal + n_val >= len(targets):
+        raise SystemExit(
+            "validation/calibration fractions leave no training targets")
+    calibration_targets = targets[:n_cal]
+    validation_targets = targets[n_cal:n_cal + n_val]
+    training_targets = targets[n_cal + n_val:]
+    role_targets = {
+        "train": training_targets,
+        "validation": validation_targets,
+        "calibration": calibration_targets,
+    }
+    role_masks = {
+        role: np.isin(target_ids, selected)
+        for role, selected in role_targets.items()
+    }
+    if not np.all(np.logical_or.reduce(list(role_masks.values()))):
+        raise SystemExit("development noise split did not assign every segment")
+    if not all(mask.any() for mask in role_masks.values()):
+        raise SystemExit("development noise split produced an empty partition")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    paths = {
+        role: out_dir / f"noise_{role}.npz"
+        for role in role_targets
+    }
+    for role, output_path in paths.items():
+        mask = role_masks[role]
+        np.savez_compressed(
+            output_path, segments=segments[mask], target_ids=target_ids[mask])
+    sets = {
+        role: sorted(selected.tolist())
+        for role, selected in role_targets.items()
+    }
+    overlaps = {
+        "train_validation": sorted(set(sets["train"]) & set(sets["validation"])),
+        "train_calibration": sorted(set(sets["train"]) & set(sets["calibration"])),
+        "validation_calibration": sorted(
+            set(sets["validation"]) & set(sets["calibration"])),
+    }
+    meta = {
+        "seed": int(seed),
+        "validation_fraction_requested": float(validation_fraction),
+        "calibration_fraction_requested": float(calibration_fraction),
+        "targets": sets,
+        "n_segments": {
+            role: int(mask.sum()) for role, mask in role_masks.items()
+        },
+        "overlaps": overlaps,
+        "all_disjoint": not any(overlaps.values()),
+        "evaluation_role": "external_frozen_publication_lockbox",
+        "sampling_unit": "source_target_uniform_then_segment_v1",
+    }
+    return paths["train"], paths["validation"], paths["calibration"], meta
+
+
 def prepare_noise_three_way_split(
     path: Path,
     out_dir: Path,
@@ -349,6 +439,102 @@ def prepare_noise_three_way_split(
         "sampling_unit": "source_target_uniform_then_segment_v1",
     }
     return train_path, cal_path, eval_path, meta
+
+
+def prepare_noise_four_way_split(
+    path: Path,
+    out_dir: Path,
+    seed: int,
+    validation_fraction: float = 0.1,
+    calibration_fraction: float = 0.2,
+    eval_fraction: float = 0.2,
+) -> tuple[Path, Path, Path, Path, dict]:
+    """Create target-disjoint train/validation/calibration/evaluation sets."""
+    import numpy as np
+
+    fractions = {
+        "validation": validation_fraction,
+        "calibration": calibration_fraction,
+        "evaluation": eval_fraction,
+    }
+    for role, fraction in fractions.items():
+        if not 0.0 < fraction < 1.0:
+            raise SystemExit(
+                f"{role} fraction must be strictly between 0 and 1")
+    if sum(fractions.values()) >= 1.0:
+        raise SystemExit(
+            "validation/calibration/evaluation fractions leave no training targets")
+    with np.load(path) as arr:
+        if "target_ids" not in arr.files:
+            raise SystemExit("noise library lacks target_ids for four-way splitting")
+        segments = np.asarray(arr["segments"])
+        target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if len(target_ids) != len(segments) or len(segments) == 0:
+        raise SystemExit("noise target_ids must be nonempty and match segments")
+    targets = np.unique(target_ids)
+    if len(targets) < 4:
+        raise SystemExit("at least four source targets are required for a four-way split")
+    rng = np.random.default_rng(seed)
+    targets = targets[rng.permutation(len(targets))]
+    n_eval = max(1, int(np.ceil(len(targets) * eval_fraction)))
+    n_cal = max(1, int(np.ceil(len(targets) * calibration_fraction)))
+    n_val = max(1, int(np.ceil(len(targets) * validation_fraction)))
+    if n_eval + n_cal + n_val >= len(targets):
+        raise SystemExit(
+            "validation/calibration/evaluation fractions leave no training targets")
+    role_targets = {
+        "evaluation": targets[:n_eval],
+        "calibration": targets[n_eval:n_eval + n_cal],
+        "validation": targets[n_eval + n_cal:n_eval + n_cal + n_val],
+        "train": targets[n_eval + n_cal + n_val:],
+    }
+    role_masks = {
+        role: np.isin(target_ids, selected)
+        for role, selected in role_targets.items()
+    }
+    if not np.all(np.logical_or.reduce(list(role_masks.values()))):
+        raise SystemExit("four-way noise split did not assign every segment")
+    if not all(mask.any() for mask in role_masks.values()):
+        raise SystemExit("four-way noise split produced an empty partition")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    filenames = {
+        "train": "noise_train.npz",
+        "validation": "noise_validation.npz",
+        "calibration": "noise_calibration.npz",
+        "evaluation": "noise_eval.npz",
+    }
+    paths = {role: out_dir / name for role, name in filenames.items()}
+    for role, output_path in paths.items():
+        mask = role_masks[role]
+        np.savez_compressed(
+            output_path, segments=segments[mask], target_ids=target_ids[mask])
+    sets = {
+        role: sorted(selected.tolist())
+        for role, selected in role_targets.items()
+    }
+    roles = ("train", "validation", "calibration", "evaluation")
+    overlaps = {
+        f"{left}_{right}": sorted(set(sets[left]) & set(sets[right]))
+        for i, left in enumerate(roles)
+        for right in roles[i + 1:]
+    }
+    meta = {
+        "seed": int(seed),
+        "validation_fraction_requested": float(validation_fraction),
+        "calibration_fraction_requested": float(calibration_fraction),
+        "eval_fraction_requested": float(eval_fraction),
+        "targets": sets,
+        "n_segments": {
+            role: int(mask.sum()) for role, mask in role_masks.items()
+        },
+        "overlaps": overlaps,
+        "all_disjoint": not any(overlaps.values()),
+        "sampling_unit": "source_target_uniform_then_segment_v1",
+    }
+    return (
+        paths["train"], paths["validation"], paths["calibration"],
+        paths["evaluation"], meta,
+    )
 
 
 def _gate_value(metrics: dict, key: str) -> bool:
@@ -527,6 +713,8 @@ def main() -> None:
     ap.add_argument("--min-noise-targets", type=int, default=120)
     ap.add_argument("--noise-eval-fraction", type=float, default=0.2,
                     help="fraction of source targets reserved for evaluation")
+    ap.add_argument("--noise-validation-fraction", type=float, default=0.1,
+                    help="fraction of source targets reserved for checkpoint selection")
     ap.add_argument("--noise-calibration-fraction", type=float, default=0.2,
                     help="fraction of source targets reserved for posterior calibration")
     ap.add_argument("--data-dir", default=None)
@@ -729,14 +917,16 @@ def main() -> None:
         (out_dir / "publication_eval_noise_lib.json").write_text(
             json.dumps(publication_eval_meta, indent=2))
     train_noise_lib = noise_lib
+    validation_noise_lib = noise_lib
     calibration_noise_lib = noise_lib
     eval_noise_lib = noise_lib
     split_meta = None
     if noise_lib is not None and not args.smoke:
         if publication_eval_noise_lib is not None:
-            train_noise_lib, calibration_noise_lib, split_meta = \
-                prepare_noise_train_calibration_split(
+            (train_noise_lib, validation_noise_lib, calibration_noise_lib,
+             split_meta) = prepare_noise_train_validation_calibration_split(
                     noise_lib, out_dir / "noise_splits", args.eval_seed,
+                    args.noise_validation_fraction,
                     args.noise_calibration_fraction)
             eval_noise_lib = publication_eval_noise_lib
             split_meta["publication_evaluation"] = {
@@ -745,11 +935,15 @@ def main() -> None:
                 "n_targets": publication_eval_meta["n_unique_targets"],
                 "target_overlap_with_development": [],
             }
-            split_meta["all_disjoint"] = True
+            split_meta["all_disjoint"] = bool(
+                split_meta.get("all_disjoint", False)
+                and not split_meta["publication_evaluation"][
+                    "target_overlap_with_development"])
         else:
-            train_noise_lib, calibration_noise_lib, eval_noise_lib, split_meta = \
-                prepare_noise_three_way_split(
+            (train_noise_lib, validation_noise_lib, calibration_noise_lib,
+             eval_noise_lib, split_meta) = prepare_noise_four_way_split(
                     noise_lib, out_dir / "noise_splits", args.eval_seed,
+                    args.noise_validation_fraction,
                     args.noise_calibration_fraction, args.noise_eval_fraction)
         (out_dir / "noise_split.json").write_text(json.dumps(split_meta, indent=2))
 
@@ -781,6 +975,33 @@ def main() -> None:
     except ImportError:  # direct ``python scripts/run_publishable_vast.py``
         from _config import build_configs
     expected_steps = int(steps or build_configs(args.config)["train"].n_steps)
+    training_provenance = {
+        "schema_version": 1,
+        "config_sha256": _sha256_file((repo / args.config).resolve()),
+        "dataset_metadata_sha256": _sha256_file(data_dir / "dataset_meta.json"),
+        "validation_noise_lib": None if validation_noise_lib is None else {
+            "path": str(validation_noise_lib),
+            "sha256": _sha256_file(validation_noise_lib),
+            "n_targets": len(noise_target_set(validation_noise_lib)),
+        },
+        "train_seed": int(args.train_seed),
+        "steps": int(expected_steps),
+    }
+    training_provenance_path = run_dir / "training_provenance.json"
+    if training_provenance_path.exists():
+        if read_json(training_provenance_path) != training_provenance:
+            raise SystemExit(
+                "existing run has incompatible training/validation provenance; "
+                "use a new --run-dir")
+    elif (run_dir / "checkpoints").exists() and any(
+            (run_dir / "checkpoints").glob("*.pt")):
+        raise SystemExit(
+            "existing checkpoints lack training/validation provenance; "
+            "use a new --run-dir")
+    else:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        training_provenance_path.write_text(
+            json.dumps(training_provenance, indent=2))
     prior_status_path = run_dir / "status.json"
     prior_status = read_json(prior_status_path) if prior_status_path.exists() else {}
     training_already_complete = bool(
@@ -792,7 +1013,10 @@ def main() -> None:
         run([args.python, "scripts/train.py", "--config", args.config,
              "--run-dir", str(run_dir), "--data-dir", str(data_dir),
              "--expect-device", "cuda", "--no-preflight",
-             "--seed", str(args.train_seed), *train_steps],
+             "--seed", str(args.train_seed),
+             *([] if validation_noise_lib is None else [
+                 "--noise-lib", str(validation_noise_lib)]),
+             *train_steps],
             repo, logs / "train.log")
 
     train_status = read_json(run_dir / "status.json")
@@ -904,6 +1128,9 @@ def main() -> None:
             split_meta.get("all_disjoint", False))
         report["status"]["posterior_calibration_disjoint"] = bool(
             calibration_path.exists() and split_meta.get("all_disjoint", False))
+        report["status"]["checkpoint_validation_disjoint"] = bool(
+            validation_noise_lib is not None
+            and split_meta.get("all_disjoint", False))
         report["status"]["final_pass"] = all(
             value for key, value in report["status"].items()
             if key != "final_pass")
@@ -919,12 +1146,15 @@ def main() -> None:
         "publication_eval_noise_lib": None
         if publication_eval_noise_lib is None else str(publication_eval_noise_lib),
         "train_noise_lib": None if train_noise_lib is None else str(train_noise_lib),
+        "validation_noise_lib": None if validation_noise_lib is None else str(
+            validation_noise_lib),
         "calibration_noise_lib": None if calibration_noise_lib is None else str(
             calibration_noise_lib),
         "posterior_calibration": str(calibration_path)
         if calibration_path.exists() else None,
         "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
         "noise_calibration_fraction": float(args.noise_calibration_fraction),
+        "noise_validation_fraction": float(args.noise_validation_fraction),
         "noise_eval_fraction": float(args.noise_eval_fraction),
         "noise_workers": int(args.noise_workers),
         "smoke": bool(args.smoke),

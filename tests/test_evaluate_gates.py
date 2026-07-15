@@ -14,8 +14,10 @@ from scripts.validate_real import (
 from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
+    prepare_noise_four_way_split,
     prepare_noise_splits,
     prepare_noise_train_calibration_split,
+    prepare_noise_train_validation_calibration_split,
     prepare_noise_three_way_split,
     require_noise_target_count,
     validate_existing_dataset,
@@ -427,6 +429,70 @@ def test_development_train_calibration_split_reserves_no_internal_eval(tmp_path)
     assert train.isdisjoint(calibration)
     assert train | calibration == set(target_ids)
     assert meta["evaluation_role"] == "external_frozen_publication_lockbox"
+
+
+def test_noise_four_way_split_is_target_disjoint(tmp_path):
+    path = tmp_path / "noise.npz"
+    target_ids = np.repeat(np.array(list("ABCDEFGHIJ")), 2)
+    segments = np.arange(len(target_ids) * 8, dtype=float).reshape(-1, 8)
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    train_path, validation_path, calibration_path, eval_path, meta = \
+        prepare_noise_four_way_split(
+            path, tmp_path / "four_way", seed=9,
+            validation_fraction=0.1, calibration_fraction=0.2,
+            eval_fraction=0.2)
+
+    target_sets = [
+        set(np.load(role_path)["target_ids"].astype(str))
+        for role_path in (
+            train_path, validation_path, calibration_path, eval_path)
+    ]
+    for i, left in enumerate(target_sets):
+        for right in target_sets[i + 1:]:
+            assert left.isdisjoint(right)
+    assert set().union(*target_sets) == set(target_ids)
+    assert meta["all_disjoint"] is True
+
+
+def test_external_eval_split_isolates_checkpoint_validation_targets(tmp_path):
+    path = tmp_path / "noise.npz"
+    target_ids = np.repeat(np.array(list("ABCDEFGHIJ")), 2)
+    segments = np.arange(len(target_ids) * 8, dtype=float).reshape(-1, 8)
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    train_path, validation_path, calibration_path, meta = \
+        prepare_noise_train_validation_calibration_split(
+            path, tmp_path / "external_eval", seed=4,
+            validation_fraction=0.1, calibration_fraction=0.2)
+
+    target_sets = [
+        set(np.load(role_path)["target_ids"].astype(str))
+        for role_path in (train_path, validation_path, calibration_path)
+    ]
+    assert target_sets[0].isdisjoint(target_sets[1])
+    assert target_sets[0].isdisjoint(target_sets[2])
+    assert target_sets[1].isdisjoint(target_sets[2])
+    assert set().union(*target_sets) == set(target_ids)
+    assert meta["all_disjoint"] is True
+    assert meta["evaluation_role"] == "external_frozen_publication_lockbox"
+
+
+def test_four_way_split_rejects_fractions_without_training_partition(tmp_path):
+    path = tmp_path / "noise.npz"
+    target_ids = np.array(list("ABCDEFGHIJ"))
+    np.savez_compressed(
+        path, segments=np.ones((len(target_ids), 8)), target_ids=target_ids)
+
+    try:
+        prepare_noise_four_way_split(
+            path, tmp_path / "invalid", seed=1,
+            validation_fraction=0.4, calibration_fraction=0.3,
+            eval_fraction=0.3)
+    except SystemExit as exc:
+        assert "leave no training targets" in str(exc)
+    else:
+        raise AssertionError("invalid four-way fractions did not fail closed")
 
 
 def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):

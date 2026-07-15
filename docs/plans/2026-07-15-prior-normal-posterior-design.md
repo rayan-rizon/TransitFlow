@@ -39,6 +39,10 @@ small post-hoc calibrator.
 5. Keep the probit-bounded monotone calibrator available, fitted only on the
    calibration-target split.  Calibration may correct residual finite-training
    error; it may not redefine the simulator or use evaluation targets.
+6. Use a fourth, target-disjoint development role for checkpoint selection.
+   Gradient training, checkpoint validation, posterior calibration, and
+   development evaluation may not share source targets.  A full publication
+   run replaces the development evaluation role with the external lockbox.
 
 ## Alternatives rejected
 
@@ -56,7 +60,8 @@ small post-hoc calibrator.
 Unit tests must cover prior normalization and sampling, both transform
 round-trips, finite-difference Jacobians, sample support, exact transformed
 log-density, disk-shard training, component RNG independence, and discrete SBC
-support.  A short GPU smoke may establish that data generation, training,
+support.  They must also prove pairwise target disjointness across training,
+checkpoint validation, calibration, and evaluation.  A short GPU smoke may establish that data generation, training,
 calibration, and evaluation execute together and that the correction moves the
 development diagnostics in the expected direction.  It cannot support a paper
 claim.

@@ -296,8 +296,10 @@ python3 scripts/build_noise_library.py --mission TESS \
 ```
 
 The publishability runner enforces at least 120 successful independent source
-targets. Fast development checks use target-disjoint
-training/calibration/evaluation splits within that archive. A full publication
+targets. Fast development checks use target-disjoint gradient-training,
+checkpoint-validation, calibration, and evaluation splits within that archive.
+The held-out checkpoint-validation archive is passed to the trainer even when
+gradient training uses pre-generated disk shards. A full publication
 run additionally requires `--publication-eval-noise-lib` containing at least 30
 new source targets with zero overlap; the runner fails closed without it.
 The builder records the target query, quality metrics, and provenance hash in
