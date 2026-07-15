@@ -31,8 +31,9 @@ from .simulator import SimConfig, TransitSimulator
 from .utils import batch_to_torch
 
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
-_OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std", "dil_feat",
-                  "posterior_valid", "candidate_kind")
+_OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std",
+                  "theta_char_prior_normal", "dil_feat", "posterior_valid",
+                  "candidate_kind")
 
 
 def _gen_shard(args) -> str:
@@ -43,8 +44,8 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, thc, d, sf, pg, ef, df, pv, ck = (
-        [], [], [], [], [], [], [], [], [], [], [])
+    g, l, th, thc, thn, d, sf, pg, ef, df, pv, ck = (
+        [], [], [], [], [], [], [], [], [], [], [], [])
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -53,6 +54,7 @@ def _gen_shard(args) -> str:
         l.append(b["local"].astype(np.float16))
         th.append(b["theta_std"].astype(np.float32))
         thc.append(b["theta_char_std"].astype(np.float32))
+        thn.append(b["theta_char_prior_normal"].astype(np.float32))
         d.append(b["d"].astype(np.int8))
         sf.append(b["sigma_feat"].astype(np.float16))
         if "periodogram" in b:
@@ -69,6 +71,7 @@ def _gen_shard(args) -> str:
         "theta_std": np.concatenate(th), "d": np.concatenate(d),
         "sigma_feat": np.concatenate(sf),
         "theta_char_std": np.concatenate(thc),
+        "theta_char_prior_normal": np.concatenate(thn),
         "posterior_valid": np.concatenate(pv),
         "candidate_kind": np.concatenate(ck),
     }
@@ -154,6 +157,9 @@ def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
     cfg_json = json.dumps(cfg, sort_keys=True)
     noise_sampling_unit = NoiseLibrary.load(noise_lib_path).sampling_unit
     metadata = {
+        "dataset_schema_version": 2,
+        "posterior_target_fields": [
+            "theta_char_std", "theta_char_prior_normal"],
         "created_unix": time.time(),
         "git_sha": _git_sha(),
         "config_hash": hashlib.sha256(cfg_json.encode("utf-8")).hexdigest(),

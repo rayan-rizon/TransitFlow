@@ -34,6 +34,9 @@ def test_generate_and_load_disk_dataset(tmp_path):
     assert batch["global"].shape == (64, 128)
     assert batch["local"].shape == (64, 65)
     assert batch["theta_std"].shape == (64, 7)
+    assert batch["theta_char_prior_normal"].shape == (64, 5)
+    assert bool(__import__("torch").isfinite(
+        batch["theta_char_prior_normal"]).all())
     assert batch["valid"].dtype == __import__("torch").bool
     assert bool(__import__("torch").isfinite(batch["global"]).all())
     # d=0 rows carry zeroed targets (as the simulator emits)
@@ -74,6 +77,23 @@ def test_train_from_disk(tmp_path):
                        eval_every=0, log_every=5, warmup_steps=3, tensorboard=False)
     res = train(_model_cfg(), _sim_cfg(), tcfg, verbose=False)
     assert res["history"]["posterior"][-1] < res["history"]["posterior"][0] + 1.0
+
+
+def test_train_prior_normal_target_from_disk(tmp_path):
+    out = str(tmp_path / "data")
+    generate_to_disk(_sim_cfg(), n_total=256, out_dir=out, shard_size=256,
+                     num_workers=1, seed=7, verbose=False)
+    model = _model_cfg()
+    model.param_dim = 5
+    model.use_ephemeris_feature = True
+    model.posterior_transform = "prior_normal"
+    tcfg = TrainConfig(
+        n_steps=2, batch_size=32, device="cpu", data_source="disk",
+        data_dir=out, run_dir=str(tmp_path / "run_prior_normal"),
+        ckpt_every=2, eval_every=0, log_every=1, warmup_steps=1,
+        tensorboard=False)
+    result = train(model, _sim_cfg(), tcfg, verbose=False)
+    assert np.isfinite(result["history"]["posterior"][-1])
 
 
 def test_preflight_verdict_and_cost(tmp_path):

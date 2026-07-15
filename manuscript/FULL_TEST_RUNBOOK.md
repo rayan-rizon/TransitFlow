@@ -9,17 +9,23 @@ reason to tune against the test partition.
 
 1. Use a clean, committed checkout and record `git rev-parse HEAD`.
 2. Install `requirements.txt`; verify CUDA in `scripts/preflight.py`.
-3. Rebuild `data/noise_lib.npz` with `--build-noise-lib`, retaining target and
-   exact product provenance.
-4. Confirm `noise_split.json` reports disjoint, nonempty training, calibration,
-   and final-evaluation target groups. Posterior calibration is fitted only on
-   the calibration group.
-5. Confirm `sampling_unit` is `source_target_uniform_then_segment_v1`; cached
+3. Retain the inspected 145-star development archive as
+   `data/noise_lib.npz`; it may supply training, calibration and fast-check
+   evaluation, but not the publication test.
+4. Build `data/noise_publication_lockbox.npz` from at least 30 newly selected
+   source targets that have never appeared in development. Freeze its target
+   list, exact product provenance and SHA-256 before the full run. Never pass
+   this archive to a fast check or inspect injected results from it early.
+5. Confirm `noise_split.json` reports disjoint, nonempty development training
+   and calibration groups plus zero target overlap with the external publication
+   evaluation archive. Posterior calibration is fitted only on development
+   calibration targets.
+6. Confirm `sampling_unit` is `source_target_uniform_then_segment_v1`; cached
    sector counts must not weight source stars unequally.
-6. Use `best.pt` selected by validation posterior loss for characterization and
+7. Use `best.pt` selected by validation posterior loss for characterization and
    `best_detection.pt` selected by validation AP for detection. `latest.pt` is
    resume-only.
-7. Use the same frozen evaluation and real-data seeds for every training seed.
+8. Use the same frozen evaluation and real-data seeds for every training seed.
 
 ## Commands
 
@@ -41,11 +47,11 @@ python3 scripts/run_publishable_vast.py \
 
 Do not start the full commands unless the fresh characterization SBC/coverage
 gates pass and the paired AP comparison no longer shows a significant TLS
-disadvantage.
+disadvantage. This command uses development evaluation targets and must not be
+given the publication lockbox.
 
-Build the source-labelled noise library in the first run from the automatic,
-seeded catalog selector, requiring at least 120 successful independent targets.
-Then reuse that exact file for seeds 1 and 2 by omitting `--build-noise-lib`.
+Both source-labelled archives must already be frozen before the seed loop. Reuse
+the identical development and publication-lockbox files for every seed.
 
 ```bash
 for seed in 0 1 2; do
@@ -53,6 +59,8 @@ for seed in 0 1 2; do
     --run-name "mnras_seed_${seed}" \
     --config configs/publishable.yaml \
     --noise-lib data/noise_lib.npz \
+    --publication-eval-noise-lib data/noise_publication_lockbox.npz \
+    --min-publication-eval-targets 30 \
     --min-noise-targets 120 \
     --train-seed "$seed" \
     --eval-seed 123 \
@@ -73,18 +81,16 @@ for seed in 0 1 2; do
 done
 ```
 
-Add `--build-noise-lib --noise-workers 1` only to the seed-0 command. Serial
-archive access avoids Lightkurve/Astroquery progress-stream and cache races. This writes
-the catalog query and selected targets inside the run directory and the library
-quality/provenance sidecar beside the archive. Do not rebuild or alter the noise
-source archive between seeds.
+Do not use `--build-noise-lib` inside this loop and do not rebuild, alter or
+inspect the publication evaluation archive between seeds.
 
 ## Hard stop criteria
 
 The top-level `gate_report.json` must retain every pass and failure. Publication
 claims remain blocked if any of these occur:
 
-- target overlap among training, calibration, and evaluation noise libraries;
+- a missing external publication lockbox, or target overlap between it and the
+  development training/calibration archive;
 - fewer than 120 successful independent source targets in the noise archive;
 - segment-weighted rather than source-target-uniform real-noise sampling;
 - characterization from a final/resume checkpoint instead of the predeclared

@@ -83,6 +83,31 @@ def test_log_prob_slices_characterization_target(fast_simulator, fast_sim_cfg,
     assert np.allclose(lp_full, lp_char)
 
 
+def test_prior_normal_posterior_samples_and_density(
+        fast_simulator, fast_sim_cfg, tiny_model_cfg, prior, rng):
+    tiny_model_cfg.use_ephemeris_feature = True
+    tiny_model_cfg.param_dim = 5
+    tiny_model_cfg.posterior_transform = "prior_normal"
+    inf = _inference(fast_sim_cfg, tiny_model_cfg, prior)
+    batch = fast_simulator.simulate_batch(2, rng)
+    samples, samples_std = inf.posterior_samples(
+        batch["global"], batch["local"], batch["sigma_feat"],
+        n_samples=32, return_std=True, ephem_feat=batch["ephem_feat"])
+    lower, upper = prior.std_bounds
+
+    assert samples.shape == (2, 32, 7)
+    assert np.all(samples_std[..., 2:] > lower[2:])
+    assert np.all(samples_std[..., 2:] < upper[2:])
+    embedding = inf.embed(
+        batch["global"], batch["local"], batch["sigma_feat"],
+        ephem_feat=batch["ephem_feat"])
+    lp_full = inf.log_prob_std(batch["theta_std"], embedding)
+    lp_char = inf.log_prob_std(
+        batch["theta_char_std"], embedding, ephem_feat=batch["ephem_feat"])
+    assert np.all(np.isfinite(lp_full))
+    assert np.allclose(lp_full, lp_char, atol=1e-5)
+
+
 def test_calibrated_log_prob_obeys_affine_change_of_variables(
         fast_simulator, fast_sim_cfg, tiny_model_cfg, prior, rng):
     tiny_model_cfg.use_ephemeris_feature = True
@@ -140,6 +165,41 @@ def test_calibrated_log_prob_obeys_bounded_change_of_variables(
     assert np.allclose(
         calibrated_lp,
         raw_lp - calibration.log_abs_det_at(calibrated_theta),
+        atol=1e-5)
+
+
+def test_calibrated_log_prob_obeys_probit_change_of_variables(
+        fast_simulator, fast_sim_cfg, tiny_model_cfg, prior, rng):
+    tiny_model_cfg.use_ephemeris_feature = True
+    tiny_model_cfg.param_dim = 5
+    model = TransitFlow(tiny_model_cfg)
+    raw_inf = TransitFlowInference(model, prior, fast_sim_cfg, ode_steps=10)
+    lower, upper = prior.std_bounds
+    calibration = PosteriorAffineCalibration(
+        np.array([1.2, 1.4, 0.8, 1.1, 1.3]),
+        np.array([0.1, -0.2, 0.05, 0.0, 0.15]),
+        np.array([0.9, 1.1, 1.0, 0.8, 1.2]),
+        lower[2:], upper[2:], "bounded_probit",
+        center_quadratic=np.array([0.03, -0.02, 0.01, 0.0, 0.04]),
+        log_scale_slope=np.array([0.05, -0.04, 0.03, 0.02, -0.01]))
+    cal_inf = TransitFlowInference(
+        model, prior, fast_sim_cfg, ode_steps=10, calibration=calibration)
+    batch = fast_simulator.simulate_batch(4, rng)
+    e = raw_inf.embed(
+        batch["global"], batch["local"], batch["sigma_feat"],
+        ephem_feat=batch["ephem_feat"])
+    raw_theta = batch["theta_char_std"]
+    center = raw_inf.posterior_center_std(e)
+    calibrated_theta = calibration.apply(raw_theta, center)
+
+    raw_lp = raw_inf.log_prob_std(raw_theta, e)
+    calibrated_lp = cal_inf.log_prob_std(calibrated_theta, e)
+
+    assert np.all(calibrated_theta > lower[2:])
+    assert np.all(calibrated_theta < upper[2:])
+    assert np.allclose(
+        calibrated_lp,
+        raw_lp - calibration.log_abs_det_at(calibrated_theta, center),
         atol=1e-5)
 
 

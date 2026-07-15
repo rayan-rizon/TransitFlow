@@ -30,24 +30,58 @@ def sbc_ranks(theta_true: np.ndarray, posterior_samples: np.ndarray) -> np.ndarr
     return (posterior_samples < theta_true[:, None, :]).sum(axis=1)
 
 
-def sbc_uniformity(ranks: np.ndarray, n_bins: int = 20) -> dict:
+def sbc_uniformity(ranks: np.ndarray, n_bins: int = 20,
+                   n_posterior: int | None = None) -> dict:
     """Per-dimension chi-square test of rank uniformity.
 
     Returns a dict with the chi-square statistic and p-value for each dim; small
     p-values indicate miscalibration.
     """
     ranks = np.asarray(ranks)
+    if ranks.ndim != 2:
+        raise ValueError("ranks must have shape (N, D)")
+    if np.any(ranks < 0):
+        raise ValueError("SBC ranks must be non-negative")
     N, D = ranks.shape
-    L = ranks.max() if ranks.size else 1
-    out = {"chi2": [], "pvalue": [], "n_bins": n_bins}
-    edges = np.linspace(-0.5, L + 0.5, n_bins + 1)
+    if n_posterior is None:
+        if not ranks.size:
+            raise ValueError("n_posterior is required for empty ranks")
+        n_posterior = int(ranks.max())
+    L = int(n_posterior)
+    if L < 1:
+        raise ValueError("n_posterior must be positive")
+    if np.any(ranks > L):
+        raise ValueError("SBC rank exceeds the declared posterior sample count")
+
+    # Ranks are discrete-uniform on {0, ..., L}.  When L + 1 is not divisible
+    # by n_bins, equal expected counts are incorrect because bins contain
+    # different numbers of possible ranks.  Map each integer rank to a bin and
+    # derive the exact expected mass from the number of supported rank values.
+    n_bins = min(int(n_bins), L + 1)
+    if n_bins < 2:
+        raise ValueError("n_bins must be at least two")
+    support = np.arange(L + 1, dtype=np.int64)
+    support_bins = np.minimum((support * n_bins) // (L + 1), n_bins - 1)
+    support_counts = np.bincount(support_bins, minlength=n_bins)
+    expected = N * support_counts / float(L + 1)
+    out = {
+        "chi2": [],
+        "pvalue": [],
+        "n_bins": n_bins,
+        "n_posterior": L,
+        "rank_support_size": L + 1,
+        "expected_counts": expected.tolist(),
+        "histogram_counts": [],
+    }
     for j in range(D):
-        counts, _ = np.histogram(ranks[:, j], bins=edges)
-        expected = np.full(n_bins, counts.sum() / n_bins)
+        rank_bins = np.minimum(
+            (ranks[:, j].astype(np.int64) * n_bins) // (L + 1), n_bins - 1)
+        counts = np.bincount(rank_bins, minlength=n_bins)
         chi2 = float(np.sum((counts - expected) ** 2 / np.maximum(expected, 1e-9)))
         pval = float(stats.chi2.sf(chi2, df=n_bins - 1))
         out["chi2"].append(chi2)
         out["pvalue"].append(pval)
+        out["histogram_counts"].append(counts.tolist())
     return out
 
 
@@ -98,4 +132,4 @@ def run_sbc(inference, simulator, n_sims: int = 500, n_posterior: int = 1000,
     return {"ranks": ranks, "theta_true": trues_phys,
             "theta_true_std": np.concatenate(trues_std)[:n_sims],
             "param_names": param_names,
-            "uniformity": sbc_uniformity(ranks)}
+            "uniformity": sbc_uniformity(ranks, n_posterior=n_posterior)}

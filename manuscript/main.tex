@@ -25,23 +25,26 @@ We present TransitFlow, a candidate-conditioned simulation-based inference
 pipeline that combines a transit-candidate probability with a flow-matching
 posterior over $R_{\rm p}/R_\star$, $a/R_\star$, impact parameter $b$, and two
 quadratic limb-darkening parameters. The method consumes global, candidate-folded
-local, and box-periodogram views of a single TESS-like light curve. A diagnostic
-single-seed experiment gives pooled simulator-domain simulation-based calibration
-and a mean absolute coverage error of 0.015, but conditional 68 per cent coverage
-for $b$ decreases to 0.564 in the high-$b$ stratum. We identify and correct an
+local, and box-periodogram views of TESS-like light curves. A
+target-disjoint development experiment rejects marginal simulation-based
+calibration for three of five parameters despite a mean absolute coverage error
+of 0.015. We trace this failure to a clipped stellar-density prior and a mismatch
+between bounded posterior targets and the Gaussian flow base, and introduce an
+exact truncated prior with a conditional prior-CDF-to-normal transformation. A
+small end-to-end smoke passes posterior calibration diagnostics but fails the
+detection threshold and is not treated as scientific evidence. We also correct an
 evaluation design in which the neural classifier received the simulated true
 ephemeris while Box Least Squares (BLS) had to search. In a corrected
 $n=1000$ candidate-vetting experiment, TransitFlow achieves ROC-AUC $0.807$
 (95 per cent paired-bootstrap interval $0.782$--$0.834$) and average precision
 $0.762$ ($0.731$--$0.796$), compared with $0.598$ and $0.584$ for the BLS score.
-This result is preliminary because the real-noise library is not yet separated
-by target and sector. A selected positive-only sample recovers 30 known TESS
+This pilot predates the frozen target-level protocol. A selected positive-only
+sample recovers 30 known TESS
 transits, but does not establish real-world reliability, and previous
 real-posterior agreement values are invalidated by collapsed importance-sampling
-effective sample size and unconverged MCMC references. TransitFlow is therefore
-a promising candidate-conditioned inference method, not yet a validated blind
-search or real-characterization system. We specify the frozen experiments needed
-for an MNRAS-ready result.
+effective sample size and unconverged MCMC references. TransitFlow is a
+promising candidate-conditioned method, not yet a validated blind-search or
+real-characterization system.
 \end{abstract}
 
 \begin{keywords}
@@ -145,11 +148,13 @@ The noise mixture assigns 70 per cent of examples to cached out-of-transit TESS
 segments, 20 per cent to Mat\'ern-$3/2$ correlated noise plus white noise, and
 10 per cent to white noise. Negative examples include eclipsing-binary-like
 dips, isolated events and sinusoids. Dilution, cadence gaps and finite exposure
-are simulated. A transit-preserving median filter removes slow trends. In the
-current archive, 115 real-noise segments generated the training data and the
-same library was reused for the diagnostic synthetic evaluation. Because the
-archive does not retain target and sector identifiers, this reuse cannot be
-repaired retrospectively; a grouped rebuild is required.
+are simulated. A transit-preserving median filter removes slow trends. The
+latest development archive contains 249 segments from 145 source-labelled
+stars and is split by source target into 87/29/29 training, calibration and
+evaluation groups with no target overlap. These groups support model
+development, but the evaluation group has now informed model selection and
+cannot serve as the final publication lockbox. Exact product provenance and a
+new untouched target-level test manifest remain required.
 
 \subsection{Representation and network}
 
@@ -158,7 +163,7 @@ on $c$, and a 256-bin box-periodogram view. A tri-branch residual convolutional
 network maps the views, a noise-level feature, the standardized candidate
 ephemeris and a dilution feature to a 256-dimensional embedding. A binary head
 returns $p(d=1\mid x,c)$. The FMPE head defines a conditional time-dependent
-velocity field in standardized parameter space and is trained with an
+velocity field in prior-normal parameter space and is trained with an
 optimal-transport conditional flow-matching objective,
 \begin{equation}
  \mathcal{L}_{\rm FM} = \mathbb{E}
@@ -166,8 +171,11 @@ optimal-transport conditional flow-matching objective,
  (\boldsymbol{z}_1-\boldsymbol{z}_0)\right\rVert_2^2,
 \end{equation}
 where $\boldsymbol{z}_0\sim\mathcal{N}(0,I)$ and
-$\boldsymbol{z}_1$ is the standardized simulated truth. At inference, an ODE
-transports base samples to posterior samples. The evaluated model contains
+$\boldsymbol{z}_1=\Phi^{-1}(F_{\Theta\mid P}(\boldsymbol{\theta}\mid P))$.
+Here $F_{\Theta\mid P}$ is the exact prior CDF, including the support-truncated
+stellar-density CDF for $a/R_\star$ conditional on period, and $\Phi$ is the
+standard-normal CDF. The inverse and its Jacobian are analytic. At inference,
+an ODE transports base samples to posterior samples. The evaluated model contains
 approximately 4.18 million parameters and was trained for 60000 steps on one
 million simulated curves.
 
@@ -176,8 +184,9 @@ million simulated curves.
 
 \subsection{Simulator-domain calibration}
 
-The archived diagnostic uses 1000 simulated planets and 2000 posterior samples
-per object. Per-parameter SBC rank histograms are tested for uniformity with a
+The latest target-disjoint development diagnostic uses 500 simulated planets
+and 1000 posterior samples per object. Per-parameter SBC rank histograms are
+tested for uniformity with a
 Bonferroni family-wise threshold of 0.05 across the five characterization
 parameters. Passing such a test means that miscalibration was not detected; it
 does not prove calibration. Expected coverage is measured over central credible
@@ -186,9 +195,10 @@ $R_{\rm p}/R_\star$, $a/R_\star$, signal-to-noise ratio and number of observed
 transits.
 
 This evaluation is useful for diagnosing the trained network but is not the
-final held-out test because the real-noise segment groups overlap training.
-The final protocol will split target--sector groups before simulation and freeze
-the test library until all model and threshold choices are complete.
+final held-out test because its failures informed the prior-normal redesign.
+The final protocol will acquire and freeze a new target-level lockbox before
+the model is retrained, and will keep it sealed until all model, calibration and
+threshold choices are complete.
 
 \subsection{Candidate-vetting comparison}
 
@@ -226,26 +236,16 @@ samples.
 
 \subsection{Pooled and conditional calibration}
 
-The single archived run has a minimum characterization SBC $p$-value of 0.107
-and a pooled mean absolute expected-coverage error of 0.0153. Figure
-\ref{fig:calibration} shows that the pooled curve is close to the diagonal while
-conditional behaviour is weaker. The 68 per cent coverage for $b$ is about
-0.64, 0.68 and 0.564 in the low-, intermediate- and high-$b$ strata,
-respectively. The high-$b$ result is inconsistent with nominal coverage at the
-available sample size. Consequently, the manuscript must not state that the
-posterior is calibrated uniformly across the prior.
-
-\begin{figure*}
- \centering
- \includegraphics[width=0.98\textwidth]{figures/calibration_diagnostics.pdf}
- \caption{Simulator-domain calibration diagnostic for the archived single-seed
- run. (a) Pooled expected coverage is close to the ideal diagonal. (b) Empirical
- 68 per cent coverage stratified by impact parameter; the dashed line denotes
- nominal coverage. The decrease for $b$ at high impact parameter is hidden by
- the pooled summary. This figure does not constitute an independent held-out
- result because the real-noise segment library overlaps training.}
- \label{fig:calibration}
-\end{figure*}
+The target-disjoint v4 development run has marginal SBC $p$-values 0.000,
+0.019, 0.899, 0.072 and 0.000 for $R_{\rm p}/R_\star$, $a/R_\star$, $b$,
+$q_1$ and $q_2$, respectively. Its pooled mean absolute expected-coverage error
+is 0.015, but the familywise SBC decision fails. A bounded smoke after the
+prior-normal correction, using only 6000 training cases and 3000 optimization
+steps, gives p-values 0.094, 0.612, 0.117, 0.175 and 0.674 and coverage error
+0.0111 on 200 separate development cases. Its calibration scales of 4.45--6.66,
+large train--validation gap and detection ROC-AUC of 0.903 reveal severe
+small-data overfitting. The smoke validates the corrected execution path; it is
+underpowered and cannot replace the preregistered multi-seed lockbox test.
 
 \subsection{Fair candidate-vetting pilot}
 
@@ -361,8 +361,8 @@ candidate-conditioned transit photometry and exposes a useful factorized
 interface for candidate scoring and physical posterior sampling. Its pooled
 simulator-domain diagnostics are promising, and a corrected candidate-level
 pilot shows a paired improvement over the BLS score. The same audit also reveals
-conditional high-$b$ miscalibration, strong dependence on candidate quality,
-non-independent noise evaluation, a positive-only real sample and invalid old
+failed target-disjoint marginal calibration, strong dependence on candidate
+quality, an already-inspected development evaluation, a positive-only real sample and invalid old
 importance-corrected real-posterior comparisons. The scientifically honest
 conclusion is therefore narrower than the original repository narrative:
 TransitFlow is a promising research prototype whose MNRAS case depends on a new,
@@ -405,10 +405,10 @@ environment, grouped data manifests, plotting tables, commands, checkpoint and
 noise-library hashes, and final result bundles will be deposited in an immutable
 public archive with a DOI. TESS light curves are available from MAST and catalogue
 metadata from the NASA Exoplanet Archive; the final release will provide exact
-product identifiers and access dates. The present draft has no archival DOI and
-is not independently reproducible from the repository alone because the retained
-115-segment legacy noise library lacks source-target identifiers and therefore
-cannot support a leakage-safe grouped evaluation.
+product identifiers and access dates. The present draft has no archival DOI.
+The 145-star development archive supports target-disjoint development, but its
+evaluation partition has informed the present redesign and is not an untouched
+publication lockbox.
 
 \bibliographystyle{mnras}
 \bibliography{references}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fit a held-out affine posterior calibration artifact.
+"""Fit a held-out invertible posterior calibration artifact.
 
 The calibration noise library must be disjoint from gradient-training and final
 evaluation targets.  This script never modifies a checkpoint.
@@ -34,6 +34,8 @@ def main() -> None:
     ap.add_argument("--n-posterior", type=int, default=1000)
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--seed", type=int, default=7301)
+    ap.add_argument("--bounded-link", choices=("probit", "tanh"), default="probit",
+                    help="bounded bijection; probit matches a Gaussian latent to the uniform prior")
     ap.add_argument("--amp", action="store_true")
     args = ap.parse_args()
     if args.n_calibration < 50:
@@ -69,7 +71,7 @@ def main() -> None:
             batch["global"][mask], batch["local"][mask],
             batch["sigma_feat"][mask], periodogram=pg,
             ephem_feat=eph, dil_feat=dil)
-        center = inference.posterior_center_std(embedding)
+        center = inference.posterior_center_std(embedding, eph)
         target = batch["theta_std"][mask]
         if model.cfg.param_dim == 5:
             target = target[:, 2:]
@@ -87,7 +89,7 @@ def main() -> None:
         lower, upper = lower[2:], upper[2:]
     calibration, diagnostics = fit_affine_calibration(
         theta, posterior, center, bounds=(lower, upper),
-        optimizer_seed=args.seed)
+        optimizer_seed=args.seed, bounded_link=args.bounded_link)
     metadata = {
         **calibration.metadata,
         "seed": int(args.seed),
@@ -96,6 +98,7 @@ def main() -> None:
         "noise_lib": str(Path(args.noise_lib).resolve()),
         "noise_lib_sha256": sha256_file(args.noise_lib),
         "amp": bool(args.amp),
+        "bounded_link": args.bounded_link,
         "fit_set_role": "calibration_only_not_final_evaluation",
     }
     calibration = type(calibration)(

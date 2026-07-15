@@ -37,6 +37,21 @@ from transitflow.transit_model import transit_duration
 from transitflow.utils import set_seed
 
 
+def evaluation_component_seeds(seed: int) -> dict[str, int]:
+    """Derive stable, independent RNG seeds for each evaluation component.
+
+    Detection, SBC, and coverage have different sample-size knobs.  Giving each
+    component its own child stream prevents changing one knob from silently
+    changing another component's simulated test set.
+    """
+    names = ("detection", "sbc", "coverage")
+    children = np.random.SeedSequence(int(seed)).spawn(len(names))
+    return {
+        name: int(child.generate_state(1, dtype=np.uint32)[0])
+        for name, child in zip(names, children)
+    }
+
+
 def detection_eval(inference, simulator, n: int, rng) -> dict:
     labels, scores, periods, rprs = [], [], [], []
     got = 0
@@ -171,18 +186,23 @@ def main() -> None:
             raise SystemExit("--detector-ckpt simulator config mismatch")
         detector_inference = TransitFlowInference(
             detector_model, prior, scfg, amp=args.amp)
-    rng = np.random.default_rng(args.seed)
+    component_seeds = evaluation_component_seeds(args.seed)
+    detection_rng = np.random.default_rng(component_seeds["detection"])
+    sbc_rng = np.random.default_rng(component_seeds["sbc"])
+    coverage_rng = np.random.default_rng(component_seeds["coverage"])
 
     if args.noise_lib and not noise_library.available():
         raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")
 
     print("== detection ==")
-    det = detection_eval(detector_inference, simulator, args.n_detection, rng)
+    det = detection_eval(
+        detector_inference, simulator, args.n_detection, detection_rng)
     print(det)
 
     print("== SBC ==")
+    set_seed(component_seeds["sbc"])
     sbc = run_sbc(inference, simulator, n_sims=args.n_sbc,
-                  n_posterior=args.n_posterior, rng=rng)
+                  n_posterior=args.n_posterior, rng=sbc_rng)
     unif = sbc["uniformity"]
     print("SBC uniformity p-values:", [round(p, 3) for p in unif["pvalue"]])
     param_names = list(prior.names)
@@ -196,14 +216,16 @@ def main() -> None:
             else list(range(len(param_names)))
         char_names = [param_names[i] for i in char_dims]
         char_ranks = sbc["ranks"][:, char_dims]
-        char_unif = sbc_uniformity(char_ranks)
+        char_unif = sbc_uniformity(
+            char_ranks, n_posterior=args.n_posterior)
 
     print("== coverage ==")
     # reuse SBC posteriors for coverage by re-sampling a fresh set
     cov_samples, cov_samples_std, cov_true, cov_sigma = [], [], [], []
+    set_seed(component_seeds["coverage"])
     got = 0
     while got < args.n_sbc:
-        batch = simulator.simulate_batch(128, rng)
+        batch = simulator.simulate_batch(128, coverage_rng)
         mask = batch.get("posterior_valid", batch["valid"])
         if not mask.any():
             continue
@@ -255,6 +277,7 @@ def main() -> None:
 
     report = {
         "seed": int(args.seed),
+        "component_seeds": component_seeds,
         "checkpoint": args.ckpt,
         "detector_checkpoint": args.detector_ckpt or args.ckpt,
         "head": model.head_type,
@@ -269,6 +292,13 @@ def main() -> None:
         "characterization_param_names": char_names,
         "detection": det,
         "sbc_pvalues": unif["pvalue"],
+        "sbc_rank_histograms": {
+            "n_bins": unif["n_bins"],
+            "n_posterior": unif["n_posterior"],
+            "expected_counts": unif["expected_counts"],
+            "counts_by_param": dict(zip(
+                sbc_param_names, unif["histogram_counts"])),
+        },
         "sbc_pvalues_by_param": dict(zip(sbc_param_names, unif["pvalue"])),
         "sbc_gate": posterior_sbc_gate,
         "characterization_sbc_pvalues": char_unif["pvalue"],

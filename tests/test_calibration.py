@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import ndtri
 
 from transitflow.calibration import (
     PosteriorAffineCalibration,
@@ -50,6 +51,30 @@ def test_bounded_calibration_round_trip_support_and_logdet():
     assert np.allclose(loaded.apply(raw, center), calibrated)
 
 
+def test_probit_calibration_round_trip_logdet_and_prior_matching():
+    bound = np.sqrt(3.0)
+    cal = PosteriorAffineCalibration(
+        scale=np.array([1.0]), offset=np.array([0.0]),
+        center_slope=np.array([0.0]), lower=np.array([-bound]),
+        upper=np.array([bound]), space="bounded_probit")
+    probability = (np.arange(4096, dtype=np.float64) + 0.5) / 4096
+    raw = ndtri(probability)[:, None]
+    center = np.zeros_like(raw)
+
+    calibrated = cal.apply(raw, center)
+    recovered = cal.inverse(calibrated, center)
+
+    assert np.allclose(recovered, raw, atol=1e-9)
+    assert np.isclose(calibrated.mean(), 0.0, atol=1e-12)
+    assert np.isclose(calibrated.var(), 1.0, atol=1e-6)
+    eps = 1e-6
+    numerical = np.log(np.abs(
+        (cal.apply(raw + eps, center) - cal.apply(raw - eps, center))
+        / (2.0 * eps)))[:, 0]
+    assert np.allclose(
+        cal.log_abs_det_at(calibrated, center), numerical, atol=2e-5)
+
+
 def test_bounded_nonlinear_calibration_recovers_conditional_bias():
     rng = np.random.default_rng(77)
     n, n_post = 320, 128
@@ -62,7 +87,8 @@ def test_bounded_nonlinear_calibration_recovers_conditional_bias():
 
     calibration, diagnostics = fit_affine_calibration(
         truth, posterior, center,
-        bounds=(np.array([-bound]), np.array([bound])), optimizer_seed=29)
+        bounds=(np.array([-bound]), np.array([bound])), optimizer_seed=29,
+        bounded_link="tanh")
 
     assert abs(calibration.center_quadratic[0]) > 0.05
     assert diagnostics["rank_cvm_after_by_dim"][0] < 0.05
@@ -99,7 +125,7 @@ def test_bounded_rank_calibration_improves_bias_and_preserves_support():
         bounds=(np.array([-bound]), np.array([bound])), optimizer_seed=19)
     calibrated = calibration.apply(posterior, center)
 
-    assert calibration.space == "bounded_tanh"
+    assert calibration.space == "bounded_probit"
     assert diagnostics["rank_cvm_after_by_dim"][0] \
         < diagnostics["rank_cvm_before_by_dim"][0]
     assert diagnostics["coverage_error_after_mean"] \

@@ -18,10 +18,10 @@ square maps bijectively to the *physically valid* triangle of quadratic
 coefficients, so every prior draw yields a monotonically-decreasing intensity
 profile and the marginal priors are clean uniforms (good for SBC).
 
-Each parameter is mapped to a standardized space ``z`` in which the prior is
-roughly zero-mean / unit-variance.  Flow matching transports a standard normal
-base density to this standardized parameter space, which keeps the target and
-base distributions at a comparable scale and stabilizes training.
+Each parameter is mapped to a standardized space ``z`` for reporting and
+density diagnostics.  The characterization posterior can additionally use the
+exact conditional prior CDF followed by a standard-normal quantile, making its
+training marginals match the flow's standard-normal base.
 
 The transform is a composition of
     physical  --(g)-->  "u-space" (where the prior is uniform)  --(affine)-->  z
@@ -39,6 +39,7 @@ import math
 
 import numpy as np
 import torch
+from scipy.special import ndtr, ndtri
 
 # Canonical ordering of the inference targets.  Everything downstream relies on
 # this exact order, so it is defined once here.
@@ -111,6 +112,10 @@ class TransitPrior:
             )
         if a_rs_prior_mode not in ("log_uniform", "stellar_density"):
             raise ValueError(f"unknown a_rs_prior_mode {a_rs_prior_mode!r}")
+        if (a_rs_prior_mode == "stellar_density"
+                and stellar_density_log10_std <= 0):
+            raise ValueError(
+                "stellar-density prior requires a positive log10 density width")
         self.specs = specs
         # a/Rs prior mode. ``log_uniform`` is the box prior consistent with the
         # affine standardization. ``stellar_density`` makes the a/Rs *density*
@@ -272,7 +277,44 @@ class TransitPrior:
                       - math.log(sd) - 0.5 * math.log(2.0 * math.pi))
         # |dx / d a_rs| = 3 / (ln10 * a_rs)
         log_jac = math.log(3.0) - math.log(ln10) - np.log(a_rs)
-        return log_normal + log_jac
+        lo, hi = self.specs[3].low, self.specs[3].high
+        x_lo = log10_C + 3.0 * np.log10(lo)
+        x_hi = log10_C + 3.0 * np.log10(hi)
+        truncation_mass = ndtr((x_hi - mu) / sd) - ndtr((x_lo - mu) / sd)
+        log_normalization = np.log(np.maximum(truncation_mass, 1e-300))
+        return log_normal + log_jac - log_normalization
+
+    def sample_stellar_density_a_rs(
+            self, P: np.ndarray,
+            rng: np.random.Generator | None = None) -> np.ndarray:
+        """Draw ``a/Rs`` from the continuous support-truncated density.
+
+        Inverse-CDF sampling avoids the boundary atoms created by clipping an
+        unconstrained stellar-density draw.  The resulting samples match
+        :meth:`_stellar_density_logpdf_a_rs` exactly for positive density width.
+        """
+        rng = np.random.default_rng() if rng is None else rng
+        P = np.asarray(P, dtype=np.float64)
+        mu = self.stellar_density_log10_mean
+        sd = self.stellar_density_log10_std
+        rho_sun_kg_m3 = 1408.0
+        g_si = 6.67430e-11
+        day_s = 86400.0
+        log10_C = np.log10(3.0 * np.pi /
+                           (g_si * rho_sun_kg_m3 * (P * day_s) ** 2))
+        lo, hi = self.specs[3].low, self.specs[3].high
+        z_lo = (log10_C + 3.0 * np.log10(lo) - mu) / sd
+        z_hi = (log10_C + 3.0 * np.log10(hi) - mu) / sd
+        cdf_lo = ndtr(z_lo)
+        cdf_hi = ndtr(z_hi)
+        mass = cdf_hi - cdf_lo
+        if np.any(mass <= 1e-14):
+            raise ValueError("stellar-density prior has negligible mass on a/Rs support")
+        probability = cdf_lo + rng.random(P.shape) * mass
+        probability = np.clip(
+            probability, np.nextafter(0.0, 1.0), np.nextafter(1.0, 0.0))
+        log10_rho = mu + sd * ndtri(probability)
+        return 10.0 ** ((log10_rho - log10_C) / 3.0)
 
     def log_prob_physical(self, phys: np.ndarray) -> np.ndarray:
         """Log prior density in physical space; ``-inf`` outside support."""
@@ -283,7 +325,8 @@ class TransitPrior:
         log_u_density = -np.log(self._u_high - self._u_low)  # per-dim
         jac = np.where(self._log, -np.log(np.maximum(phys, 1e-300)), 0.0)
         per_dim = np.broadcast_to(log_u_density + jac, phys.shape).copy()
-        if self.a_rs_prior_mode == "stellar_density":
+        if (self.a_rs_prior_mode == "stellar_density"
+                and self.stellar_density_log10_std > 0):
             # Replace the log-uniform a/Rs term (index 3) with the
             # simulator-matched stellar-density density p(a/Rs | P).
             per_dim[..., 3] = self._stellar_density_logpdf_a_rs(
@@ -292,24 +335,131 @@ class TransitPrior:
         return np.where(inside, lp, -np.inf)
 
     def log_prob_std(self, z: np.ndarray) -> np.ndarray:
-        """Log prior density in standardized space; ``-inf`` outside support.
+        """Exact log prior density in standardized space.
 
-        In ``z`` the prior is uniform on the box ``[z_low, z_high]`` per
-        dimension (because ``z`` is an affine map of the uniform ``u``), so the
-        density is the constant ``-sum(log(z_high - z_low))`` inside the box.
+        The box-prior dimensions are uniform in ``z``.  In stellar-density
+        mode, however, ``a/Rs`` is not; evaluate the exact physical density and
+        apply ``|d physical / d z|`` so importance weights and MCMC comparisons
+        use the same prior as the simulator.
         """
         z = np.asarray(z, dtype=np.float64)
-        z_low = (self._u_low - self._u_mean) / self._u_std
-        z_high = (self._u_high - self._u_mean) / self._u_std
-        inside = np.all((z >= z_low) & (z <= z_high), axis=-1)
-        lp = -np.sum(np.log(z_high - z_low))
-        return np.where(inside, lp, -np.inf)
+        physical = self.std_to_physical(z, clip=False)
+        log_abs_det = np.log(self._u_std) + np.where(
+            self._log, np.log(np.maximum(physical, 1e-300)), 0.0)
+        return self.log_prob_physical(physical) + np.sum(log_abs_det, axis=-1)
 
     @property
     def std_bounds(self) -> tuple[np.ndarray, np.ndarray]:
         z_low = (self._u_low - self._u_mean) / self._u_std
         z_high = (self._u_high - self._u_mean) / self._u_std
         return z_low, z_high
+
+    def _broadcast_period(self, period_phys: np.ndarray,
+                          target_ndim: int) -> np.ndarray:
+        period = np.asarray(period_phys, dtype=np.float64)
+        while period.ndim < target_ndim - 1:
+            period = np.expand_dims(period, axis=-1)
+        return period
+
+    def characterization_std_to_prior_normal(
+            self, z_char: np.ndarray,
+            period_phys: np.ndarray) -> np.ndarray:
+        """Map bounded characterization coordinates to prior-normal space.
+
+        The four box-prior dimensions use their exact uniform CDF.  ``a/Rs``
+        uses the period-conditional, support-truncated stellar-density CDF when
+        enabled.  Under the simulator prior every returned coordinate is
+        standard normal, which matches the FMPE base distribution exactly.
+        """
+        z = np.asarray(z_char, dtype=np.float64)
+        if z.shape[-1] != 5:
+            raise ValueError("characterization transform expects five dimensions")
+        lower, upper = self.std_bounds
+        probability = (z - lower[2:]) / (upper[2:] - lower[2:])
+        if (self.a_rs_prior_mode == "stellar_density"
+                and self.stellar_density_log10_std > 0):
+            period = self._broadcast_period(period_phys, z.ndim)
+            a_rs = np.exp(z[..., 1] * self._u_std[3] + self._u_mean[3])
+            rho_sun_kg_m3 = 1408.0
+            g_si = 6.67430e-11
+            day_s = 86400.0
+            log10_C = np.log10(3.0 * np.pi /
+                               (g_si * rho_sun_kg_m3 * (period * day_s) ** 2))
+            mu = self.stellar_density_log10_mean
+            sd = self.stellar_density_log10_std
+            x = log10_C + 3.0 * np.log10(a_rs)
+            lo, hi = self.specs[3].low, self.specs[3].high
+            cdf_lo = ndtr((log10_C + 3.0 * np.log10(lo) - mu) / sd)
+            cdf_hi = ndtr((log10_C + 3.0 * np.log10(hi) - mu) / sd)
+            probability[..., 1] = (
+                ndtr((x - mu) / sd) - cdf_lo) / (cdf_hi - cdf_lo)
+        probability = np.clip(probability, 1e-7, 1.0 - 1e-7)
+        return ndtri(probability)
+
+    def characterization_prior_normal_to_std(
+            self, normal_char: np.ndarray,
+            period_phys: np.ndarray) -> np.ndarray:
+        """Inverse of :meth:`characterization_std_to_prior_normal`."""
+        normal = np.asarray(normal_char, dtype=np.float64)
+        if normal.shape[-1] != 5:
+            raise ValueError("characterization transform expects five dimensions")
+        probability = ndtr(normal)
+        lower, upper = self.std_bounds
+        z = lower[2:] + probability * (upper[2:] - lower[2:])
+        if (self.a_rs_prior_mode == "stellar_density"
+                and self.stellar_density_log10_std > 0):
+            period = self._broadcast_period(period_phys, normal.ndim)
+            rho_sun_kg_m3 = 1408.0
+            g_si = 6.67430e-11
+            day_s = 86400.0
+            log10_C = np.log10(3.0 * np.pi /
+                               (g_si * rho_sun_kg_m3 * (period * day_s) ** 2))
+            mu = self.stellar_density_log10_mean
+            sd = self.stellar_density_log10_std
+            lo, hi = self.specs[3].low, self.specs[3].high
+            cdf_lo = ndtr((log10_C + 3.0 * np.log10(lo) - mu) / sd)
+            cdf_hi = ndtr((log10_C + 3.0 * np.log10(hi) - mu) / sd)
+            untruncated_probability = cdf_lo + probability[..., 1] * (
+                cdf_hi - cdf_lo)
+            untruncated_probability = np.clip(
+                untruncated_probability, 1e-12, 1.0 - 1e-12)
+            log10_rho = mu + sd * ndtri(untruncated_probability)
+            a_rs = 10.0 ** ((log10_rho - log10_C) / 3.0)
+            z[..., 1] = (np.log(a_rs) - self._u_mean[3]) / self._u_std[3]
+        return z
+
+    def characterization_prior_normal_log_abs_det(
+            self, z_char: np.ndarray,
+            period_phys: np.ndarray) -> np.ndarray:
+        """Return ``log |d normal_char / d z_char|`` per object or draw."""
+        z = np.asarray(z_char, dtype=np.float64)
+        normal = self.characterization_std_to_prior_normal(z, period_phys)
+        lower, upper = self.std_bounds
+        log_phi_normal = -0.5 * normal ** 2 - 0.5 * math.log(2.0 * math.pi)
+        per_dim = -np.log(upper[2:] - lower[2:]) - log_phi_normal
+        if (self.a_rs_prior_mode == "stellar_density"
+                and self.stellar_density_log10_std > 0):
+            period = self._broadcast_period(period_phys, z.ndim)
+            a_rs = np.exp(z[..., 1] * self._u_std[3] + self._u_mean[3])
+            rho_sun_kg_m3 = 1408.0
+            g_si = 6.67430e-11
+            day_s = 86400.0
+            log10_C = np.log10(3.0 * np.pi /
+                               (g_si * rho_sun_kg_m3 * (period * day_s) ** 2))
+            mu = self.stellar_density_log10_mean
+            sd = self.stellar_density_log10_std
+            x = log10_C + 3.0 * np.log10(a_rs)
+            lo, hi = self.specs[3].low, self.specs[3].high
+            mass = (ndtr((log10_C + 3.0 * np.log10(hi) - mu) / sd)
+                    - ndtr((log10_C + 3.0 * np.log10(lo) - mu) / sd))
+            rho_normal = (x - mu) / sd
+            log_phi_rho = (-0.5 * rho_normal ** 2
+                           - 0.5 * math.log(2.0 * math.pi))
+            derivative = 3.0 * self._u_std[3] / (math.log(10.0) * sd)
+            per_dim[..., 1] = (
+                log_phi_rho - np.log(mass) + np.log(derivative)
+                - log_phi_normal[..., 1])
+        return np.sum(per_dim, axis=-1)
 
 
 def kipping_to_quadratic(q1: np.ndarray, q2: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

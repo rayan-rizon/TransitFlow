@@ -1,5 +1,10 @@
 # Nonlinear posterior calibration design
 
+> Superseded on 2026-07-15 by
+> `2026-07-15-prior-normal-posterior-design.md`.  The nonlinear bounded map
+> failed the held-out v4 SBC gate and is retained only for historical checkpoint
+> compatibility and optional residual calibration.
+
 ## Evidence and decision
 
 The v4 target-disjoint validation used 145 independently sourced TESS stars

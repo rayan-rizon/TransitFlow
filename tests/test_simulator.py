@@ -187,9 +187,9 @@ def test_physical_a_rs_mode_correlates_with_period(prior):
     cfg = SimConfig(n_global=64, n_local=41, baseline_days=27.0, n_raw=1200,
                     planet_fraction=1.0, frac_real=0.0, frac_gp=0.0,
                     frac_white=1.0, a_rs_prior_mode="stellar_density",
-                    stellar_density_log10_std=0.0, n_radial=40,
+                    stellar_density_log10_std=0.10, n_radial=40,
                     regime="tess", use_periodogram=False)
-    b = TransitSimulator(cfg, prior=prior).simulate_batch(
+    b = TransitSimulator(cfg).simulate_batch(
         256, np.random.default_rng(23))
     corr = np.corrcoef(np.log(b["theta_phys"][:, 0]),
                        np.log(b["theta_phys"][:, 3]))[0, 1]

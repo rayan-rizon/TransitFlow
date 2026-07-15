@@ -116,10 +116,12 @@ out = inf.detect_and_characterize(global_view, local_view, sigma_feat, n_samples
   prior draw is valid and the marginal priors are clean uniforms (good for SBC).
 * **`t0`** is parameterized as the **orbital phase** `t0_phase ∈ [0,1)` of the
   first transit, an `P`-independent target.
-* **Standardization.** Each parameter is mapped (log for `P, Rp/Rs, a/Rs`) and
-  z-scored to ≈ unit variance; the flow transports `N(0,I)` to this standardized
-  space, which matches the OT-CFM base/target scales. Transforms and their
-  Jacobians live in `priors.py`.
+* **Posterior coordinates.** `P` and `t0` are conditioning features. Each of the
+  five characterization targets is mapped through its exact prior CDF and then
+  the standard-normal quantile. The `a/Rs` CDF is conditional on period and uses
+  the support-truncated stellar-density prior. This makes the marginal training
+  target exactly `N(0,I)` under the simulator prior; transforms, inverse maps and
+  analytic Jacobians live in `priors.py`.
 * **Local-view folding.** The local view is folded on a *candidate* ephemeris —
   the true `(P,t0)` for planets, a random spurious candidate for non-planets —
   mirroring a real BLS/TLS pipeline that proposes candidates the network must
@@ -294,7 +296,10 @@ python3 scripts/build_noise_library.py --mission TESS \
 ```
 
 The publishability runner enforces at least 120 successful independent source
-targets, then performs target-disjoint training/calibration/evaluation splits.
+targets. Fast development checks use target-disjoint
+training/calibration/evaluation splits within that archive. A full publication
+run additionally requires `--publication-eval-noise-lib` containing at least 30
+new source targets with zero overlap; the runner fails closed without it.
 The builder records the target query, quality metrics, and provenance hash in
 `data/noise_lib.npz.metadata.json`. The segments are quiet-target light curves,
 not guaranteed planet-free data; the manuscript must retain that limitation.

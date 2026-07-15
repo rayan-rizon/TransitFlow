@@ -1,6 +1,6 @@
 # TransitFlow MNRAS publishability audit
 
-Date: 2026-07-11
+Date: 2026-07-15
 Target venue: *Monthly Notices of the Royal Astronomical Society* (MNRAS), Paper
 Verdict: **not yet submission-ready; major scientific validation remains**
 
@@ -20,6 +20,47 @@ This audit therefore treats the old real-characterization and 0.999 detection
 numbers as non-publication diagnostics. Rewriting the manuscript cannot cure
 those problems. The code changes in this pass make the next experiment honest
 and reproducible; a new, frozen validation run is still required.
+
+## Latest failure analysis and bounded remediation smoke
+
+The most recent target-disjoint v4 development evaluation used 145 independent
+TESS source stars (87/29/29 train/calibration/evaluation), 500 SBC simulations
+and 1000 posterior draws. Its nonlinear bounded calibration produced marginal
+SBC p-values of 0.000, 0.019, 0.899, 0.072 and 0.000 for `RpRs`, `aRs`, `b`,
+`q1` and `q2`. Coverage error was 0.015, but `RpRs`, `aRs` and `q2` failed the
+familywise SBC decision. A probit-bounded variant removed the `q2` rejection in
+a smaller development check but still rejected `RpRs` and `aRs`; conditioning
+calibration on posterior spread fitted the calibration split better and
+generalized worse. That candidate was rejected rather than promoted.
+
+The root-cause audit identified two generating-distribution defects. The
+stellar-density `a/Rs` simulator clipped unconstrained draws to [3, 50],
+creating boundary atoms absent from the analytic prior density. In addition,
+the flow learned bounded uniform-like prior marginals directly from a Gaussian
+base. The corrected implementation now samples the exact support-truncated,
+period-conditional stellar-density prior and includes its normalization in the
+density. Characterization targets are transformed by their exact conditional
+prior CDFs into standard-normal coordinates; samples and densities use the
+analytic inverse and Jacobian. Evaluation components now have independent RNG
+streams, and discrete SBC bin expectations use the declared posterior rank
+support rather than the largest observed rank. Historical training shards fail
+closed under an explicit dataset schema because they lack the new target.
+
+A bounded GPU smoke used 6000 training simulations, 3000 optimizer steps, 200
+calibration simulations and a separate 200-case evaluation with 256 posterior
+draws. It exercised data generation, training, checkpoint selection, bounded
+probit calibration, density inversion and evaluation. Characterization SBC
+p-values were 0.094, 0.612, 0.117, 0.175 and 0.674; coverage error was 0.0111
+and the out-of-prior fraction was zero. Detection reached ROC-AUC 0.903 and AP
+0.917, failing the 0.99 detection gate. Calibration scales of 4.45--6.66 and a
+large train--validation loss gap show severe small-data overfitting. The smoke
+therefore establishes execution and a promising calibration direction only; it
+is underpowered, single-seed development evidence and is not a paper result.
+
+The 29-star v4 evaluation group has influenced model selection and is no longer
+an untouched publication test. Before a full run, a new target-level lockbox
+must be acquired and frozen. The full pipeline remains blocked until that
+lockbox, all model choices, thresholds and multi-seed analysis are predeclared.
 
 ## Completed full-run decision (seed 0)
 

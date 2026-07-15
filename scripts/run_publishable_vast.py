@@ -91,6 +91,19 @@ def require_noise_target_count(metadata: dict, minimum: int) -> None:
             "are required before a research gate")
 
 
+def noise_target_set(path: Path) -> set[str]:
+    """Return source-target identifiers, failing closed when absent."""
+    import numpy as np
+
+    with np.load(path) as arr:
+        if "target_ids" not in arr.files:
+            raise SystemExit(f"noise library lacks target_ids: {path}")
+        target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if target_ids.size == 0:
+        raise SystemExit(f"noise library has no target_ids: {path}")
+    return set(target_ids.tolist())
+
+
 def _sha256_file(path: Path | None) -> str | None:
     if path is None or not path.exists():
         return None
@@ -105,6 +118,8 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
                               shard_size: int, seed: int,
                               noise_lib: Path | None) -> bool:
     """Accept a reusable disk dataset only when its provenance is exact."""
+    import numpy as np
+
     try:
         from scripts._config import build_configs
     except ImportError:  # direct ``python scripts/run_publishable_vast.py``
@@ -116,8 +131,9 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
     try:
         meta = read_json(meta_path)
         expected_shards = (n_total + shard_size - 1) // shard_size
+        configs = build_configs(config_path)
         config_json = json.dumps(
-            asdict(build_configs(config_path)["simulator"]), sort_keys=True)
+            asdict(configs["simulator"]), sort_keys=True)
         expected_hash = hashlib.sha256(config_json.encode("utf-8")).hexdigest()
         expected_names = {
             f"shard_{idx:05d}.npz" for idx in range(expected_shards)}
@@ -129,8 +145,26 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
                 "source_target_uniform_then_segment_v1"
                 if noise_description.get("has_target_ids")
                 else "segment_uniform_legacy")
+        required_keys = {
+            "global", "local", "theta_std", "theta_char_std", "d",
+            "sigma_feat", "posterior_valid",
+        }
+        if configs["model"].posterior_transform == "prior_normal":
+            required_keys.add("theta_char_prior_normal")
+        shard_schema_valid = True
+        for idx, name in enumerate(sorted(expected_names)):
+            expected_rows = min(shard_size, n_total - idx * shard_size)
+            with np.load(data_dir / name) as shard:
+                if (not required_keys.issubset(shard.files)
+                        or any(len(shard[key]) != expected_rows
+                               for key in required_keys)):
+                    shard_schema_valid = False
+                    break
         return bool(
-            int(meta.get("n_total", -1)) == n_total
+            int(meta.get("dataset_schema_version", -1)) == 2
+            and set(meta.get("posterior_target_fields", [])) >= {
+                "theta_char_std", "theta_char_prior_normal"}
+            and int(meta.get("n_total", -1)) == n_total
             and int(meta.get("n_shards", -1)) == expected_shards
             and int(meta.get("shard_size", -1)) == shard_size
             and int(meta.get("seed", -1)) == seed
@@ -139,8 +173,10 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
             and meta.get("noise_sampling_unit") == expected_sampling_unit
             and actual_names == expected_names
             and all((data_dir / name).stat().st_size > 0 for name in expected_names)
+            and shard_schema_valid
         )
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError,
+            EOFError):
         return False
 
 
@@ -185,6 +221,60 @@ def prepare_noise_splits(path: Path, out_dir: Path, seed: int,
         "target_overlap": sorted(set(target_ids[~eval_mask]) & set(target_ids[eval_mask])),
     }
     return train_path, eval_path, meta
+
+
+def prepare_noise_train_calibration_split(
+    path: Path,
+    out_dir: Path,
+    seed: int,
+    calibration_fraction: float = 0.2,
+) -> tuple[Path, Path, dict]:
+    """Split development targets while reserving evaluation externally."""
+    import numpy as np
+
+    with np.load(path) as arr:
+        if "target_ids" not in arr.files:
+            raise SystemExit("development noise library lacks target_ids")
+        segments = np.asarray(arr["segments"])
+        target_ids = np.asarray(arr["target_ids"]).astype(str)
+    if len(target_ids) != len(segments) or len(segments) == 0:
+        raise SystemExit("noise target_ids must be nonempty and match segments")
+    targets = np.unique(target_ids)
+    if len(targets) < 3:
+        raise SystemExit("at least three development targets are required")
+    rng = np.random.default_rng(seed)
+    targets = targets[rng.permutation(len(targets))]
+    n_cal = max(1, int(np.ceil(len(targets) * calibration_fraction)))
+    if n_cal >= len(targets):
+        raise SystemExit("calibration fraction leaves no training targets")
+    calibration_targets = targets[:n_cal]
+    training_targets = targets[n_cal:]
+    calibration_mask = np.isin(target_ids, calibration_targets)
+    training_mask = np.isin(target_ids, training_targets)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    train_path = out_dir / "noise_train.npz"
+    calibration_path = out_dir / "noise_calibration.npz"
+    np.savez_compressed(train_path, segments=segments[training_mask],
+                        target_ids=target_ids[training_mask])
+    np.savez_compressed(calibration_path, segments=segments[calibration_mask],
+                        target_ids=target_ids[calibration_mask])
+    meta = {
+        "seed": int(seed),
+        "calibration_fraction_requested": float(calibration_fraction),
+        "targets": {
+            "train": sorted(training_targets.tolist()),
+            "calibration": sorted(calibration_targets.tolist()),
+        },
+        "n_segments": {
+            "train": int(training_mask.sum()),
+            "calibration": int(calibration_mask.sum()),
+        },
+        "train_calibration_overlap": sorted(
+            set(training_targets) & set(calibration_targets)),
+        "evaluation_role": "external_frozen_publication_lockbox",
+        "sampling_unit": "source_target_uniform_then_segment_v1",
+    }
+    return train_path, calibration_path, meta
 
 
 def prepare_noise_three_way_split(
@@ -423,6 +513,11 @@ def main() -> None:
     ap.add_argument("--out-root", default="results/publishable_runs")
     ap.add_argument("--run-name", default=None)
     ap.add_argument("--noise-lib", default="data/noise_lib.npz")
+    ap.add_argument(
+        "--publication-eval-noise-lib", default=None,
+        help="newly frozen target-level evaluation archive; required for a full run "
+             "and forbidden from overlapping development targets")
+    ap.add_argument("--min-publication-eval-targets", type=int, default=30)
     ap.add_argument("--build-noise-lib", action="store_true")
     ap.add_argument("--noise-workers", type=int, default=1,
                     help="parallel target downloads when building the noise library")
@@ -507,6 +602,15 @@ def main() -> None:
         noise_lib = None
     else:
         noise_lib = (repo / args.noise_lib).resolve()
+    publication_eval_noise_lib = (
+        None if args.publication_eval_noise_lib is None
+        else (repo / args.publication_eval_noise_lib).resolve()
+    )
+    if (not args.smoke and not args.fast_check
+            and publication_eval_noise_lib is None):
+        raise SystemExit(
+            "a new --publication-eval-noise-lib is required for a full run; "
+            "the inspected development evaluation targets are not a lockbox")
     data_dir = Path(args.data_dir).resolve() if args.data_dir else out_dir / "data"
     run_dir = Path(args.run_dir).resolve() if args.run_dir else out_dir / "run"
     if args.smoke:
@@ -608,15 +712,45 @@ def main() -> None:
     if noise_lib is not None and not args.smoke:
         require_noise_target_count(noise_meta, args.min_noise_targets)
     (out_dir / "noise_lib.json").write_text(json.dumps(noise_meta, indent=2))
+    publication_eval_meta = None
+    if publication_eval_noise_lib is not None:
+        if noise_lib is None:
+            raise SystemExit(
+                "--publication-eval-noise-lib requires a development --noise-lib")
+        publication_eval_meta = validate_noise_lib(publication_eval_noise_lib)
+        require_noise_target_count(
+            publication_eval_meta, args.min_publication_eval_targets)
+        overlap = noise_target_set(noise_lib) & noise_target_set(
+            publication_eval_noise_lib)
+        if overlap:
+            raise SystemExit(
+                "publication evaluation archive overlaps development targets: "
+                + ", ".join(sorted(overlap)[:10]))
+        (out_dir / "publication_eval_noise_lib.json").write_text(
+            json.dumps(publication_eval_meta, indent=2))
     train_noise_lib = noise_lib
     calibration_noise_lib = noise_lib
     eval_noise_lib = noise_lib
     split_meta = None
     if noise_lib is not None and not args.smoke:
-        train_noise_lib, calibration_noise_lib, eval_noise_lib, split_meta = \
-            prepare_noise_three_way_split(
-                noise_lib, out_dir / "noise_splits", args.eval_seed,
-                args.noise_calibration_fraction, args.noise_eval_fraction)
+        if publication_eval_noise_lib is not None:
+            train_noise_lib, calibration_noise_lib, split_meta = \
+                prepare_noise_train_calibration_split(
+                    noise_lib, out_dir / "noise_splits", args.eval_seed,
+                    args.noise_calibration_fraction)
+            eval_noise_lib = publication_eval_noise_lib
+            split_meta["publication_evaluation"] = {
+                "path": str(publication_eval_noise_lib),
+                "sha256": _sha256_file(publication_eval_noise_lib),
+                "n_targets": publication_eval_meta["n_unique_targets"],
+                "target_overlap_with_development": [],
+            }
+            split_meta["all_disjoint"] = True
+        else:
+            train_noise_lib, calibration_noise_lib, eval_noise_lib, split_meta = \
+                prepare_noise_three_way_split(
+                    noise_lib, out_dir / "noise_splits", args.eval_seed,
+                    args.noise_calibration_fraction, args.noise_eval_fraction)
         (out_dir / "noise_split.json").write_text(json.dumps(split_meta, indent=2))
 
     if not validate_existing_dataset(
@@ -782,6 +916,8 @@ def main() -> None:
         "detector_checkpoint": str(detector_ckpt),
         "data_dir": str(data_dir),
         "noise_lib": None if noise_lib is None else str(noise_lib),
+        "publication_eval_noise_lib": None
+        if publication_eval_noise_lib is None else str(publication_eval_noise_lib),
         "train_noise_lib": None if train_noise_lib is None else str(train_noise_lib),
         "calibration_noise_lib": None if calibration_noise_lib is None else str(
             calibration_noise_lib),

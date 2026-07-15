@@ -102,7 +102,13 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
     mask = batch.get("posterior_valid", batch["valid"])
     target = batch["theta_std"]
     if model.cfg.param_dim == 5:
-        target = batch.get("theta_char_std", batch["theta_std"][:, 2:])
+        if model.cfg.posterior_transform == "prior_normal":
+            if "theta_char_prior_normal" not in batch:
+                raise ValueError(
+                    "prior_normal model requires theta_char_prior_normal targets")
+            target = batch["theta_char_prior_normal"]
+        else:
+            target = batch.get("theta_char_std", batch["theta_std"][:, 2:])
     if model.head_type == "fmpe":
         l_post = cfm_loss(model.velocity_fn(), target, e, mask=mask)
     else:

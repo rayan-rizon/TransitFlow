@@ -1,6 +1,6 @@
 import json
 
-from scripts.evaluate import sbc_gate
+from scripts.evaluate import evaluation_component_seeds, sbc_gate
 from types import SimpleNamespace
 
 import numpy as np
@@ -15,11 +15,13 @@ from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
     prepare_noise_splits,
+    prepare_noise_train_calibration_split,
     prepare_noise_three_way_split,
     require_noise_target_count,
     validate_existing_dataset,
 )
 from transitflow.data import _write_dataset_metadata
+from transitflow.evaluation.sbc import sbc_uniformity
 
 
 def test_sbc_gate_controls_familywise_error():
@@ -44,6 +46,43 @@ def test_sbc_gate_rejects_clear_miscalibration():
     gate = sbc_gate([1.3e-5, 0.15, 0.27, 0.89, 0.87])
 
     assert gate["pass"] is False
+
+
+def test_sbc_uniformity_uses_declared_discrete_rank_support():
+    # The observed maximum is deliberately far below L.  The null support must
+    # still be all L + 1 possible ranks, rather than shrinking to the sample.
+    ranks = np.array([[0], [1], [2], [3], [4], [5]], dtype=np.int64)
+    result = sbc_uniformity(ranks, n_bins=4, n_posterior=9)
+
+    assert result["n_posterior"] == 9
+    assert result["rank_support_size"] == 10
+    assert result["expected_counts"] == [1.8, 1.2, 1.8, 1.2]
+    assert result["histogram_counts"] == [[3, 2, 1, 0]]
+
+
+def test_sbc_uniformity_rejects_rank_outside_declared_support():
+    try:
+        sbc_uniformity(np.array([[11]]), n_posterior=10)
+    except ValueError as exc:
+        assert "exceeds" in str(exc)
+    else:
+        raise AssertionError("invalid rank support did not fail closed")
+
+
+def test_evaluation_component_streams_are_sample_size_invariant():
+    seeds = evaluation_component_seeds(20260715)
+    assert seeds == evaluation_component_seeds(20260715)
+    assert len(set(seeds.values())) == 3
+
+    short_detection = np.random.default_rng(seeds["detection"])
+    short_detection.random(10)
+    sbc_after_short = np.random.default_rng(seeds["sbc"]).random(16)
+
+    long_detection = np.random.default_rng(seeds["detection"])
+    long_detection.random(10000)
+    sbc_after_long = np.random.default_rng(seeds["sbc"]).random(16)
+
+    assert np.array_equal(sbc_after_short, sbc_after_long)
 
 
 def test_real_gate_ignores_fixed_ephemeris_coverage():
@@ -374,6 +413,22 @@ def test_noise_three_way_split_is_target_disjoint(tmp_path):
     assert meta["all_disjoint"] is True
 
 
+def test_development_train_calibration_split_reserves_no_internal_eval(tmp_path):
+    path = tmp_path / "noise.npz"
+    target_ids = np.repeat(np.array(list("ABCDE")), 2)
+    segments = np.arange(len(target_ids) * 8, dtype=float).reshape(-1, 8)
+    np.savez_compressed(path, segments=segments, target_ids=target_ids)
+
+    train_path, calibration_path, meta = prepare_noise_train_calibration_split(
+        path, tmp_path / "split", seed=4, calibration_fraction=0.2)
+
+    train = set(np.load(train_path)["target_ids"].astype(str))
+    calibration = set(np.load(calibration_path)["target_ids"].astype(str))
+    assert train.isdisjoint(calibration)
+    assert train | calibration == set(target_ids)
+    assert meta["evaluation_role"] == "external_frozen_publication_lockbox"
+
+
 def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
     data_dir = tmp_path / "data"
     data_dir.mkdir()
@@ -382,12 +437,23 @@ def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
     _write_dataset_metadata(
         str(data_dir), sim, n_total=20, n_shards=2, shard_size=10,
         seed=3, noise_lib_path=None)
-    (data_dir / "shard_00000.npz").write_bytes(b"complete")
+    def write_shard(path):
+        n = 10
+        np.savez(path, **{
+            "global": np.zeros((n, 2)), "local": np.zeros((n, 2)),
+            "theta_std": np.zeros((n, 7)),
+            "theta_char_std": np.zeros((n, 5)),
+            "theta_char_prior_normal": np.zeros((n, 5)),
+            "d": np.zeros(n), "sigma_feat": np.zeros(n),
+            "posterior_valid": np.ones(n),
+        })
+
+    write_shard(data_dir / "shard_00000.npz")
 
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, None) is False
 
-    (data_dir / "shard_00001.npz").write_bytes(b"complete")
+    write_shard(data_dir / "shard_00001.npz")
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, None) is True
 
@@ -413,8 +479,16 @@ def test_existing_dataset_accepts_target_uniform_noise_provenance(tmp_path):
     _write_dataset_metadata(
         str(data_dir), sim, n_total=20, n_shards=2, shard_size=10,
         seed=3, noise_lib_path=str(noise_path))
-    (data_dir / "shard_00000.npz").write_bytes(b"complete")
-    (data_dir / "shard_00001.npz").write_bytes(b"complete")
+    for idx in range(2):
+        n = 10
+        np.savez(data_dir / f"shard_{idx:05d}.npz", **{
+            "global": np.zeros((n, 2)), "local": np.zeros((n, 2)),
+            "theta_std": np.zeros((n, 7)),
+            "theta_char_std": np.zeros((n, 5)),
+            "theta_char_prior_normal": np.zeros((n, 5)),
+            "d": np.zeros(n), "sigma_feat": np.zeros(n),
+            "posterior_valid": np.ones(n),
+        })
 
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, noise_path) is True

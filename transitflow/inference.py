@@ -58,7 +58,24 @@ class TransitFlowInference:
             return std_np
         return self.calibration.apply(std_np, center_std)
 
-    def posterior_center_std(self, e: torch.Tensor) -> np.ndarray:
+    def _period_phys(self, ephem_feat=None, theta_std=None) -> np.ndarray:
+        if theta_std is not None and np.asarray(theta_std).shape[-1] == 7:
+            period_std = np.asarray(theta_std, dtype=np.float64)[..., 0]
+        elif ephem_feat is not None:
+            period_std = np.asarray(ephem_feat, dtype=np.float64)[..., 0]
+        else:
+            raise ValueError(
+                "prior_normal posterior transform requires ephemeris features")
+        return np.exp(
+            period_std * self.prior._u_std[0] + self.prior._u_mean[0])
+
+    def _model_to_std(self, model_np: np.ndarray, ephem_feat=None) -> np.ndarray:
+        if self.model.cfg.posterior_transform == "standardized":
+            return model_np
+        period = self._period_phys(ephem_feat=ephem_feat)
+        return self.prior.characterization_prior_normal_to_std(model_np, period)
+
+    def posterior_center_std(self, e: torch.Tensor, ephem_feat=None) -> np.ndarray:
         """Deterministic conditional center: FMPE transport of base point zero."""
         if self.model.head_type != "fmpe":
             raise RuntimeError("posterior calibration currently requires the FMPE head")
@@ -69,7 +86,8 @@ class TransitFlowInference:
             center = sample_ode(
                 self.model.velocity_fn(), e, 1, n_steps=self.ode_steps,
                 method=self.ode_method, base_samples=base)
-        return center[:, 0].float().cpu().numpy()
+        center_np = center[:, 0].float().cpu().numpy()
+        return self._model_to_std(center_np, ephem_feat)
 
     def _autocast(self):
         device_type = self.device.type if hasattr(self.device, "type") else str(self.device)
@@ -153,9 +171,11 @@ class TransitFlowInference:
                                      n_steps=self.ode_steps, method=self.ode_method)
                 else:
                     std = self.model.posterior.sample(e, n_samples)
-            std_np = std.float().cpu().numpy()
+            std_np = self._model_to_std(
+                std.float().cpu().numpy(), ephem_feat)
             if self.calibration is not None:
-                std_np = self._calibrate_std(std_np, self.posterior_center_std(e))
+                std_np = self._calibrate_std(
+                    std_np, self.posterior_center_std(e, ephem_feat))
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
@@ -178,35 +198,51 @@ class TransitFlowInference:
                 else:
                     std = self.model.posterior.sample(e, n_samples)
             p_det = torch.sigmoid(logits.float()).cpu().numpy()
-            std_np = std.float().cpu().numpy()
+            std_np = self._model_to_std(
+                std.float().cpu().numpy(), ephem_feat)
             if self.calibration is not None:
-                std_np = self._calibrate_std(std_np, self.posterior_center_std(e))
+                std_np = self._calibrate_std(
+                    std_np, self.posterior_center_std(e, ephem_feat))
         std_full = self._expand_std_samples(std_np, ephem_feat)
         phys = self.prior.std_to_physical(std_full.reshape(-1, std_full.shape[-1]))
         phys = phys.reshape(std_full.shape)
         return {"p_detect": p_det, "samples": phys, "samples_std": std_full}
 
-    def log_prob_std(self, theta_std, e) -> np.ndarray:
+    def log_prob_std(self, theta_std, e, ephem_feat=None) -> np.ndarray:
         """Exact ``log q(theta | x)`` in standardized space."""
-        ts = torch.as_tensor(np.asarray(theta_std, dtype=np.float32),
-                             device=self.device)
-        if ts.ndim == 1:
-            ts = ts[None]
-        if self.model.cfg.param_dim == 5 and ts.shape[-1] == 7:
-            ts = ts[..., 2:]
+        theta_np = np.asarray(theta_std, dtype=np.float64)
+        if theta_np.ndim == 1:
+            theta_np = theta_np[None]
+        period = None
+        context_ephem = ephem_feat
+        if self.model.cfg.param_dim == 5:
+            if self.model.cfg.posterior_transform == "prior_normal":
+                period = self._period_phys(ephem_feat=ephem_feat, theta_std=theta_np)
+                if context_ephem is None and theta_np.shape[-1] == 7:
+                    context_ephem = theta_np[..., :2]
+            if theta_np.shape[-1] == 7:
+                theta_np = theta_np[..., 2:]
         log_abs_det = 0.0
         if self.calibration is not None:
-            center = self.posterior_center_std(e)
-            calibrated = ts.detach().cpu().numpy()
+            center = self.posterior_center_std(e, context_ephem)
+            calibrated = theta_np
             raw = self.calibration.inverse(calibrated, center)
-            ts = torch.as_tensor(raw, device=self.device, dtype=torch.float32)
+            theta_np = raw
             log_abs_det = self.calibration.log_abs_det_at(calibrated, center)
+        model_log_abs_det = 0.0
+        if self.model.cfg.posterior_transform == "prior_normal":
+            model_log_abs_det = self.prior.characterization_prior_normal_log_abs_det(
+                theta_np, period)
+            theta_np = self.prior.characterization_std_to_prior_normal(
+                theta_np, period)
+        ts = torch.as_tensor(theta_np, device=self.device, dtype=torch.float32)
         with self._autocast():
             if self.model.head_type == "fmpe":
                 lp = fm_log_prob(self.model.velocity_fn(), ts, e, n_steps=self.ode_steps)
             else:
                 lp = self.model.posterior.log_prob(ts, e)
-        return lp.detach().float().cpu().numpy() - log_abs_det
+        return (lp.detach().float().cpu().numpy()
+                + model_log_abs_det - log_abs_det)
 
     # ------------------------------------------------------------------ #
     # Importance-sampling efficiency diagnostic (approximate)

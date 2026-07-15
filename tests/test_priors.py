@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 
+from scripts._config import build_configs
+
 from transitflow.priors import (
     PARAM_NAMES,
     TransitPrior,
@@ -82,13 +84,14 @@ def _stellar_prior(mean=0.0, std=0.25):
 
 
 def test_stellar_density_aRs_density_is_normalized():
-    # p(a/Rs | P) must integrate to ~1 on its support (proper density).
+    # p(a/Rs | P) must integrate to ~1 on its support for every period.
     prior = _stellar_prior()
     grid = np.linspace(3.0, 50.0, 400000)
-    P = np.full(grid.size, 5.0)
-    pdf = np.exp(prior._stellar_density_logpdf_a_rs(P, grid))
-    norm = float(_trapz(pdf, grid))
-    assert abs(norm - 1.0) < 0.02, norm
+    for period in (0.5, 5.0, 13.0):
+        P = np.full(grid.size, period)
+        pdf = np.exp(prior._stellar_density_logpdf_a_rs(P, grid))
+        norm = float(_trapz(pdf, grid))
+        assert abs(norm - 1.0) < 0.02, (period, norm)
 
 
 def test_stellar_density_prior_matches_simulator_sampling():
@@ -104,8 +107,7 @@ def test_stellar_density_prior_matches_simulator_sampling():
     rng = np.random.default_rng(0)
     P = np.full(300000, 5.0)
     ars = sim._sample_physical_a_rs(P, rng)
-    # drop the measure that the simulator clips onto the [3, 50] boundary
-    ars = ars[(ars > 3.0 + 1e-3) & (ars < 50.0 - 1e-3)]
+    assert np.all((ars > 3.0) & (ars < 50.0))
     emp_mean_log10 = float(np.mean(np.log10(ars)))
     emp_std_log10 = float(np.std(np.log10(ars)))
 
@@ -118,6 +120,50 @@ def test_stellar_density_prior_matches_simulator_sampling():
     var_density = float(_trapz((log10_grid - mean_density) ** 2 * pdf, grid))
     assert abs(mean_density - emp_mean_log10) < 0.01, (mean_density, emp_mean_log10)
     assert abs(np.sqrt(var_density) - emp_std_log10) < 0.01
+
+
+def test_characterization_prior_normal_round_trip_and_jacobian():
+    prior = _stellar_prior()
+    rng = np.random.default_rng(81)
+    period = rng.uniform(0.5, 13.0, size=128)
+    physical = prior.sample(128, rng)
+    physical[:, 0] = period
+    physical[:, 3] = prior.sample_stellar_density_a_rs(period, rng)
+    z = prior.physical_to_std(physical)[:, 2:]
+
+    normal = prior.characterization_std_to_prior_normal(z, period)
+    recovered = prior.characterization_prior_normal_to_std(normal, period)
+
+    assert np.allclose(recovered, z, atol=1e-9)
+    eps = 1e-6
+    numerical = []
+    for dim in range(5):
+        delta = np.zeros_like(z)
+        delta[:, dim] = eps
+        hi = prior.characterization_std_to_prior_normal(z + delta, period)
+        lo = prior.characterization_std_to_prior_normal(z - delta, period)
+        numerical.append(np.log(np.abs((hi[:, dim] - lo[:, dim]) / (2 * eps))))
+    numerical = np.sum(np.stack(numerical, axis=-1), axis=-1)
+    analytic = prior.characterization_prior_normal_log_abs_det(z, period)
+    assert np.allclose(analytic, numerical, atol=2e-5)
+
+
+def test_config_rejects_degenerate_stellar_density():
+    try:
+        build_configs(
+            "configs/default.yaml",
+            overrides={
+                "model": {"posterior_transform": "prior_normal", "param_dim": 5},
+                "simulator": {
+                    "a_rs_prior_mode": "stellar_density",
+                    "stellar_density_log10_std": 0.0,
+                },
+            },
+        )
+    except ValueError as exc:
+        assert "positive log10 density width" in str(exc)
+    else:
+        raise AssertionError("degenerate stellar-density configuration did not fail")
 
 
 def test_stellar_density_only_changes_aRs(prior, rng):
@@ -134,3 +180,21 @@ def test_stellar_density_only_changes_aRs(prior, rng):
     bad = s.copy()
     bad[:, 4] = 5.0  # impact parameter outside [0, 1.1]
     assert np.all(~np.isfinite(stellar.log_prob_physical(bad)))
+
+
+def test_stellar_density_log_prob_std_matches_physical_change_of_variables():
+    prior = _stellar_prior()
+    rng = np.random.default_rng(919)
+    physical = prior.sample(128, rng)
+    physical[:, 3] = prior.sample_stellar_density_a_rs(physical[:, 0], rng)
+    z = prior.physical_to_std(physical)
+
+    expected = prior.log_prob_physical(physical) + np.sum(
+        np.log(prior._u_std) + np.where(
+            prior._log, np.log(physical), 0.0),
+        axis=-1,
+    )
+    actual = prior.log_prob_std(z)
+
+    assert np.allclose(actual, expected, atol=1e-10)
+    assert np.std(actual) > 0.1

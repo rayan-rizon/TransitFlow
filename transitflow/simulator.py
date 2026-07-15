@@ -119,6 +119,18 @@ class TransitSimulator:
                  noise_library: NoiseLibrary | None = None) -> None:
         self.cfg = config or SimConfig()
         self.prior = prior or TransitPrior.from_sim_config(self.cfg)
+        if prior is not None:
+            mismatch = prior.a_rs_prior_mode != self.cfg.a_rs_prior_mode
+            if self.cfg.a_rs_prior_mode == "stellar_density":
+                mismatch = mismatch or not np.isclose(
+                    prior.stellar_density_log10_mean,
+                    self.cfg.stellar_density_log10_mean)
+                mismatch = mismatch or not np.isclose(
+                    prior.stellar_density_log10_std,
+                    self.cfg.stellar_density_log10_std)
+            if mismatch:
+                raise ValueError(
+                    "custom prior a/Rs settings do not match simulator config")
         self.noise_library = noise_library or NoiseLibrary(None)
         self.times = np.linspace(0.0, self.cfg.baseline_days, self.cfg.n_raw)
         self.dt = self.times[1] - self.times[0]
@@ -130,29 +142,18 @@ class TransitSimulator:
     # ------------------------------------------------------------------ #
     def _sample_physical_a_rs(self, P: np.ndarray,
                               rng: np.random.Generator) -> np.ndarray:
-        """Draw ``a/Rs`` from a stellar-density prior.
+        """Draw ``a/Rs`` from the support-truncated stellar-density prior.
 
         For circular orbits, ``a/Rs = (G rho_star P^2 / 3pi)^(1/3)``.  The
-        density is sampled in solar units and clipped to the canonical support
-        used by :class:`TransitPrior`, so downstream standardization remains
-        valid.
+        Sampling is performed by :class:`TransitPrior` so the simulator and
+        reference density use the same truncation normalization and contain no
+        artificial boundary atoms.
         """
         if self.cfg.a_rs_prior_mode == "log_uniform":
             return np.array([], dtype=np.float64)
         if self.cfg.a_rs_prior_mode != "stellar_density":
             raise ValueError(f"unknown a_rs_prior_mode {self.cfg.a_rs_prior_mode!r}")
-        rho_sun_kg_m3 = 1408.0
-        g_si = 6.67430e-11
-        day_s = 86400.0
-        rho = rho_sun_kg_m3 * 10.0 ** rng.normal(
-            self.cfg.stellar_density_log10_mean,
-            self.cfg.stellar_density_log10_std,
-            size=len(P),
-        )
-        ars = (g_si * rho * (np.asarray(P, dtype=np.float64) * day_s) ** 2
-               / (3.0 * np.pi)) ** (1.0 / 3.0)
-        lo, hi = self.prior.specs[3].low, self.prior.specs[3].high
-        return np.clip(ars, lo, hi)
+        return self.prior.sample_stellar_density_a_rs(P, rng)
 
     def _sample_gap_masks(self, B: int, rng: np.random.Generator) -> np.ndarray:
         """Cadence-availability masks for downlinks/momentum-dump-like gaps."""
@@ -375,6 +376,9 @@ class TransitSimulator:
         theta_std = self.prior.physical_to_std(theta_phys).astype(np.float32)
         theta_std[is_neg] = 0.0  # undefined for non-planets; masked in the loss
         theta_char_std = theta_std[:, 2:].astype(np.float32)
+        theta_char_prior_normal = self.prior.characterization_std_to_prior_normal(
+            theta_char_std, theta_phys[:, 0]).astype(np.float32)
+        theta_char_prior_normal[is_neg] = 0.0
 
         # noise-level conditioning feature: standardized log10 sigma
         sig_feat = (np.log10(sigma_white) - 0.5 *
@@ -412,6 +416,7 @@ class TransitSimulator:
             "local": lv,
             "theta_std": theta_std,
             "theta_char_std": theta_char_std,
+            "theta_char_prior_normal": theta_char_prior_normal,
             "theta_phys": theta_phys.astype(np.float32),
             "d": d,
             "valid": is_planet,

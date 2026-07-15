@@ -1,11 +1,13 @@
 """Held-out invertible calibration for standardized posterior samples.
 
 The legacy transform is diagonal affine around a deterministic conditional
-center ``c(x)``. The bounded transform follows that latent affine map with a
-per-parameter tanh bijection into the exact prior support. Because both are
-explicit changes of variables, calibrated samples and log densities remain
-mutually consistent. Parameters must be fitted on a calibration split that is
-disjoint from both gradient training and final tests.
+center ``c(x)``. Bounded transforms follow that latent affine map with either a
+legacy tanh link or a prior-matched probit link into the exact prior support.
+The probit link maps a standard-normal latent exactly to a uniform bounded
+prior, which is the appropriate null behavior for weakly identified parameters.
+Because every transform is an explicit change of variables, calibrated samples
+and log densities remain mutually consistent. Parameters must be fitted on a
+calibration split that is disjoint from both gradient training and final tests.
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+from scipy.special import ndtr, ndtri
 
 
 def sha256_file(path: str | Path) -> str:
@@ -70,11 +73,11 @@ class PosteriorAffineCalibration:
                 or not np.all(np.isfinite(quadratic)) \
                 or not np.all(np.isfinite(log_scale_slope)):
             raise ValueError("calibration location parameters must be finite")
-        if self.space not in ("linear", "bounded_tanh"):
+        if self.space not in ("linear", "bounded_tanh", "bounded_probit"):
             raise ValueError(f"unsupported calibration space {self.space!r}")
         lower = None if self.lower is None else np.asarray(self.lower, dtype=np.float64)
         upper = None if self.upper is None else np.asarray(self.upper, dtype=np.float64)
-        if self.space == "bounded_tanh":
+        if self.space in ("bounded_tanh", "bounded_probit"):
             if lower is None or upper is None or lower.shape != scale.shape \
                     or upper.shape != scale.shape:
                 raise ValueError("bounded calibration requires per-dimension bounds")
@@ -119,9 +122,11 @@ class PosteriorAffineCalibration:
         latent = calibrated_center + conditional_scale * (arr - center)
         if self.space == "linear":
             return latent
-        midpoint = 0.5 * (self.lower + self.upper)
-        half_range = 0.5 * (self.upper - self.lower)
-        return midpoint + half_range * np.tanh(latent)
+        if self.space == "bounded_tanh":
+            midpoint = 0.5 * (self.lower + self.upper)
+            half_range = 0.5 * (self.upper - self.lower)
+            return midpoint + half_range * np.tanh(latent)
+        return self.lower + (self.upper - self.lower) * ndtr(latent)
 
     def inverse(self, calibrated_std: np.ndarray, center_std: np.ndarray) -> np.ndarray:
         arr = np.asarray(calibrated_std)
@@ -136,12 +141,16 @@ class PosteriorAffineCalibration:
         calibrated_center, conditional_scale = self._conditional_terms(center)
         if self.space == "linear":
             latent = arr
-        else:
+        elif self.space == "bounded_tanh":
             midpoint = 0.5 * (self.lower + self.upper)
             half_range = 0.5 * (self.upper - self.lower)
             normalized = np.clip(
                 (arr - midpoint) / half_range, -1.0 + 1e-12, 1.0 - 1e-12)
             latent = np.arctanh(normalized)
+        else:
+            probability = np.clip(
+                (arr - self.lower) / (self.upper - self.lower), 1e-12, 1.0 - 1e-12)
+            latent = ndtri(probability)
         return center + (latent - calibrated_center) / conditional_scale
 
     def log_abs_det_at(self, calibrated_std: np.ndarray,
@@ -154,28 +163,39 @@ class PosteriorAffineCalibration:
         conditional_log_scale = np.log(self.scale)
         if np.any(self.log_scale_slope):
             if center_std is None:
-                raise ValueError("conditional-scale calibration requires center_std")
+                raise ValueError("conditional calibration requires center_std")
             center = np.asarray(center_std, dtype=np.float64)
             if center.shape[-1] != self.dim:
                 raise ValueError("conditional center dimension does not match calibration")
             while center.ndim < arr.ndim:
                 center = np.expand_dims(center, axis=-2)
-            conditional_log_scale = conditional_log_scale + self.log_scale_slope * center
+            _, conditional_scale = self._conditional_terms(center)
+            conditional_log_scale = np.log(conditional_scale)
         if self.space == "linear":
             if np.ndim(conditional_log_scale) == 1:
                 return np.full(arr.shape[:-1], self.log_abs_det, dtype=np.float64)
             return np.sum(conditional_log_scale, axis=-1)
-        midpoint = 0.5 * (self.lower + self.upper)
-        half_range = 0.5 * (self.upper - self.lower)
-        normalized = np.clip(
-            (arr - midpoint) / half_range, -1.0 + 1e-12, 1.0 - 1e-12)
-        per_dim = (conditional_log_scale + np.log(half_range)
-                   + np.log1p(-(normalized * normalized)))
+        if self.space == "bounded_tanh":
+            midpoint = 0.5 * (self.lower + self.upper)
+            half_range = 0.5 * (self.upper - self.lower)
+            normalized = np.clip(
+                (arr - midpoint) / half_range, -1.0 + 1e-12, 1.0 - 1e-12)
+            per_dim = (conditional_log_scale + np.log(half_range)
+                       + np.log1p(-(normalized * normalized)))
+        else:
+            full_range = self.upper - self.lower
+            probability = np.clip(
+                (arr - self.lower) / full_range, 1e-12, 1.0 - 1e-12)
+            latent = ndtri(probability)
+            per_dim = (conditional_log_scale + np.log(full_range)
+                       - 0.5 * latent ** 2 - 0.5 * np.log(2.0 * np.pi))
         return np.sum(per_dim, axis=-1)
 
     def to_dict(self) -> dict:
         return {
-            "schema_version": 3 if self.space == "bounded_tanh" else 1,
+            "schema_version": (
+                4 if self.space == "bounded_probit"
+                else 3 if self.space == "bounded_tanh" else 1),
             "kind": "conditional_centered_diagonal_affine_posterior",
             "scale": self.scale.tolist(),
             "offset": self.offset.tolist(),
@@ -247,12 +267,15 @@ def _rank_objective(ranks: np.ndarray, levels: np.ndarray) -> tuple[float, float
 
 
 def _bounded_truth_latent(theta: np.ndarray, lower: np.ndarray,
-                          upper: np.ndarray) -> np.ndarray:
-    midpoint = 0.5 * (lower + upper)
-    half_range = 0.5 * (upper - lower)
-    normalized = np.clip(
-        (theta - midpoint) / half_range, -1.0 + 1e-8, 1.0 - 1e-8)
-    return np.arctanh(normalized)
+                          upper: np.ndarray, space: str) -> np.ndarray:
+    if space == "bounded_tanh":
+        midpoint = 0.5 * (lower + upper)
+        half_range = 0.5 * (upper - lower)
+        normalized = np.clip(
+            (theta - midpoint) / half_range, -1.0 + 1e-8, 1.0 - 1e-8)
+        return np.arctanh(normalized)
+    probability = np.clip((theta - lower) / (upper - lower), 1e-8, 1.0 - 1e-8)
+    return ndtri(probability)
 
 
 def fit_affine_calibration(theta_true_std: np.ndarray,
@@ -260,7 +283,8 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
                            conditional_center_std: np.ndarray,
                            scale_grid: np.ndarray | None = None,
                            bounds: tuple[np.ndarray, np.ndarray] | None = None,
-                           optimizer_seed: int = 7301) \
+                           optimizer_seed: int = 7301,
+                           bounded_link: str = "probit") \
         -> tuple[PosteriorAffineCalibration, dict]:
     """Fit a predeclared diagonal affine map by held-out coverage error.
 
@@ -290,13 +314,16 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
         raise ValueError("scale grid must contain positive values")
     levels = np.arange(0.1, 1.0, 0.1)
     if bounds is not None:
+        if bounded_link not in ("probit", "tanh"):
+            raise ValueError("bounded_link must be 'probit' or 'tanh'")
         lower = np.asarray(bounds[0], dtype=np.float64)
         upper = np.asarray(bounds[1], dtype=np.float64)
         if lower.shape != (theta.shape[1],) or upper.shape != lower.shape \
                 or np.any(upper <= lower):
             raise ValueError("calibration bounds must match posterior dimensions")
         return _fit_bounded_rank_calibration(
-            theta, samples, center, lower, upper, levels, optimizer_seed)
+            theta, samples, center, lower, upper, levels, optimizer_seed,
+            f"bounded_{bounded_link}")
     scale = np.empty(theta.shape[1], dtype=np.float64)
     offset = np.empty(theta.shape[1], dtype=np.float64)
     slope = np.empty(theta.shape[1], dtype=np.float64)
@@ -350,12 +377,12 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
 def _fit_bounded_rank_calibration(
         theta: np.ndarray, samples: np.ndarray, center: np.ndarray,
         lower: np.ndarray, upper: np.ndarray, levels: np.ndarray,
-        optimizer_seed: int) -> tuple[PosteriorAffineCalibration, dict]:
+        optimizer_seed: int, space: str) -> tuple[PosteriorAffineCalibration, dict]:
     """Fit a bounded, nonlinear conditional map directly against SBC ranks."""
     from scipy.optimize import differential_evolution
 
     dim = theta.shape[1]
-    truth_latent = _bounded_truth_latent(theta, lower, upper)
+    truth_latent = _bounded_truth_latent(theta, lower, upper, space)
     scale = np.empty(dim, dtype=np.float64)
     offset = np.empty(dim, dtype=np.float64)
     slope = np.empty(dim, dtype=np.float64)
@@ -375,7 +402,6 @@ def _fit_bounded_rank_calibration(
         initial_offset = float(np.clip(coef[0], -2.0, 2.0))
         initial_slope = float(np.clip(coef[1], 0.25, 2.0))
         initial_quadratic = float(np.clip(coef[2], -0.75, 0.75))
-
         def objective(params: np.ndarray) -> float:
             (candidate_offset, candidate_slope, candidate_quadratic,
              log_scale, candidate_log_scale_slope) = params
@@ -433,7 +459,7 @@ def _fit_bounded_rank_calibration(
         slope,
         lower,
         upper,
-        "bounded_tanh",
+        space,
         metadata={},
         center_quadratic=quadratic,
         log_scale_slope=log_scale_slope,
@@ -448,7 +474,7 @@ def _fit_bounded_rank_calibration(
         "n_calibration": int(theta.shape[0]),
         "n_posterior": int(samples.shape[1]),
         "levels": levels.tolist(),
-        "space": "bounded_tanh",
+        "space": space,
         "coverage_error_before_by_dim": before.tolist(),
         "coverage_error_after_by_dim": after.tolist(),
         "coverage_error_before_mean": float(before.mean()),
@@ -467,7 +493,7 @@ def _fit_bounded_rank_calibration(
         "calibration_input_sha256": digest,
     }
     calibration = PosteriorAffineCalibration(
-        scale, offset, slope, lower, upper, "bounded_tanh",
+        scale, offset, slope, lower, upper, space,
         metadata={"fit_diagnostics": diagnostics},
         center_quadratic=quadratic,
         log_scale_slope=log_scale_slope)

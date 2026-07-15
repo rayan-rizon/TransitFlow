@@ -33,6 +33,7 @@ class ModelConfig:
     use_periodogram: bool = False          # box-periodogram branch (period info)
     use_ephemeris_feature: bool = False    # candidate (P, t0_phase) conditioning
     use_dilution_feature: bool = False     # third-light/crowding conditioning
+    posterior_transform: str = "standardized"  # standardized | prior_normal
     # embedding
     global_channels: tuple = (32, 64, 128, 128, 256, 256)
     local_channels: tuple = (32, 64, 128, 128)
@@ -61,6 +62,11 @@ class TransitFlow(nn.Module):
         super().__init__()
         self.cfg = config or ModelConfig()
         c = self.cfg
+        if c.posterior_transform not in ("standardized", "prior_normal"):
+            raise ValueError(
+                f"unknown posterior_transform {c.posterior_transform!r}")
+        if c.posterior_transform == "prior_normal" and c.param_dim != 5:
+            raise ValueError("prior_normal posterior transform requires the 5D model")
         self.embedding = DualBranchEmbedding(
             embed_dim=c.embed_dim,
             global_channels=c.global_channels,

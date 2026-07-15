@@ -24,4 +24,8 @@ def build_configs(path: str, overrides: dict | None = None):
         train = merge_into_dataclass(train, overrides.get("train", {}))
         model = merge_into_dataclass(model, overrides.get("model", {}))
         sim = merge_into_dataclass(sim, overrides.get("simulator", {}))
+    if (sim.a_rs_prior_mode == "stellar_density"
+            and sim.stellar_density_log10_std <= 0):
+        raise ValueError(
+            "stellar-density prior requires a positive log10 density width")
     return {"simulator": sim, "model": model, "train": train, "inference": inf}
