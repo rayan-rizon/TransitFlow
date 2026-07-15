@@ -98,6 +98,17 @@ def bootstrap_tls_detection_metrics(labels: np.ndarray, tls_scores: np.ndarray,
     return result
 
 
+def prior_for_checkpoint_simulator(sc) -> TransitPrior:
+    """Return the prior encoded by a checkpoint's simulator configuration.
+
+    The baseline draws test curves from the checkpoint's forward model.  Its
+    prior must therefore retain non-default a/Rs settings (notably the
+    stellar-density prior), or ``TransitSimulator`` correctly rejects the
+    inconsistent configuration before a BLS/TLS comparison can begin.
+    """
+    return TransitPrior.from_sim_config(sc)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default="runs/fmpe_pg/checkpoints/latest.pt")
@@ -131,7 +142,7 @@ def main() -> None:
     set_seed(args.seed)
 
     model, _, sc = load_checkpoint(args.ckpt)
-    prior = TransitPrior(TransitPrior.default_specs(sc.regime))
+    prior = prior_for_checkpoint_simulator(sc)
     noise_library = NoiseLibrary.load(args.noise_lib)
     if args.noise_lib and not noise_library.available():
         raise SystemExit(f"noise library could not be loaded: {args.noise_lib}")

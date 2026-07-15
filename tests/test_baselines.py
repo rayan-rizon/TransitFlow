@@ -4,10 +4,31 @@ import pytest
 from transitflow.baselines.bls import bls_detect
 from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
-from scripts.baseline_detection import bootstrap_tls_detection_metrics
+from scripts.baseline_detection import (
+    bootstrap_tls_detection_metrics,
+    prior_for_checkpoint_simulator,
+)
 from transitflow.baselines.mcmc import _split_rhat, has_emcee, run_mcmc
 from transitflow.priors import TransitPrior, kipping_to_quadratic
 from transitflow.transit_model import transit_flux
+
+
+def test_baseline_prior_matches_stellar_density_checkpoint_config():
+    """Baseline detection must accept checkpoints with a physical a/Rs prior."""
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    cfg = SimConfig(
+        regime="tess",
+        a_rs_prior_mode="stellar_density",
+        stellar_density_log10_mean=0.12,
+        stellar_density_log10_std=0.18,
+    )
+    prior = prior_for_checkpoint_simulator(cfg)
+
+    assert prior.a_rs_prior_mode == "stellar_density"
+    assert prior.stellar_density_log10_mean == pytest.approx(0.12)
+    assert prior.stellar_density_log10_std == pytest.approx(0.18)
+    TransitSimulator(cfg, prior=prior)
 
 
 def _make_lc(P=3.0, t0=1.0, RpRs=0.1, aRs=12.0, b=0.2, sigma=0.001, seed=0):
