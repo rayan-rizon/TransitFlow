@@ -58,17 +58,27 @@ small post-hoc calibrator.
    run replaces the development evaluation role with the external lockbox.
 7. Split calibration targets again into calibrator-fit and calibrator-selection
    groups. Fit a simple bounded-affine candidate and the conditional candidate,
-   include exact identity as a no-calibration control, and select one global
-   family only on the target-held-out calibration-selection group. The
-   predeclared score is mean rank Cramer-von Mises distance plus 0.25 times mean
-   central-coverage error, so SBC uniformity remains primary. Preserve the fit
-   and selection arrays and hashes for offline audit.
+   include exact identity as a no-calibration control, and select each diagonal
+   parameter only on the target-held-out calibration-selection group. The
+   predeclared per-parameter score is rank Cramer-von Mises distance plus 0.25
+   times central-coverage error, so SBC uniformity remains primary. This matches
+   the declared diagonal transform instead of forcing physically unrelated
+   parameters to share complexity. Freeze the hybrid as one artifact and
+   preserve the fit and selection arrays and hashes for offline audit.
 8. Apply calibration in the prior-CDF latent coordinate. The prior-normal flow
    is converted to bounded standardized physical coordinates before the public
    inference API returns samples; treating those bounded coordinates directly
    as Gaussian latents is not an identity-preserving change of variables. The
    bounded-to-latent-to-bounded map must have an exact inverse and Jacobian, and
    the identity candidate must be an exact no-op.
+
+The first corrected-coordinate retry reduced coverage error to 0.0073 and made
+`RpRs` and `aRs` pass (`p=0.112`, `0.124`), but a global conditional-family
+choice still failed `b`, `q1`, and `q2` (`p=0.001`, `0.001`, `0.008`). On the
+calibrator-selection targets alone, the simpler family had the lower declared
+per-parameter score for precisely those three coordinates. Because the
+calibrator is diagonal, the final protocol therefore selects family complexity
+per coordinate and freezes the resulting hybrid as one artifact.
 
 ## Alternatives rejected
 

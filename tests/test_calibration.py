@@ -10,7 +10,8 @@ from transitflow.calibration import (
 )
 from transitflow.noise import NoiseLibrary
 from scripts.calibrate_posterior import (
-    select_calibration_candidate,
+    combine_calibration_candidates,
+    select_calibration_candidates_by_dimension,
     split_calibration_noise_targets,
 )
 
@@ -217,22 +218,28 @@ def test_calibration_target_selection_split_is_source_disjoint():
     assert metadata["target_overlap"] == []
 
 
-def test_calibrator_family_selection_uses_heldout_rank_score():
+def test_calibrator_family_selection_uses_heldout_rank_score_per_dimension():
     n, n_post = 100, 101
     grid = np.linspace(-1.0, 1.0, n_post)
-    posterior = np.broadcast_to(grid[None, :, None], (n, n_post, 1)).copy()
-    theta = np.linspace(-0.98, 0.98, n)[:, None]
+    posterior = np.broadcast_to(
+        grid[None, :, None], (n, n_post, 2)).copy()
+    uniform_truth = np.linspace(-0.98, 0.98, n)
+    theta = np.column_stack([uniform_truth, uniform_truth + 1.0])
     center = np.zeros_like(theta)
-    identity = PosteriorAffineCalibration(np.ones(1), np.zeros(1))
-    shifted = PosteriorAffineCalibration(np.ones(1), np.ones(1))
+    identity = PosteriorAffineCalibration(np.ones(2), np.zeros(2))
+    shifted = PosteriorAffineCalibration(np.ones(2), np.ones(2))
 
-    selected, scores = select_calibration_candidate(
+    selected, scores, per_dimension = select_calibration_candidates_by_dimension(
         {"identity": identity, "shifted": shifted},
         theta, posterior, center)
+    hybrid = combine_calibration_candidates(
+        {"identity": identity, "shifted": shifted}, selected)
 
-    assert selected == "identity"
-    assert scores["identity"]["selection_score"] \
-        < scores["shifted"]["selection_score"]
+    assert selected == ["identity", "shifted"]
+    assert per_dimension[0]["identity"] < per_dimension[0]["shifted"]
+    assert per_dimension[1]["shifted"] < per_dimension[1]["identity"]
+    assert np.array_equal(hybrid.offset, np.array([0.0, 1.0]))
+    assert set(scores) == {"identity", "shifted"}
 
 
 def test_calibration_rejects_wrong_dimension():

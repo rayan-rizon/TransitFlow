@@ -118,13 +118,13 @@ def collect_calibration_cases(
     )
 
 
-def select_calibration_candidate(
+def select_calibration_candidates_by_dimension(
     candidates: dict[str, PosteriorAffineCalibration],
     theta: np.ndarray,
     posterior: np.ndarray,
     center: np.ndarray,
-) -> tuple[str, dict]:
-    """Select one global complexity on target-held-out calibration cases."""
+) -> tuple[list[str], dict, list[dict]]:
+    """Select each diagonal dimension on target-held-out calibration cases."""
     if not candidates:
         raise ValueError("at least one calibration candidate is required")
     scores = {
@@ -132,9 +132,56 @@ def select_calibration_candidate(
             theta, posterior, center, candidate)
         for name, candidate in candidates.items()
     }
-    selected = min(
-        scores, key=lambda name: (scores[name]["selection_score"], name))
-    return selected, scores
+    dimensions = {candidate.dim for candidate in candidates.values()}
+    if len(dimensions) != 1:
+        raise ValueError("calibration candidates must have equal dimensions")
+    selected = []
+    per_dimension_scores = []
+    for dim in range(dimensions.pop()):
+        score_by_candidate = {
+            name: float(
+                diagnostics["rank_cvm_by_dim"][dim]
+                + 0.25 * diagnostics["rank_coverage_error_by_dim"][dim])
+            for name, diagnostics in scores.items()
+        }
+        selected.append(min(
+            score_by_candidate,
+            key=lambda name: (score_by_candidate[name], name)))
+        per_dimension_scores.append(score_by_candidate)
+    return selected, scores, per_dimension_scores
+
+
+def combine_calibration_candidates(
+    candidates: dict[str, PosteriorAffineCalibration],
+    selected_by_dimension: list[str],
+) -> PosteriorAffineCalibration:
+    """Freeze one diagonal artifact from independently selected dimensions."""
+    if not selected_by_dimension:
+        raise ValueError("selected_by_dimension cannot be empty")
+    chosen = [candidates[name] for name in selected_by_dimension]
+    dim = len(chosen)
+    if any(candidate.dim != dim for candidate in chosen):
+        raise ValueError("selected calibrators do not match output dimension")
+    reference = chosen[0]
+    if any(candidate.space != reference.space for candidate in chosen):
+        raise ValueError("selected calibrators must use the same coordinate space")
+    for candidate in chosen[1:]:
+        if not np.array_equal(candidate.lower, reference.lower) \
+                or not np.array_equal(candidate.upper, reference.upper):
+            raise ValueError("selected calibrators must use the same bounds")
+
+    def diagonal(attribute: str) -> np.ndarray:
+        return np.asarray([
+            getattr(candidate, attribute)[index]
+            for index, candidate in enumerate(chosen)
+        ])
+
+    return PosteriorAffineCalibration(
+        diagonal("scale"), diagonal("offset"), diagonal("center_slope"),
+        reference.lower, reference.upper, reference.space,
+        center_quadratic=diagonal("center_quadratic"),
+        log_scale_slope=diagonal("log_scale_slope"),
+    )
 
 
 def main() -> None:
@@ -199,15 +246,24 @@ def main() -> None:
             bounded_link=args.bounded_link, complexity=complexity)
         candidates[complexity] = candidate
         fit_diagnostics[complexity] = candidate_fit
-    selected_name, selection_scores = select_calibration_candidate(
+    selected_names, selection_scores, selection_scores_by_dimension = \
+        select_calibration_candidates_by_dimension(
         candidates, selection_theta, selection_posterior, selection_center)
-    calibration = candidates[selected_name]
+    calibration = combine_calibration_candidates(candidates, selected_names)
+    parameter_names = list(prior.names[-theta.shape[1]:])
+    hybrid_selection_score = calibration_rank_diagnostics(
+        selection_theta, selection_posterior, selection_center, calibration)
     diagnostics = {
-        "selection_protocol": "target_disjoint_rank_cvm_primary_v1",
-        "selected_complexity": selected_name,
+        "selection_protocol": "target_disjoint_per_dimension_rank_cvm_primary_v2",
+        "selected_complexity": "per_dimension",
+        "selected_complexity_by_parameter": dict(
+            zip(parameter_names, selected_names)),
         "target_split": target_split,
         "candidate_fit_diagnostics": fit_diagnostics,
         "candidate_selection_scores": selection_scores,
+        "candidate_selection_scores_by_dimension": dict(
+            zip(parameter_names, selection_scores_by_dimension)),
+        "hybrid_selection_score": hybrid_selection_score,
     }
     if args.diagnostic_data:
         diagnostic_path = Path(args.diagnostic_data)
