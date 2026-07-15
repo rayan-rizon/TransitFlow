@@ -11,6 +11,14 @@ development test but still rejected `RpRs` and `aRs` and missed the coverage
 gate.  Conditioning the calibrator on posterior spread improved its fit split
 but degraded held-out evaluation, so that candidate was rejected as overfit.
 
+The subsequent 100,000-example, 10,000-step target-disjoint development gate
+confirmed that the prior-normal correction alone was not sufficient. Coverage
+passed at 0.0132, but held-out characterization SBC p-values were
+`[0.0006, 0.1218, 0.000022, 0.0185, 0.2839]`. An exact same-case uncalibrated
+diagnostic failed the first three parameters and had coverage error 0.0295.
+Audit of the calibration fit found that its scalar objective could trade worse
+rank uniformity for better central coverage, despite SBC being the primary gate.
+
 Code audit then exposed two model-generating-distribution mismatches.  The
 stellar-density draw for `a/Rs` was clipped to the prior interval, creating
 point masses at the bounds that were absent from the density used by inference.
@@ -43,6 +51,13 @@ small post-hoc calibrator.
    Gradient training, checkpoint validation, posterior calibration, and
    development evaluation may not share source targets.  A full publication
    run replaces the development evaluation role with the external lockbox.
+7. Split calibration targets again into calibrator-fit and calibrator-selection
+   groups. Fit a simple bounded-affine candidate and the conditional candidate,
+   include exact identity as a no-calibration control, and select one global
+   family only on the target-held-out calibration-selection group. The
+   predeclared score is mean rank Cramer-von Mises distance plus 0.25 times mean
+   central-coverage error, so SBC uniformity remains primary. Preserve the fit
+   and selection arrays and hashes for offline audit.
 
 ## Alternatives rejected
 

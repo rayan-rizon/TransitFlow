@@ -447,7 +447,8 @@ def train(
             f"step={final_step}/{train_cfg.n_steps}")
 
     return {"model": model, "history": history, "device": device,
-            "simulator": val_simulator, "best": best, "run_dir": run_dir}
+            "simulator": val_simulator, "best": best,
+            "best_detection": best_detection, "run_dir": run_dir}
 
 
 # --------------------------------------------------------------------------- #

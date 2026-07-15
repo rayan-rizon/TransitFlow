@@ -86,9 +86,14 @@ def main() -> None:
             raise SystemExit(1)
 
     result = train(cfg["model"], cfg["simulator"], cfg["train"], verbose=True)
-    print("training complete. best val AUC:",
-          round(result["best"].get("roc_auc", float("nan")), 4),
-          "| run_dir:", result["run_dir"])
+    print(
+        "training complete. best posterior val loss:",
+        round(result["best"].get("posterior", float("nan")), 4),
+        "| best detection val AP:",
+        round(result["best_detection"].get(
+            "average_precision", float("nan")), 4),
+        "| run_dir:", result["run_dir"],
+    )
 
 
 if __name__ == "__main__":

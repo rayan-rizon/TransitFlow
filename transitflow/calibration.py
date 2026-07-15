@@ -266,6 +266,44 @@ def _rank_objective(ranks: np.ndarray, levels: np.ndarray) -> tuple[float, float
     return cvm, coverage_error
 
 
+def calibration_rank_diagnostics(
+    theta_true_std: np.ndarray,
+    posterior_samples_std: np.ndarray,
+    conditional_center_std: np.ndarray,
+    calibration: PosteriorAffineCalibration | None,
+) -> dict:
+    """Score a fitted calibrator on data not used to optimize its parameters."""
+    theta = np.asarray(theta_true_std, dtype=np.float64)
+    samples = np.asarray(posterior_samples_std, dtype=np.float64)
+    center = np.asarray(conditional_center_std, dtype=np.float64)
+    if theta.ndim != 2 or samples.ndim != 3 or center.shape != theta.shape:
+        raise ValueError("calibration diagnostic shapes do not align")
+    if samples.shape[0] != theta.shape[0] or samples.shape[2] != theta.shape[1]:
+        raise ValueError("calibration diagnostic samples do not align")
+    evaluated = samples if calibration is None else calibration.apply(samples, center)
+    levels = np.arange(0.1, 1.0, 0.1)
+    rank_cvm = []
+    rank_coverage = []
+    for dim in range(theta.shape[1]):
+        ranks = np.mean(
+            evaluated[:, :, dim] < theta[:, dim, None], axis=1)
+        cvm, coverage = _rank_objective(ranks, levels)
+        rank_cvm.append(cvm)
+        rank_coverage.append(coverage)
+    rank_cvm = np.asarray(rank_cvm)
+    rank_coverage = np.asarray(rank_coverage)
+    # SBC rank uniformity is primary; coverage is a secondary declared gate.
+    selection_score = float(rank_cvm.mean() + 0.25 * rank_coverage.mean())
+    return {
+        "n": int(theta.shape[0]),
+        "rank_cvm_by_dim": rank_cvm.tolist(),
+        "rank_coverage_error_by_dim": rank_coverage.tolist(),
+        "rank_cvm_mean": float(rank_cvm.mean()),
+        "rank_coverage_error_mean": float(rank_coverage.mean()),
+        "selection_score": selection_score,
+    }
+
+
 def _bounded_truth_latent(theta: np.ndarray, lower: np.ndarray,
                           upper: np.ndarray, space: str) -> np.ndarray:
     if space == "bounded_tanh":
@@ -284,14 +322,15 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
                            scale_grid: np.ndarray | None = None,
                            bounds: tuple[np.ndarray, np.ndarray] | None = None,
                            optimizer_seed: int = 7301,
-                           bounded_link: str = "probit") \
+                           bounded_link: str = "probit",
+                           complexity: str = "conditional") \
         -> tuple[PosteriorAffineCalibration, dict]:
-    """Fit a predeclared diagonal affine map by held-out coverage error.
+    """Fit a predeclared diagonal affine map on calibration simulations.
 
-    A bounded linear regression calibrates the deterministic conditional center.
-    The selected positive dispersion scale minimizes mean absolute central
-    interval coverage error over levels 0.1--0.9.  This routine is deterministic
-    and must never be fitted on the final evaluation set.
+    Bounded variants optimize SBC rank uniformity as the primary objective and
+    central coverage as a secondary objective. Candidate complexity must be
+    selected on separate calibration targets; this routine is deterministic and
+    must never be fitted on the final evaluation set.
     """
     theta = np.asarray(theta_true_std, dtype=np.float64)
     samples = np.asarray(posterior_samples_std, dtype=np.float64)
@@ -323,7 +362,7 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
             raise ValueError("calibration bounds must match posterior dimensions")
         return _fit_bounded_rank_calibration(
             theta, samples, center, lower, upper, levels, optimizer_seed,
-            f"bounded_{bounded_link}")
+            f"bounded_{bounded_link}", complexity)
     scale = np.empty(theta.shape[1], dtype=np.float64)
     offset = np.empty(theta.shape[1], dtype=np.float64)
     slope = np.empty(theta.shape[1], dtype=np.float64)
@@ -377,10 +416,13 @@ def fit_affine_calibration(theta_true_std: np.ndarray,
 def _fit_bounded_rank_calibration(
         theta: np.ndarray, samples: np.ndarray, center: np.ndarray,
         lower: np.ndarray, upper: np.ndarray, levels: np.ndarray,
-        optimizer_seed: int, space: str) -> tuple[PosteriorAffineCalibration, dict]:
+        optimizer_seed: int, space: str,
+        complexity: str) -> tuple[PosteriorAffineCalibration, dict]:
     """Fit a bounded, nonlinear conditional map directly against SBC ranks."""
     from scipy.optimize import differential_evolution
 
+    if complexity not in {"simple", "conditional"}:
+        raise ValueError("bounded calibration complexity must be simple or conditional")
     dim = theta.shape[1]
     truth_latent = _bounded_truth_latent(theta, lower, upper, space)
     scale = np.empty(dim, dtype=np.float64)
@@ -403,8 +445,13 @@ def _fit_bounded_rank_calibration(
         initial_slope = float(np.clip(coef[1], 0.25, 2.0))
         initial_quadratic = float(np.clip(coef[2], -0.75, 0.75))
         def objective(params: np.ndarray) -> float:
-            (candidate_offset, candidate_slope, candidate_quadratic,
-             log_scale, candidate_log_scale_slope) = params
+            if complexity == "conditional":
+                (candidate_offset, candidate_slope, candidate_quadratic,
+                 log_scale, candidate_log_scale_slope) = params
+            else:
+                candidate_offset, candidate_slope, log_scale = params
+                candidate_quadratic = 0.0
+                candidate_log_scale_slope = 0.0
             candidate_scale = np.exp(log_scale + candidate_log_scale_slope * center[:, d])
             candidate_center = (candidate_offset + candidate_slope * center[:, d]
                                 + candidate_quadratic * center[:, d] ** 2)
@@ -416,11 +463,9 @@ def _fit_bounded_rank_calibration(
                 candidate_offset ** 2 + (candidate_slope - 1.0) ** 2
                 + candidate_quadratic ** 2 + log_scale ** 2
                 + candidate_log_scale_slope ** 2)
-            return cvm + coverage_error + regularization
+            return cvm + 0.25 * coverage_error + regularization
 
-        result = differential_evolution(
-            objective,
-            bounds=[
+        conditional_bounds = [
                 (max(-3.0, initial_offset - 1.0),
                  min(3.0, initial_offset + 1.0)),
                 (max(0.1, initial_slope - 0.75),
@@ -429,7 +474,15 @@ def _fit_bounded_rank_calibration(
                  min(1.0, initial_quadratic + 0.5)),
                 (np.log(0.25), np.log(8.0)),
                 (-1.0, 1.0),
-            ],
+            ]
+        simple_bounds = [
+            conditional_bounds[0], conditional_bounds[1],
+            conditional_bounds[3],
+        ]
+        result = differential_evolution(
+            objective,
+            bounds=conditional_bounds if complexity == "conditional"
+            else simple_bounds,
             seed=int(optimizer_seed + d),
             maxiter=24,
             popsize=6,
@@ -440,9 +493,14 @@ def _fit_bounded_rank_calibration(
         )
         offset[d] = float(result.x[0])
         slope[d] = float(result.x[1])
-        quadratic[d] = float(result.x[2])
-        scale[d] = float(np.exp(result.x[3]))
-        log_scale_slope[d] = float(result.x[4])
+        if complexity == "conditional":
+            quadratic[d] = float(result.x[2])
+            scale[d] = float(np.exp(result.x[3]))
+            log_scale_slope[d] = float(result.x[4])
+        else:
+            quadratic[d] = 0.0
+            scale[d] = float(np.exp(result.x[2]))
+            log_scale_slope[d] = 0.0
         conditional_scale = scale[d] * np.exp(log_scale_slope[d] * center[:, d])
         calibrated_center = (offset[d] + slope[d] * center[:, d]
                              + quadratic[d] * center[:, d] ** 2)
@@ -475,6 +533,7 @@ def _fit_bounded_rank_calibration(
         "n_posterior": int(samples.shape[1]),
         "levels": levels.tolist(),
         "space": space,
+        "complexity": complexity,
         "coverage_error_before_by_dim": before.tolist(),
         "coverage_error_after_by_dim": after.tolist(),
         "coverage_error_before_mean": float(before.mean()),

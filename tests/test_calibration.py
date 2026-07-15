@@ -3,9 +3,15 @@ from scipy.special import ndtri
 
 from transitflow.calibration import (
     PosteriorAffineCalibration,
+    calibration_rank_diagnostics,
     fit_affine_calibration,
     load_for_checkpoint,
     sha256_file,
+)
+from transitflow.noise import NoiseLibrary
+from scripts.calibrate_posterior import (
+    select_calibration_candidate,
+    split_calibration_noise_targets,
 )
 
 
@@ -132,6 +138,58 @@ def test_bounded_rank_calibration_improves_bias_and_preserves_support():
         < diagnostics["coverage_error_before_mean"]
     assert calibrated.min() > -bound
     assert calibrated.max() < bound
+
+
+def test_simple_bounded_calibration_disables_conditional_curvature():
+    rng = np.random.default_rng(913)
+    n, n_post = 180, 96
+    bound = np.sqrt(3.0)
+    truth = rng.uniform(-1.3, 1.3, size=(n, 1))
+    center = truth + 0.25 + rng.normal(0.0, 0.1, size=(n, 1))
+    posterior = center[:, None, :] + rng.normal(
+        0.0, 0.2, size=(n, n_post, 1))
+
+    calibration, _ = fit_affine_calibration(
+        truth, posterior, center,
+        bounds=(np.array([-bound]), np.array([bound])),
+        optimizer_seed=43, complexity="simple")
+
+    assert np.array_equal(calibration.center_quadratic, np.zeros(1))
+    assert np.array_equal(calibration.log_scale_slope, np.zeros(1))
+    score = calibration_rank_diagnostics(
+        truth, posterior, center, calibration)
+    assert np.isfinite(score["selection_score"])
+
+
+def test_calibration_target_selection_split_is_source_disjoint():
+    target_ids = np.repeat(np.array(list("ABCDEFGHIJ")), 2)
+    noise = NoiseLibrary(
+        np.ones((len(target_ids), 32)), target_ids=target_ids)
+
+    fit, selection, metadata = split_calibration_noise_targets(
+        noise, seed=17, selection_fraction=0.3)
+
+    assert set(fit.target_ids).isdisjoint(set(selection.target_ids))
+    assert set(fit.target_ids) | set(selection.target_ids) == set(target_ids)
+    assert metadata["target_overlap"] == []
+
+
+def test_calibrator_family_selection_uses_heldout_rank_score():
+    n, n_post = 100, 101
+    grid = np.linspace(-1.0, 1.0, n_post)
+    posterior = np.broadcast_to(grid[None, :, None], (n, n_post, 1)).copy()
+    theta = np.linspace(-0.98, 0.98, n)[:, None]
+    center = np.zeros_like(theta)
+    identity = PosteriorAffineCalibration(np.ones(1), np.zeros(1))
+    shifted = PosteriorAffineCalibration(np.ones(1), np.ones(1))
+
+    selected, scores = select_calibration_candidate(
+        {"identity": identity, "shifted": shifted},
+        theta, posterior, center)
+
+    assert selected == "identity"
+    assert scores["identity"]["selection_score"] \
+        < scores["shifted"]["selection_score"]
 
 
 def test_calibration_rejects_wrong_dimension():

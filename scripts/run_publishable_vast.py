@@ -1077,18 +1077,31 @@ def main() -> None:
     if not detector_ckpt.exists():
         detector_ckpt = latest_ckpt
     calibration_path = out_dir / "posterior_calibration.json"
+    calibration_diagnostic_data = out_dir / "posterior_calibration_inputs.npz"
+    calibrator_selection_disjoint = False
     if calibration_noise_lib is not None:
         calibration_n = 100 if args.smoke else (600 if args.fast_check else 1000)
+        calibration_selection_n = 100 if args.smoke else (
+            300 if args.fast_check else 500)
         calibration_post = min(n_posterior, 512) if args.smoke else n_posterior
         calibration_cmd = [
             args.python, "scripts/calibrate_posterior.py", "--ckpt", str(ckpt),
             "--noise-lib", str(calibration_noise_lib), "--out", str(calibration_path),
             "--n-calibration", str(calibration_n), "--n-posterior",
-            str(calibration_post), "--seed", str(args.eval_seed + 7000),
+            str(calibration_post), "--n-selection", str(calibration_selection_n),
+            "--diagnostic-data", str(calibration_diagnostic_data),
+            "--seed", str(args.eval_seed + 7000),
         ]
         if args.amp:
             calibration_cmd.append("--amp")
         run(calibration_cmd, repo, logs / "calibrate_posterior.log")
+        calibration_artifact = read_json(calibration_path)
+        target_split = calibration_artifact.get("metadata", {}).get(
+            "selection_protocol", {}).get("target_split", {})
+        calibrator_selection_disjoint = bool(
+            target_split.get("fit_targets")
+            and target_split.get("selection_targets")
+            and target_split.get("target_overlap") == [])
     eval_dir = results / "synthetic"
     evaluate_cmd = [args.python, "scripts/evaluate.py", "--ckpt", str(ckpt),
                     "--detector-ckpt", str(detector_ckpt),
@@ -1105,6 +1118,10 @@ def main() -> None:
     if args.stop_after_synthetic:
         synthetic_report = build_synthetic_gate_report(
             read_json(eval_dir / "metrics.json"), split_meta)
+        synthetic_report["status"]["calibrator_selection_target_disjoint"] = \
+            calibrator_selection_disjoint
+        synthetic_report["all_declared_synthetic_gates_pass"] = all(
+            synthetic_report["status"].values())
         synthetic_report["run"] = {
             "run_name": run_name,
             "git_sha": git_sha(repo),
@@ -1120,6 +1137,8 @@ def main() -> None:
                 calibration_noise_lib),
             "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
             "external_lockbox_used": bool(publication_eval_noise_lib is not None),
+            "calibration_diagnostic_data": str(calibration_diagnostic_data)
+            if calibration_diagnostic_data.exists() else None,
             "n_data": int(n_data),
             "steps": int(expected_steps),
             "n_sbc": int(n_sbc),
@@ -1196,6 +1215,8 @@ def main() -> None:
         report["status"]["checkpoint_validation_disjoint"] = bool(
             validation_noise_lib is not None
             and split_meta.get("all_disjoint", False))
+        report["status"]["calibrator_selection_target_disjoint"] = \
+            calibrator_selection_disjoint
         report["status"]["final_pass"] = all(
             value for key, value in report["status"].items()
             if key != "final_pass")
