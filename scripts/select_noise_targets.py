@@ -81,8 +81,16 @@ def is_selected_standard(row: dict[str, str], *, vmag_min: float = 7.0,
 
 
 def select_targets(rows: list[dict[str, str]], n_targets: int,
-                   seed: int) -> list[dict[str, str]]:
-    selected = [row for row in rows if is_selected_standard(row)]
+                   seed: int,
+                   exclude_archive_ids: set[str] | None = None) \
+        -> list[dict[str, str]]:
+    excluded = set() if exclude_archive_ids is None else {
+        value.strip() for value in exclude_archive_ids if value.strip()}
+    selected = [
+        row for row in rows
+        if is_selected_standard(row)
+        and archive_target_id(row["ID"]) not in excluded
+    ]
     selected.sort(key=lambda row: (float(row.get("RA_ICRS", "0")), row["ID"]))
     if len(selected) < n_targets:
         raise ValueError(
@@ -118,18 +126,32 @@ def main() -> None:
     ap.add_argument("--n-targets", type=int, default=120)
     ap.add_argument("--seed", type=int, default=20260712)
     ap.add_argument("--timeout", type=int, default=60)
+    ap.add_argument(
+        "--exclude-target-file", default=None,
+        help="archive target IDs already used in development; excluded before sampling")
     args = ap.parse_args()
     if args.n_targets < 30:
         raise SystemExit("--n-targets must be at least 30 for a publication pool")
 
     text, url = fetch_catalog(args.timeout)
     rows = parse_catalog_tsv(text)
-    targets = select_targets(rows, args.n_targets, args.seed)
+    excluded: set[str] = set()
+    if args.exclude_target_file:
+        exclude_path = Path(args.exclude_target_file)
+        excluded = {
+            line.strip() for line in exclude_path.read_text().splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+    targets = select_targets(rows, args.n_targets, args.seed, excluded)
     out = Path(args.out)
     metadata = Path(args.metadata)
     out.parent.mkdir(parents=True, exist_ok=True)
     metadata.parent.mkdir(parents=True, exist_ok=True)
     archive_ids = [archive_target_id(row["ID"]) for row in targets]
+    overlap = sorted(set(archive_ids) & excluded)
+    if overlap:
+        raise SystemExit(
+            "selected targets overlap the exclusion set: " + ", ".join(overlap))
     out.write_text("\n".join(archive_ids) + "\n")
     metadata.write_text(json.dumps({
         "catalog": CATALOG,
@@ -138,6 +160,10 @@ def main() -> None:
         "seed": int(args.seed),
         "n_catalog_rows": len(rows),
         "n_selected": len(targets),
+        "exclude_target_file": args.exclude_target_file,
+        "excluded_archive_target_ids": sorted(excluded),
+        "n_excluded_archive_targets": len(excluded),
+        "selected_exclusion_overlap": overlap,
         "filters": {
             "flag": "CAL1",
             "spectral_type": "FGK dwarf",

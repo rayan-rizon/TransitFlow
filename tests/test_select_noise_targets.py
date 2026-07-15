@@ -64,3 +64,21 @@ def test_target_selection_is_seeded_and_requires_enough_rows():
         assert "requested 41" in str(exc)
     else:
         raise AssertionError("underfilled target selection did not fail")
+
+
+def test_target_selection_excludes_development_archive_ids_before_sampling():
+    rows = [_row(index) for index in range(50)]
+    excluded = {archive_target_id(_row(index)["ID"]) for index in range(15)}
+
+    selected = select_targets(
+        rows, 30, seed=4, exclude_archive_ids=excluded)
+    selected_ids = {archive_target_id(row["ID"]) for row in selected}
+
+    assert len(selected_ids) == 30
+    assert selected_ids.isdisjoint(excluded)
+    try:
+        select_targets(rows, 36, seed=4, exclude_archive_ids=excluded)
+    except ValueError as exc:
+        assert "requested 36" in str(exc)
+    else:
+        raise AssertionError("exclusion-aware underfill did not fail")
