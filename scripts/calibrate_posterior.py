@@ -188,7 +188,8 @@ def main() -> None:
         lower, upper = lower[2:], upper[2:]
     identity = PosteriorAffineCalibration(
         np.ones(theta.shape[1]), np.zeros(theta.shape[1]),
-        np.ones(theta.shape[1]), space="linear")
+        np.ones(theta.shape[1]), lower=lower, upper=upper,
+        space=f"bounded_latent_{args.bounded_link}")
     candidates = {"identity": identity}
     fit_diagnostics = {}
     for index, complexity in enumerate(("simple", "conditional")):

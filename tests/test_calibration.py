@@ -81,6 +81,44 @@ def test_probit_calibration_round_trip_logdet_and_prior_matching():
         cal.log_abs_det_at(calibrated, center), numerical, atol=2e-5)
 
 
+def test_bounded_latent_identity_is_exact_and_has_zero_logdet():
+    bound = np.sqrt(3.0)
+    cal = PosteriorAffineCalibration(
+        scale=np.ones(1), offset=np.zeros(1), center_slope=np.ones(1),
+        lower=np.array([-bound]), upper=np.array([bound]),
+        space="bounded_latent_probit")
+    raw = np.linspace(-1.6, 1.6, 257)[:, None]
+    center = np.linspace(-1.2, 1.2, 257)[:, None]
+
+    calibrated = cal.apply(raw, center)
+
+    assert np.allclose(calibrated, raw, atol=1e-12)
+    assert np.allclose(cal.inverse(calibrated, center), raw, atol=1e-12)
+    assert np.allclose(cal.log_abs_det_at(calibrated, center), 0.0, atol=1e-12)
+    assert PosteriorAffineCalibration.load(cal.to_dict()).bounded_latent_input
+
+
+def test_bounded_latent_logdet_matches_numerical_derivative():
+    bound = np.sqrt(3.0)
+    cal = PosteriorAffineCalibration(
+        scale=np.array([1.35]), offset=np.array([-0.12]),
+        center_slope=np.array([0.85]), lower=np.array([-bound]),
+        upper=np.array([bound]), space="bounded_latent_probit",
+        center_quadratic=np.array([0.06]),
+        log_scale_slope=np.array([-0.08]))
+    raw = np.array([[-1.1], [-0.2], [0.7], [1.25]])
+    center = np.array([[-0.8], [0.1], [0.5], [1.0]])
+    calibrated = cal.apply(raw, center)
+    eps = 1e-6
+    numerical = np.log(np.abs(
+        (cal.apply(raw + eps, center) - cal.apply(raw - eps, center))
+        / (2.0 * eps)))[:, 0]
+
+    assert np.allclose(cal.inverse(calibrated, center), raw, atol=1e-10)
+    assert np.allclose(
+        cal.log_abs_det_at(calibrated, center), numerical, atol=2e-5)
+
+
 def test_bounded_nonlinear_calibration_recovers_conditional_bias():
     rng = np.random.default_rng(77)
     n, n_post = 320, 128
@@ -90,6 +128,7 @@ def test_bounded_nonlinear_calibration_recovers_conditional_bias():
     truth = bound * np.tanh(truth_latent + rng.normal(0.0, 0.04, size=(n, 1)))
     posterior = center[:, None, :] + rng.normal(
         0.0, 0.11 * np.exp(0.35 * center[:, None, :]), size=(n, n_post, 1))
+    posterior = np.clip(posterior, -bound + 1e-5, bound - 1e-5)
 
     calibration, diagnostics = fit_affine_calibration(
         truth, posterior, center,
@@ -125,13 +164,15 @@ def test_bounded_rank_calibration_improves_bias_and_preserves_support():
     center = truth + 0.35 + rng.normal(0.0, 0.08, size=(n, 1))
     posterior = center[:, None, :] + rng.normal(
         0.0, 0.18, size=(n, n_post, 1))
+    center = np.clip(center, -bound + 1e-5, bound - 1e-5)
+    posterior = np.clip(posterior, -bound + 1e-5, bound - 1e-5)
 
     calibration, diagnostics = fit_affine_calibration(
         truth, posterior, center,
         bounds=(np.array([-bound]), np.array([bound])), optimizer_seed=19)
     calibrated = calibration.apply(posterior, center)
 
-    assert calibration.space == "bounded_probit"
+    assert calibration.space == "bounded_latent_probit"
     assert diagnostics["rank_cvm_after_by_dim"][0] \
         < diagnostics["rank_cvm_before_by_dim"][0]
     assert diagnostics["coverage_error_after_mean"] \
@@ -148,6 +189,8 @@ def test_simple_bounded_calibration_disables_conditional_curvature():
     center = truth + 0.25 + rng.normal(0.0, 0.1, size=(n, 1))
     posterior = center[:, None, :] + rng.normal(
         0.0, 0.2, size=(n, n_post, 1))
+    center = np.clip(center, -bound + 1e-5, bound - 1e-5)
+    posterior = np.clip(posterior, -bound + 1e-5, bound - 1e-5)
 
     calibration, _ = fit_affine_calibration(
         truth, posterior, center,

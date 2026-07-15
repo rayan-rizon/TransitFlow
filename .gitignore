@@ -26,3 +26,5 @@ manuscript/build/
 manuscript/output/
 artifacts/vast_publishable_*/
 artifacts/canonical/vast_publishable_*/
+# Timestamped Vast handoff bundles are local evidence, not source artifacts.
+artifacts/vast_[0-9]*/

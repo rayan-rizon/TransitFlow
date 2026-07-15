@@ -257,7 +257,9 @@ For posterior claims, use `best.pt`, selected only by held-out validation
 posterior loss, and fit any declared calibration artifact to that exact
 checkpoint. Calibration targets are divided again: candidate families are
 fitted on one source-target group and selected on another using a predeclared
-rank-uniformity-first score; final evaluation targets remain untouched. Use
+rank-uniformity-first score. For the prior-normal model, recalibration is an
+affine map in the exact prior-CDF latent coordinate, with an explicit inverse
+and Jacobian; final evaluation targets remain untouched. Use
 `latest.pt` only to resume training. Detector-only claims use
 `best_detection.pt`, selected independently by validation average precision.
 

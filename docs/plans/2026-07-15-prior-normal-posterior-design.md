@@ -18,6 +18,11 @@ passed at 0.0132, but held-out characterization SBC p-values were
 diagnostic failed the first three parameters and had coverage error 0.0295.
 Audit of the calibration fit found that its scalar objective could trade worse
 rank uniformity for better central coverage, despite SBC being the primary gate.
+A target-heldout family-selection retry using that old coordinate convention
+selected the conditional candidate but still failed development SBC with
+familywise p-values `[0.001, 0.008, 0.015, 0.0, 0.012]` (coverage error 0.0237).
+That failure prompted the coordinate-system and Jacobian audit below; it is
+preserved as a rejected diagnostic and is not publication evidence.
 
 Code audit then exposed two model-generating-distribution mismatches.  The
 stellar-density draw for `a/Rs` was clipped to the prior interval, creating
@@ -58,6 +63,12 @@ small post-hoc calibrator.
    predeclared score is mean rank Cramer-von Mises distance plus 0.25 times mean
    central-coverage error, so SBC uniformity remains primary. Preserve the fit
    and selection arrays and hashes for offline audit.
+8. Apply calibration in the prior-CDF latent coordinate. The prior-normal flow
+   is converted to bounded standardized physical coordinates before the public
+   inference API returns samples; treating those bounded coordinates directly
+   as Gaussian latents is not an identity-preserving change of variables. The
+   bounded-to-latent-to-bounded map must have an exact inverse and Jacobian, and
+   the identity candidate must be an exact no-op.
 
 ## Alternatives rejected
 
