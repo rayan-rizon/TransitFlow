@@ -574,6 +574,29 @@ def build_synthetic_gate_report(metrics: dict, split_meta: dict | None) -> dict:
     }
 
 
+def external_lockbox_synthetic_failure_blocks_downstream(
+    report: dict,
+    *,
+    smoke: bool,
+    fast_check: bool,
+    has_external_lockbox: bool,
+) -> bool:
+    """Fail closed before baselines/real-data stages after a lockbox failure.
+
+    A full publication run consumes an external lockbox at synthetic evaluation.
+    Once a declared synthetic gate fails, later BLS/TLS, speed, and real-data
+    stages cannot repair that evidence.  Stopping here prevents needless cost
+    and, importantly, prevents a resumed supervisor job from treating the same
+    lockbox as a fresh validation opportunity.
+    """
+    return bool(
+        not smoke
+        and not fast_check
+        and has_external_lockbox
+        and not report.get("all_declared_synthetic_gates_pass", False)
+    )
+
+
 def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
                       thresholds: dict | None = None) -> dict:
     thresholds = thresholds or {}
@@ -1115,42 +1138,51 @@ def main() -> None:
     if args.amp:
         evaluate_cmd.append("--amp")
     run(evaluate_cmd, repo, logs / "evaluate.log")
+    synthetic_report = build_synthetic_gate_report(
+        read_json(eval_dir / "metrics.json"), split_meta)
+    synthetic_report["status"]["calibrator_selection_target_disjoint"] = \
+        calibrator_selection_disjoint
+    synthetic_report["all_declared_synthetic_gates_pass"] = all(
+        synthetic_report["status"].values())
+    synthetic_report["run"] = {
+        "run_name": run_name,
+        "git_sha": git_sha(repo),
+        "checkpoint": str(ckpt),
+        "detector_checkpoint": str(detector_ckpt),
+        "posterior_checkpoint_selection": posterior_checkpoint_selection,
+        "training_provenance": training_provenance,
+        "train_noise_lib": None if train_noise_lib is None else str(
+            train_noise_lib),
+        "validation_noise_lib": None if validation_noise_lib is None else str(
+            validation_noise_lib),
+        "calibration_noise_lib": None if calibration_noise_lib is None else str(
+            calibration_noise_lib),
+        "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
+        "external_lockbox_used": bool(publication_eval_noise_lib is not None),
+        "calibration_diagnostic_data": str(calibration_diagnostic_data)
+        if calibration_diagnostic_data.exists() else None,
+        "n_data": int(n_data),
+        "steps": int(expected_steps),
+        "n_sbc": int(n_sbc),
+        "n_detection": int(n_detection),
+        "n_posterior": int(n_posterior),
+        "train_seed": int(args.train_seed),
+        "eval_seed": int(args.eval_seed),
+    }
+    synthetic_report_path = out_dir / "synthetic_gate_report.json"
+    synthetic_report_path.write_text(json.dumps(synthetic_report, indent=2))
     if args.stop_after_synthetic:
-        synthetic_report = build_synthetic_gate_report(
-            read_json(eval_dir / "metrics.json"), split_meta)
-        synthetic_report["status"]["calibrator_selection_target_disjoint"] = \
-            calibrator_selection_disjoint
-        synthetic_report["all_declared_synthetic_gates_pass"] = all(
-            synthetic_report["status"].values())
-        synthetic_report["run"] = {
-            "run_name": run_name,
-            "git_sha": git_sha(repo),
-            "checkpoint": str(ckpt),
-            "detector_checkpoint": str(detector_ckpt),
-            "posterior_checkpoint_selection": posterior_checkpoint_selection,
-            "training_provenance": training_provenance,
-            "train_noise_lib": None if train_noise_lib is None else str(
-                train_noise_lib),
-            "validation_noise_lib": None if validation_noise_lib is None else str(
-                validation_noise_lib),
-            "calibration_noise_lib": None if calibration_noise_lib is None else str(
-                calibration_noise_lib),
-            "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
-            "external_lockbox_used": bool(publication_eval_noise_lib is not None),
-            "calibration_diagnostic_data": str(calibration_diagnostic_data)
-            if calibration_diagnostic_data.exists() else None,
-            "n_data": int(n_data),
-            "steps": int(expected_steps),
-            "n_sbc": int(n_sbc),
-            "n_detection": int(n_detection),
-            "n_posterior": int(n_posterior),
-            "train_seed": int(args.train_seed),
-            "eval_seed": int(args.eval_seed),
-        }
-        synthetic_report_path = out_dir / "synthetic_gate_report.json"
-        synthetic_report_path.write_text(json.dumps(synthetic_report, indent=2))
         print(f"synthetic development gate complete: {synthetic_report_path}")
         return
+    if external_lockbox_synthetic_failure_blocks_downstream(
+        synthetic_report,
+        smoke=args.smoke,
+        fast_check=args.fast_check,
+        has_external_lockbox=publication_eval_noise_lib is not None,
+    ):
+        raise SystemExit(
+            "external-lockbox synthetic gate failed; downstream baseline, speed, "
+            "and real-data stages were not run")
     baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt",
                     str(detector_ckpt),
                     "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json"),

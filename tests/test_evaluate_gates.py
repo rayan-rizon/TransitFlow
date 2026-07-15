@@ -15,6 +15,7 @@ from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
     build_synthetic_gate_report,
+    external_lockbox_synthetic_failure_blocks_downstream,
     prepare_noise_four_way_split,
     prepare_noise_splits,
     prepare_noise_train_calibration_split,
@@ -61,6 +62,16 @@ def test_synthetic_gate_report_separates_required_and_diagnostic_status():
     assert report["diagnostic_status"]["detection_auc_ge_0.99"] is False
     assert report["status"]["checkpoint_validation_disjoint"] is True
     assert report["all_declared_synthetic_gates_pass"] is False
+
+
+def test_failed_external_lockbox_stops_before_downstream_stages():
+    failed = {"all_declared_synthetic_gates_pass": False}
+    assert external_lockbox_synthetic_failure_blocks_downstream(
+        failed, smoke=False, fast_check=False, has_external_lockbox=True)
+    assert not external_lockbox_synthetic_failure_blocks_downstream(
+        failed, smoke=False, fast_check=True, has_external_lockbox=True)
+    assert not external_lockbox_synthetic_failure_blocks_downstream(
+        failed, smoke=False, fast_check=False, has_external_lockbox=False)
 
 
 def test_sbc_gate_rejects_clear_miscalibration():
