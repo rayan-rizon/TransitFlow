@@ -238,8 +238,13 @@ def main() -> None:
         np.ones(theta.shape[1]), lower=lower, upper=upper,
         space=f"bounded_latent_{args.bounded_link}")
     candidates = {"identity": identity}
+    # Conditional calibration can win on a small row-level split while fitting
+    # source-target idiosyncrasies that do not transfer to unseen stars.  The
+    # publication path therefore limits the family to identity vs. the
+    # low-capacity affine form and still selects each dimension on targets held
+    # out from calibration fitting.
     fit_diagnostics = {}
-    for index, complexity in enumerate(("simple", "conditional")):
+    for index, complexity in enumerate(("simple",)):
         candidate, candidate_fit = fit_affine_calibration(
             theta, posterior, center, bounds=(lower, upper),
             optimizer_seed=args.seed + 1000 * index,
@@ -254,7 +259,7 @@ def main() -> None:
     hybrid_selection_score = calibration_rank_diagnostics(
         selection_theta, selection_posterior, selection_center, calibration)
     diagnostics = {
-        "selection_protocol": "target_disjoint_per_dimension_rank_cvm_primary_v2",
+        "selection_protocol": "target_disjoint_identity_vs_simple_v3",
         "selected_complexity": "per_dimension",
         "selected_complexity_by_parameter": dict(
             zip(parameter_names, selected_names)),

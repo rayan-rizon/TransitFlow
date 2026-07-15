@@ -60,6 +60,26 @@ def test_bls_lite_negative_candidates_are_recorded(prior):
     assert np.isfinite(batch["local"]).all()
 
 
+def test_bls_lite_positive_candidates_are_detection_only(prior):
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=1.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        n_period_bins=24, pg_n_phase=24, pg_n_raw=400,
+        candidate_jitter_fraction=0.4, candidate_harmonic_fraction=0.4,
+        candidate_bls_positive_fraction=1.0)
+    batch = TransitSimulator(cfg, prior=prior).simulate_batch(
+        16, np.random.default_rng(481))
+
+    assert np.all(batch["candidate_kind"] == 3)
+    assert not np.any(batch["posterior_valid"])
+    assert np.all(batch["valid"])
+    assert np.isfinite(batch["global"]).all()
+    assert np.isfinite(batch["local"]).all()
+
+
 def test_posterior_loss_uses_candidate_consistency_mask(
         prior, tiny_model_cfg, monkeypatch):
     import importlib

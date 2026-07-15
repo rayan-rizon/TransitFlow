@@ -101,6 +101,7 @@ class SimConfig:
     candidate_epoch_jitter_duration_std: float = 0.5
     candidate_harmonic_fraction: float = 0.0
     candidate_bls_negative_fraction: float = 0.0
+    candidate_bls_positive_fraction: float = 0.0
 
     def normalized_regime_fracs(self, has_real: bool) -> tuple[float, float, float]:
         if has_real:
@@ -207,13 +208,21 @@ class TransitSimulator:
         candidate_kind = np.zeros(B, dtype=np.int8)  # 0 exact, 1 jitter, 2 harmonic
         bls_negative_mask = is_neg & (
             rng.random(B) < np.clip(cfg.candidate_bls_negative_fraction, 0.0, 1.0))
-        candidate_kind[bls_negative_mask] = 3
+        # The fair baseline supplies BLS candidates for *both* classes.  Using
+        # them only for negative training curves leaves the detector exposed to
+        # a positive-class candidate-domain shift at evaluation time.  BLS
+        # positive examples remain excluded from posterior supervision because
+        # their recovered ephemerides are not exact characterization labels.
+        bls_positive_mask = is_planet & (
+            rng.random(B) < np.clip(cfg.candidate_bls_positive_fraction, 0.0, 1.0))
+        bls_candidate_mask = bls_negative_mask | bls_positive_mask
+        candidate_kind[bls_candidate_mask] = 3
 
         # Planet candidate errors are part of the detection task but do not
         # define a trustworthy characterization target. Keep those roles
         # separate so alias robustness cannot corrupt posterior supervision.
         if is_planet.any():
-            planet_idx = np.where(is_planet)[0]
+            planet_idx = np.where(is_planet & ~bls_positive_mask)[0]
             harmonic_fraction = np.clip(cfg.candidate_harmonic_fraction, 0.0, 1.0)
             jitter_fraction = np.clip(
                 cfg.candidate_jitter_fraction, 0.0, 1.0 - harmonic_fraction)
@@ -341,7 +350,7 @@ class TransitSimulator:
             valid_cad = gap_mask[i]
             ti = t[valid_cad]
             fi = flux[i][valid_cad]
-            if bls_negative_mask[i]:
+            if bls_candidate_mask[i]:
                 n_pg = min(cfg.pg_n_raw, len(ti))
                 pg_step = max(1, len(ti) // max(n_pg, 1))
                 fold_P[i], fold_t0[i], duration[i] = bls_lite_candidate(
