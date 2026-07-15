@@ -306,6 +306,11 @@ The builder records the target query, quality metrics, and provenance hash in
 `data/noise_lib.npz.metadata.json`. The segments are quiet-target light curves,
 not guaranteed planet-free data; the manuscript must retain that limitation.
 
+Before spending on BLS/TLS, real-object MCMC, and timing gates, use
+`--fast-check --stop-after-synthetic` for a stronger development gate. It writes
+`synthetic_gate_report.json`, explicitly labels the result as non-publication
+evidence, and preserves every split and checkpoint-selection provenance field.
+
 ## Tests
 
 ```bash

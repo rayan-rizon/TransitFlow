@@ -542,6 +542,30 @@ def _gate_value(metrics: dict, key: str) -> bool:
     return bool(gate.get(key, False))
 
 
+def build_synthetic_gate_report(metrics: dict, split_meta: dict | None) -> dict:
+    """Build a fail-closed development report before costly downstream gates."""
+    declared = {
+        key: value
+        for key, value in metrics.get("gate_status", {}).items()
+        if isinstance(value, bool)
+    }
+    status = dict(declared)
+    if split_meta is not None:
+        status["noise_target_split_disjoint"] = bool(
+            split_meta.get("all_disjoint", False))
+        status["checkpoint_validation_disjoint"] = bool(
+            split_meta.get("all_disjoint", False))
+        status["posterior_calibration_disjoint"] = bool(
+            split_meta.get("all_disjoint", False))
+    return {
+        "stage": "synthetic_development_gate",
+        "publication_evidence": False,
+        "status": status,
+        "all_declared_synthetic_gates_pass": bool(status) and all(status.values()),
+        "metrics": metrics,
+    }
+
+
 def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
                       thresholds: dict | None = None) -> dict:
     thresholds = thresholds or {}
@@ -770,6 +794,9 @@ def main() -> None:
                     help="override training steps; useful for fast metric checks")
     ap.add_argument("--fast-check", action="store_true",
                     help="short metric-oriented run: smaller data/eval/MCMC, same report schema")
+    ap.add_argument(
+        "--stop-after-synthetic", action="store_true",
+        help="write a development synthetic-gate report and skip costly baselines/real MCMC")
     ap.add_argument("--smoke", action="store_true",
                     help="small structural run; not a metrics claim")
     ap.add_argument("--amp", action="store_true",
@@ -1067,6 +1094,36 @@ def main() -> None:
     if args.amp:
         evaluate_cmd.append("--amp")
     run(evaluate_cmd, repo, logs / "evaluate.log")
+    if args.stop_after_synthetic:
+        synthetic_report = build_synthetic_gate_report(
+            read_json(eval_dir / "metrics.json"), split_meta)
+        synthetic_report["run"] = {
+            "run_name": run_name,
+            "git_sha": git_sha(repo),
+            "checkpoint": str(ckpt),
+            "detector_checkpoint": str(detector_ckpt),
+            "posterior_checkpoint_selection": posterior_checkpoint_selection,
+            "training_provenance": training_provenance,
+            "train_noise_lib": None if train_noise_lib is None else str(
+                train_noise_lib),
+            "validation_noise_lib": None if validation_noise_lib is None else str(
+                validation_noise_lib),
+            "calibration_noise_lib": None if calibration_noise_lib is None else str(
+                calibration_noise_lib),
+            "eval_noise_lib": None if eval_noise_lib is None else str(eval_noise_lib),
+            "external_lockbox_used": bool(publication_eval_noise_lib is not None),
+            "n_data": int(n_data),
+            "steps": int(expected_steps),
+            "n_sbc": int(n_sbc),
+            "n_detection": int(n_detection),
+            "n_posterior": int(n_posterior),
+            "train_seed": int(args.train_seed),
+            "eval_seed": int(args.eval_seed),
+        }
+        synthetic_report_path = out_dir / "synthetic_gate_report.json"
+        synthetic_report_path.write_text(json.dumps(synthetic_report, indent=2))
+        print(f"synthetic development gate complete: {synthetic_report_path}")
+        return
     baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt",
                     str(detector_ckpt),
                     "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json"),

@@ -14,6 +14,7 @@ from scripts.validate_real import (
 from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
+    build_synthetic_gate_report,
     prepare_noise_four_way_split,
     prepare_noise_splits,
     prepare_noise_train_calibration_split,
@@ -42,6 +43,21 @@ def test_noise_target_count_gate_fails_closed():
         assert "14 independent targets" in str(exc)
     else:
         raise AssertionError("underpowered noise library did not fail")
+
+
+def test_synthetic_gate_report_ignores_not_applicable_nulls_but_fails_false():
+    metrics = {
+        "gate_status": {
+            "applicable_pass": True,
+            "not_applicable": None,
+            "applicable_failure": False,
+        }
+    }
+    report = build_synthetic_gate_report(metrics, {"all_disjoint": True})
+
+    assert "not_applicable" not in report["status"]
+    assert report["status"]["checkpoint_validation_disjoint"] is True
+    assert report["all_declared_synthetic_gates_pass"] is False
 
 
 def test_sbc_gate_rejects_clear_miscalibration():
