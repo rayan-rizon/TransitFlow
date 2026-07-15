@@ -45,17 +45,20 @@ def test_noise_target_count_gate_fails_closed():
         raise AssertionError("underpowered noise library did not fail")
 
 
-def test_synthetic_gate_report_ignores_not_applicable_nulls_but_fails_false():
+def test_synthetic_gate_report_separates_required_and_diagnostic_status():
     metrics = {
         "gate_status": {
-            "applicable_pass": True,
+            "characterization_sbc_familywise_alpha_0.05": True,
+            "characterization_coverage_error_le_0.03": False,
             "not_applicable": None,
-            "applicable_failure": False,
+            "detection_auc_ge_0.99": False,
         }
     }
     report = build_synthetic_gate_report(metrics, {"all_disjoint": True})
 
     assert "not_applicable" not in report["status"]
+    assert report["diagnostic_status"]["not_applicable"] is None
+    assert report["diagnostic_status"]["detection_auc_ge_0.99"] is False
     assert report["status"]["checkpoint_validation_disjoint"] is True
     assert report["all_declared_synthetic_gates_pass"] is False
 

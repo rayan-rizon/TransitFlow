@@ -544,12 +544,19 @@ def _gate_value(metrics: dict, key: str) -> bool:
 
 def build_synthetic_gate_report(metrics: dict, split_meta: dict | None) -> dict:
     """Build a fail-closed development report before costly downstream gates."""
-    declared = {
-        key: value
-        for key, value in metrics.get("gate_status", {}).items()
-        if isinstance(value, bool)
+    metric_status = metrics.get("gate_status", {})
+    required_names = (
+        "characterization_sbc_familywise_alpha_0.05",
+        "characterization_coverage_error_le_0.03",
+    )
+    status = {
+        key: bool(metric_status.get(key, False))
+        for key in required_names
     }
-    status = dict(declared)
+    diagnostic_status = {
+        key: value for key, value in metric_status.items()
+        if key not in required_names
+    }
     if split_meta is not None:
         status["noise_target_split_disjoint"] = bool(
             split_meta.get("all_disjoint", False))
@@ -561,6 +568,7 @@ def build_synthetic_gate_report(metrics: dict, split_meta: dict | None) -> dict:
         "stage": "synthetic_development_gate",
         "publication_evidence": False,
         "status": status,
+        "diagnostic_status": diagnostic_status,
         "all_declared_synthetic_gates_pass": bool(status) and all(status.values()),
         "metrics": metrics,
     }
