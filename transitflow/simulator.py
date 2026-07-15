@@ -102,6 +102,9 @@ class SimConfig:
     candidate_harmonic_fraction: float = 0.0
     candidate_bls_negative_fraction: float = 0.0
     candidate_bls_positive_fraction: float = 0.0
+    candidate_random_positive_fraction: float = 0.0
+    candidate_harmonic_factors: tuple[float, ...] = (0.5, 2.0)
+    candidate_harmonic_weights: tuple[float, ...] | None = None
 
     def normalized_regime_fracs(self, has_real: bool) -> tuple[float, float, float]:
         if has_real:
@@ -213,25 +216,63 @@ class TransitSimulator:
         # a positive-class candidate-domain shift at evaluation time.  BLS
         # positive examples remain excluded from posterior supervision because
         # their recovered ephemerides are not exact characterization labels.
-        bls_positive_mask = is_planet & (
-            rng.random(B) < np.clip(cfg.candidate_bls_positive_fraction, 0.0, 1.0))
+        # Positive candidate classes are mutually exclusive.  This preserves
+        # their configured mixture weights and lets the training distribution
+        # match the measured BLS recovery distribution rather than treating a
+        # BLS candidate as an extra, independent augmentation.
+        candidate_draw = rng.random(B)
+        bls_fraction = np.clip(cfg.candidate_bls_positive_fraction, 0.0, 1.0)
+        harmonic_fraction = np.clip(
+            cfg.candidate_harmonic_fraction, 0.0, 1.0 - bls_fraction)
+        random_fraction = np.clip(
+            cfg.candidate_random_positive_fraction, 0.0,
+            1.0 - bls_fraction - harmonic_fraction)
+        jitter_fraction = np.clip(
+            cfg.candidate_jitter_fraction, 0.0,
+            1.0 - bls_fraction - harmonic_fraction - random_fraction)
+        bls_positive_mask = is_planet & (candidate_draw < bls_fraction)
+        harmonic_positive_mask = is_planet & (
+            (candidate_draw >= bls_fraction)
+            & (candidate_draw < bls_fraction + harmonic_fraction))
+        random_positive_mask = is_planet & (
+            (candidate_draw >= bls_fraction + harmonic_fraction)
+            & (candidate_draw < bls_fraction + harmonic_fraction + random_fraction))
+        jitter_positive_mask = is_planet & (
+            (candidate_draw >= bls_fraction + harmonic_fraction + random_fraction)
+            & (candidate_draw < bls_fraction + harmonic_fraction
+                                 + random_fraction + jitter_fraction))
         bls_candidate_mask = bls_negative_mask | bls_positive_mask
         candidate_kind[bls_candidate_mask] = 3
+        candidate_kind[random_positive_mask] = 4
 
         # Planet candidate errors are part of the detection task but do not
         # define a trustworthy characterization target. Keep those roles
         # separate so alias robustness cannot corrupt posterior supervision.
         if is_planet.any():
-            planet_idx = np.where(is_planet & ~bls_positive_mask)[0]
-            harmonic_fraction = np.clip(cfg.candidate_harmonic_fraction, 0.0, 1.0)
-            jitter_fraction = np.clip(
-                cfg.candidate_jitter_fraction, 0.0, 1.0 - harmonic_fraction)
-            draw = rng.random(len(planet_idx))
-            harmonic_idx = planet_idx[draw < harmonic_fraction]
-            jitter_idx = planet_idx[(draw >= harmonic_fraction)
-                                    & (draw < harmonic_fraction + jitter_fraction)]
+            harmonic_idx = np.flatnonzero(harmonic_positive_mask)
+            jitter_idx = np.flatnonzero(jitter_positive_mask)
+            random_idx = np.flatnonzero(random_positive_mask)
             if len(harmonic_idx):
-                factors = rng.choice(np.array([0.5, 2.0]), size=len(harmonic_idx))
+                raw_factors = np.asarray(
+                    cfg.candidate_harmonic_factors, dtype=float)
+                keep = np.isfinite(raw_factors) & (raw_factors > 0)
+                factors = raw_factors[keep]
+                if not len(factors):
+                    factors = np.array([0.5, 2.0])
+                    probs = None
+                else:
+                    probs = None
+                    if cfg.candidate_harmonic_weights is not None:
+                        raw_weights = np.asarray(
+                            cfg.candidate_harmonic_weights, dtype=float)
+                        if len(raw_weights) == len(raw_factors):
+                            weights = raw_weights[keep]
+                            weights = np.where(
+                                np.isfinite(weights) & (weights > 0),
+                                weights, 0.0)
+                            if weights.sum() > 0:
+                                probs = weights / weights.sum()
+                factors = rng.choice(factors, size=len(harmonic_idx), p=probs)
                 p_lo, p_hi = self.prior.specs[0].low, self.prior.specs[0].high
                 fold_P[harmonic_idx] = np.clip(
                     fold_P[harmonic_idx] * factors, p_lo, p_hi)
@@ -246,6 +287,15 @@ class TransitSimulator:
                     0.0, max(cfg.candidate_epoch_jitter_duration_std, 0.0),
                     size=len(jitter_idx)) * duration[jitter_idx]
                 candidate_kind[jitter_idx] = 1
+            if len(random_idx):
+                spurious = self.prior.sample(len(random_idx), rng)
+                fold_P[random_idx] = spurious[:, 0]
+                fold_t0[random_idx] = spurious[:, 1] * spurious[:, 0]
+                duration[random_idx] = transit_duration(
+                    fold_P[random_idx], np.full(len(random_idx), 0.05),
+                    np.full(len(random_idx), 10.0),
+                    np.full(len(random_idx), 0.3),
+                )
 
         # ---- base (noise-free) raw flux -----------------------------
         flux = np.ones((B, cfg.n_raw), dtype=np.float64)
@@ -430,6 +480,7 @@ class TransitSimulator:
             "d": d,
             "valid": is_planet,
             "posterior_valid": is_planet & (candidate_kind == 0),
+            # 0 exact, 1 jittered, 2 harmonic, 3 BLS-lite, 4 random alias.
             "candidate_kind": candidate_kind,
             "sigma": sigma_white.astype(np.float32),
             "sigma_feat": sig_feat.astype(np.float32),

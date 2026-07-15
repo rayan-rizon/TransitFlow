@@ -80,6 +80,38 @@ def test_bls_lite_positive_candidates_are_detection_only(prior):
     assert np.isfinite(batch["local"]).all()
 
 
+def test_positive_candidate_mixture_is_exclusive_and_masks_posterior(
+        prior, monkeypatch):
+    import transitflow.simulator as simulator_module
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    # Candidate-kind allocation is the unit under test here.  Keep the test
+    # fast; the dedicated BLS tests above exercise the real BLS-lite call.
+    monkeypatch.setattr(
+        simulator_module, "bls_lite_candidate",
+        lambda times, flux, grid, n_phase: (float(grid[0]), 0.0, 0.1))
+
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=1.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        n_period_bins=24, pg_n_phase=24, pg_n_raw=400,
+        candidate_bls_positive_fraction=0.20,
+        candidate_harmonic_fraction=0.20,
+        candidate_random_positive_fraction=0.20,
+        candidate_jitter_fraction=0.20,
+        candidate_harmonic_factors=(0.5, 2.0, 3.0),
+        candidate_harmonic_weights=(0.1, 0.2, 0.7))
+    batch = TransitSimulator(cfg, prior=prior).simulate_batch(
+        800, np.random.default_rng(482))
+    kind = batch["candidate_kind"]
+
+    for value in range(5):
+        assert np.mean(kind == value) > 0.15
+    assert np.array_equal(batch["posterior_valid"], kind == 0)
+    assert np.all(batch["valid"])
+
+
 def test_posterior_loss_uses_candidate_consistency_mask(
         prior, tiny_model_cfg, monkeypatch):
     import importlib
