@@ -80,6 +80,14 @@ per-parameter score for precisely those three coordinates. Because the
 calibrator is diagonal, the final protocol therefore selects family complexity
 per coordinate and freezes the resulting hybrid as one artifact.
 
+The deterministic per-coordinate development retry passed every declared
+synthetic publication gate. Familywise SBC p-values were `[0.1120, 0.1239,
+0.2355, 0.02037, 0.02015]` at the predeclared Bonferroni threshold 0.01;
+characterization coverage error was 0.00438 and the out-of-prior fraction was
+zero. This authorizes the full pipeline. It is not final publication evidence:
+the external frozen lockbox remains unexamined and must be evaluated exactly
+once by the full protocol.
+
 ## Alternatives rejected
 
 - More target stars alone: v4 removed one earlier failure but left strong
