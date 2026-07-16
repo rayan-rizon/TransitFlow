@@ -16,6 +16,7 @@ from scripts.run_publishable_vast import (
     build_gate_report,
     build_synthetic_gate_report,
     external_lockbox_synthetic_failure_blocks_downstream,
+    full_run_disk_preflight,
     prepare_noise_four_way_split,
     prepare_noise_splits,
     prepare_noise_train_calibration_split,
@@ -44,6 +45,20 @@ def test_noise_target_count_gate_fails_closed():
         assert "14 independent targets" in str(exc)
     else:
         raise AssertionError("underpowered noise library did not fail")
+
+
+def test_full_run_disk_preflight_reports_capacity(monkeypatch, tmp_path):
+    class Usage:
+        free = 15 * 1024 ** 3
+
+    monkeypatch.setattr("scripts.run_publishable_vast.shutil.disk_usage",
+                        lambda _: Usage())
+
+    report = full_run_disk_preflight(tmp_path, 16.0)
+
+    assert report["available_gib"] == 15.0
+    assert report["required_free_gib"] == 16.0
+    assert report["pass"] is False
 
 
 def test_synthetic_gate_report_separates_required_and_diagnostic_status():

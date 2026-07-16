@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -32,6 +33,30 @@ FAST_PYTEST = [
     "tests/test_data.py",
     "tests/test_baselines.py",
 ]
+
+
+def full_run_disk_preflight(path: Path, minimum_free_gib: float) -> dict:
+    """Record and enforce the storage reserve required by a full run.
+
+    The publication configuration persists three independent datasets: posterior
+    training, all-BLS detector training, and held-out all-BLS detector
+    validation.  A full run must retain room for those datasets, checkpoints,
+    and result artifacts rather than discovering an out-of-space condition
+    after provenance has been partially generated.  Fast and smoke runs are
+    deliberately excluded because their bounded datasets are diagnostic only.
+    """
+    if minimum_free_gib <= 0:
+        raise ValueError("minimum_free_gib must be positive")
+    usage = shutil.disk_usage(path)
+    gib = 1024 ** 3
+    required_bytes = int(minimum_free_gib * gib)
+    return {
+        "path": str(path),
+        "available_bytes": int(usage.free),
+        "available_gib": float(usage.free / gib),
+        "required_free_gib": float(minimum_free_gib),
+        "pass": bool(usage.free >= required_bytes),
+    }
 
 
 def run(cmd: list[str], cwd: Path, log_path: Path) -> None:
@@ -793,6 +818,11 @@ def main() -> None:
                     help="independent all-BLS detector rows relative to posterior data")
     ap.add_argument("--detector-validation-fraction", type=float, default=0.1,
                     help="held-out fraction of detector rows for checkpoint selection")
+    ap.add_argument(
+        "--min-full-run-free-gib", type=float, default=16.0,
+        help="minimum free storage required before a full run (default: 16 GiB); "
+             "guards the three provenance-separated datasets and artifacts",
+    )
     ap.add_argument("--workers", type=int, default=16)
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-sbc", type=int, default=1000)
@@ -860,6 +890,18 @@ def main() -> None:
     results = out_dir / "results"
     out_dir.mkdir(parents=True, exist_ok=True)
     results.mkdir(parents=True, exist_ok=True)
+
+    disk_preflight = full_run_disk_preflight(
+        out_dir, args.min_full_run_free_gib)
+    (out_dir / "disk_preflight.json").write_text(
+        json.dumps(disk_preflight, indent=2))
+    if not args.smoke and not args.fast_check and not disk_preflight["pass"]:
+        raise SystemExit(
+            "insufficient free storage for a full run: "
+            f"{disk_preflight['available_gib']:.2f} GiB available, "
+            f"{disk_preflight['required_free_gib']:.2f} GiB required; "
+            "use a larger-volume instance or explicitly set a justified "
+            "--min-full-run-free-gib")
 
     noise_lib: Path | None
     if str(args.noise_lib).strip().lower() in {"", "none", "null"}:
