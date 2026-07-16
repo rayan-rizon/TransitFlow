@@ -32,7 +32,7 @@ from .simulator import SimConfig, TransitSimulator
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
 _OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std",
                   "theta_char_prior_normal", "dil_feat", "posterior_valid",
-                  "candidate_kind", "regime", "noise_source_index")
+                  "candidate_kind", "regime", "noise_source_index", "fold_P", "sigma")
 
 
 def _dataset_mp_context() -> mp.context.BaseContext:
@@ -57,8 +57,8 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, thc, thn, d, sf, pg, ef, df, pv, ck, rg, nsi = (
-        [], [], [], [], [], [], [], [], [], [], [], [], [], [])
+    g, l, th, thc, thn, d, sf, pg, ef, df, pv, ck, rg, nsi, fp, sg = (
+        [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [])
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -80,6 +80,8 @@ def _gen_shard(args) -> str:
         ck.append(b["candidate_kind"].astype(np.int8))
         rg.append(b["regime"].astype(np.int8))
         nsi.append(b["noise_source_index"].astype(np.int32))
+        fp.append(b["fold_P"].astype(np.float32))
+        sg.append(b["sigma"].astype(np.float32))
         done += bs
     payload = {
         "global": np.concatenate(g), "local": np.concatenate(l),
@@ -91,6 +93,8 @@ def _gen_shard(args) -> str:
         "candidate_kind": np.concatenate(ck),
         "regime": np.concatenate(rg),
         "noise_source_index": np.concatenate(nsi),
+        "fold_P": np.concatenate(fp),
+        "sigma": np.concatenate(sg),
     }
     if pg:
         payload["periodogram"] = np.concatenate(pg)

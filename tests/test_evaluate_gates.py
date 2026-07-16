@@ -582,10 +582,13 @@ def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
         np.savez(path, **{
             "global": np.zeros((n, 2)), "local": np.zeros((n, 2)),
             "theta_std": np.zeros((n, 7)),
-            "theta_char_std": np.zeros((n, 5)),
-            "theta_char_prior_normal": np.zeros((n, 5)),
-            "d": np.zeros(n), "sigma_feat": np.zeros(n),
-            "posterior_valid": np.ones(n),
+                "theta_char_std": np.zeros((n, 5)),
+                "theta_char_prior_normal": np.zeros((n, 5)),
+                "d": np.zeros(n), "sigma_feat": np.zeros(n),
+                "sigma": np.zeros(n), "regime": np.zeros(n, dtype=np.int8),
+                "noise_source_index": np.full(n, -1, dtype=np.int32),
+                "fold_P": np.ones(n),
+                "posterior_valid": np.ones(n),
         })
 
     write_shard(data_dir / "shard_00000.npz")
@@ -627,10 +630,13 @@ def test_existing_dataset_accepts_target_uniform_noise_provenance(tmp_path):
         np.savez(data_dir / f"shard_{idx:05d}.npz", **{
             "global": np.zeros((n, 2)), "local": np.zeros((n, 2)),
             "theta_std": np.zeros((n, 7)),
-            "theta_char_std": np.zeros((n, 5)),
-            "theta_char_prior_normal": np.zeros((n, 5)),
-            "d": np.zeros(n), "sigma_feat": np.zeros(n),
-            "posterior_valid": np.ones(n),
+                "theta_char_std": np.zeros((n, 5)),
+                "theta_char_prior_normal": np.zeros((n, 5)),
+                "d": np.zeros(n), "sigma_feat": np.zeros(n),
+                "sigma": np.zeros(n), "regime": np.zeros(n, dtype=np.int8),
+                "noise_source_index": np.full(n, -1, dtype=np.int32),
+                "fold_P": np.ones(n),
+                "posterior_valid": np.ones(n),
         })
 
     assert validate_existing_dataset(
@@ -658,10 +664,13 @@ def test_existing_bls_detector_dataset_requires_bls_domain_provenance(tmp_path):
     np.savez(data_dir / "shard_00000.npz", **{
         "global": np.zeros((10, 2)), "local": np.zeros((10, 2)),
         "theta_std": np.zeros((10, 7)),
-        "theta_char_std": np.zeros((10, 5)),
-        "theta_char_prior_normal": np.zeros((10, 5)),
-        "d": np.zeros(10), "sigma_feat": np.zeros(10),
-        "posterior_valid": np.zeros(10), "candidate_kind": np.ones(10),
+            "theta_char_std": np.zeros((10, 5)),
+            "theta_char_prior_normal": np.zeros((10, 5)),
+            "d": np.zeros(10), "sigma_feat": np.zeros(10),
+            "sigma": np.zeros(10), "regime": np.zeros(10, dtype=np.int8),
+            "noise_source_index": np.full(10, -1, dtype=np.int32),
+            "fold_P": np.ones(10),
+            "posterior_valid": np.zeros(10), "candidate_kind": np.ones(10),
     })
 
     assert validate_existing_dataset(

@@ -42,3 +42,18 @@ def test_fair_bls_protocol_removes_oracle_positive_candidates():
     assert audit.candidate_bls_negative_fraction == 1.0
     assert audit.candidate_jitter_fraction == 0.0
     assert original.candidate_bls_positive_fraction == 0.5
+
+
+def test_disk_audit_requires_provenance_schema(tmp_path):
+    import json
+
+    (tmp_path / "dataset_meta.json").write_text(json.dumps({
+        "dataset_schema_version": 2,
+        "noise_provenance": {},
+    }))
+    try:
+        _MODULE.collect_disk_scores(str(tmp_path), None, None, 1, 1)
+    except ValueError as exc:
+        assert "schema" in str(exc)
+    else:
+        raise AssertionError("legacy dataset was accepted for source audit")

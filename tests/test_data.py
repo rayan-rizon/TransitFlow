@@ -89,6 +89,8 @@ def test_generate_and_load_disk_dataset(tmp_path):
     assert meta["noise_provenance"]["field"] == "noise_source_index"
     assert meta["noise_provenance"]["model_input"] is False
     assert "noise_source_index" in ds.keys
+    assert "fold_P" in ds.keys
+    assert "sigma" in ds.keys
     assert meta["realism_flags"]["finite_exposure"] is False
 
 

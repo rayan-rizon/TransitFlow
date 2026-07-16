@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 
 from transitflow.evaluation import detection_metrics
+from transitflow.data import DiskDataset
 from transitflow.inference import TransitFlowInference
 from transitflow.noise import NoiseLibrary
 from transitflow.priors import TransitPrior
@@ -104,6 +105,53 @@ def _three_bin_masks(values: np.ndarray, edges: tuple[float, float]) -> list[np.
     return [values < edges[0], (values >= edges[0]) & (values < edges[1]), values >= edges[1]]
 
 
+def collect_disk_scores(data_dir: str, inference, prior, n: int,
+                        batch_size: int) -> tuple[dict[str, np.ndarray], dict]:
+    """Score a fixed provenance-bearing dataset without re-simulating BLS.
+
+    The dataset is the immutable, independently generated experimental unit;
+    GPU scoring is then cheap and deterministic.  Requiring the candidate
+    period prevents a classifier-only audit from masking proposal failure.
+    """
+    meta_path = Path(data_dir) / "dataset_meta.json"
+    metadata = json.loads(meta_path.read_text())
+    provenance = metadata.get("noise_provenance", {})
+    if (int(metadata.get("dataset_schema_version", -1)) < 3
+            or provenance.get("field") != "noise_source_index"
+            or provenance.get("model_input") is not False):
+        raise ValueError("--data-dir must use provenance dataset schema >= 3")
+    ds = DiskDataset(data_dir, in_ram=True)
+    required = {"global", "local", "theta_std", "d", "sigma_feat", "sigma", "regime",
+                "noise_source_index", "fold_P"}
+    missing = required.difference(ds.keys)
+    if missing:
+        raise ValueError(f"--data-dir is missing audit fields: {sorted(missing)}")
+    take = min(int(n), len(ds))
+    collected = {key: [] for key in (
+        "labels", "scores", "theta", "sigma", "regime", "sources", "fold_period")}
+    for start in range(0, take, max(1, int(batch_size))):
+        idx = np.arange(start, min(take, start + max(1, int(batch_size))))
+        batch = ds._gather(idx)
+        score = inference.detect(
+            batch["global"].astype(np.float32), batch["local"].astype(np.float32),
+            batch["sigma_feat"].astype(np.float32),
+            periodogram=(batch["periodogram"].astype(np.float32)
+                         if "periodogram" in batch else None),
+            ephem_feat=(batch["ephem_feat"].astype(np.float32)
+                        if "ephem_feat" in batch else None),
+            dil_feat=(batch["dil_feat"].astype(np.float32)
+                      if "dil_feat" in batch else None),
+        )
+        collected["labels"].append(np.asarray(batch["d"], dtype=int))
+        collected["scores"].append(np.asarray(score, dtype=float))
+        collected["theta"].append(prior.std_to_physical(batch["theta_std"]))
+        collected["sigma"].append(np.asarray(batch["sigma"], dtype=float))
+        collected["regime"].append(np.asarray(batch["regime"], dtype=np.int8))
+        collected["sources"].append(np.asarray(batch["noise_source_index"], dtype=np.int32))
+        collected["fold_period"].append(np.asarray(batch["fold_P"], dtype=float))
+    return ({key: np.concatenate(values) for key, values in collected.items()}, metadata)
+
+
 def fair_bls_sim_config(sim_cfg):
     """Force a blind BLS candidate for both labels without altering physics.
 
@@ -125,8 +173,11 @@ def fair_bls_sim_config(sim_cfg):
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True, help="frozen detector checkpoint")
-    ap.add_argument("--noise-lib", required=True,
-                    help="held-out real-residual library; must contain target_ids")
+    source = ap.add_mutually_exclusive_group(required=True)
+    source.add_argument("--noise-lib",
+                        help="held-out real-residual library; must contain target_ids")
+    source.add_argument("--data-dir",
+                        help="fixed provenance-bearing dataset generated on held-out targets")
     ap.add_argument("--n", type=int, default=5000,
                     help="independent injections; use >=5000 for a decision")
     ap.add_argument("--batch", type=int, default=64)
@@ -142,37 +193,57 @@ def main() -> None:
 
     model, _, sim_cfg = load_checkpoint(args.ckpt, device=args.device)
     prior = TransitPrior.from_sim_config(sim_cfg)
-    noise = NoiseLibrary.load(args.noise_lib)
-    if not noise.available() or not noise.source_labels:
-        raise SystemExit("--noise-lib must contain real segments and target_ids for source audit")
-    audit_cfg = fair_bls_sim_config(sim_cfg)
-    simulator = TransitSimulator(audit_cfg, prior=prior, noise_library=noise)
     inference = TransitFlowInference(model, prior, sim_cfg, amp=args.amp)
-    rng = np.random.default_rng(args.seed)
-
-    labels, scores, theta, sigma, regime, sources, fold_period = ([] for _ in range(7))
-    while sum(len(x) for x in labels) < args.n:
-        batch = simulator.simulate_batch(min(args.batch, args.n - sum(len(x) for x in labels)), rng)
-        score = inference.detect(
-            batch["global"], batch["local"], batch["sigma_feat"],
-            periodogram=batch.get("periodogram"), ephem_feat=batch.get("ephem_feat"),
-            dil_feat=batch.get("dil_feat"),
-        )
-        labels.append(np.asarray(batch["d"], dtype=int))
-        scores.append(np.asarray(score, dtype=float))
-        theta.append(np.asarray(batch["theta_phys"], dtype=float))
-        sigma.append(np.asarray(batch["sigma"], dtype=float))
-        regime.append(np.asarray(batch["regime"], dtype=np.int8))
-        sources.append(np.asarray(batch["noise_source_index"], dtype=np.int32))
-        fold_period.append(np.asarray(batch["fold_P"], dtype=float))
-
-    labels = np.concatenate(labels)[:args.n]
-    scores = np.concatenate(scores)[:args.n]
-    theta = np.concatenate(theta)[:args.n]
-    sigma = np.concatenate(sigma)[:args.n]
-    regime = np.concatenate(regime)[:args.n]
-    sources = np.concatenate(sources)[:args.n]
-    fold_period = np.concatenate(fold_period)[:args.n]
+    dataset_metadata = None
+    if args.data_dir:
+        collected, dataset_metadata = collect_disk_scores(
+            args.data_dir, inference, prior, args.n, args.batch)
+        labels, scores = collected["labels"], collected["scores"]
+        theta, sigma = collected["theta"], collected["sigma"]
+        regime, sources = collected["regime"], collected["sources"]
+        fold_period = collected["fold_period"]
+        source_label_count = len(dataset_metadata["noise_provenance"].get("labels", []))
+        candidate_protocol = {
+            "source": "pre_generated_blind_bls_dataset",
+            "candidate_bls_positive_fraction": dataset_metadata["simulator_config"].get(
+                "candidate_bls_positive_fraction"),
+            "candidate_bls_negative_fraction": dataset_metadata["simulator_config"].get(
+                "candidate_bls_negative_fraction"),
+        }
+    else:
+        noise = NoiseLibrary.load(args.noise_lib)
+        if not noise.available() or not noise.source_labels:
+            raise SystemExit("--noise-lib must contain real segments and target_ids for source audit")
+        audit_cfg = fair_bls_sim_config(sim_cfg)
+        simulator = TransitSimulator(audit_cfg, prior=prior, noise_library=noise)
+        rng = np.random.default_rng(args.seed)
+        rows = {key: [] for key in (
+            "labels", "scores", "theta", "sigma", "regime", "sources", "fold_period")}
+        while sum(len(x) for x in rows["labels"]) < args.n:
+            batch = simulator.simulate_batch(
+                min(args.batch, args.n - sum(len(x) for x in rows["labels"])), rng)
+            rows["labels"].append(np.asarray(batch["d"], dtype=int))
+            rows["scores"].append(np.asarray(inference.detect(
+                batch["global"], batch["local"], batch["sigma_feat"],
+                periodogram=batch.get("periodogram"), ephem_feat=batch.get("ephem_feat"),
+                dil_feat=batch.get("dil_feat")), dtype=float))
+            rows["theta"].append(np.asarray(batch["theta_phys"], dtype=float))
+            rows["sigma"].append(np.asarray(batch["sigma"], dtype=float))
+            rows["regime"].append(np.asarray(batch["regime"], dtype=np.int8))
+            rows["sources"].append(np.asarray(batch["noise_source_index"], dtype=np.int32))
+            rows["fold_period"].append(np.asarray(batch["fold_P"], dtype=float))
+        labels, scores = (np.concatenate(rows[key])[:args.n] for key in ("labels", "scores"))
+        theta, sigma = (np.concatenate(rows[key])[:args.n] for key in ("theta", "sigma"))
+        regime, sources = (np.concatenate(rows[key])[:args.n] for key in ("regime", "sources"))
+        fold_period = np.concatenate(rows["fold_period"])[:args.n]
+        source_label_count = len(noise.source_labels)
+        candidate_protocol = {
+            "source": "blind_astropy_bls_for_both_classes",
+            "forced_positive_fraction": audit_cfg.candidate_bls_positive_fraction,
+            "forced_negative_fraction": audit_cfg.candidate_bls_negative_fraction,
+            "checkpoint_positive_fraction": sim_cfg.candidate_bls_positive_fraction,
+            "checkpoint_negative_fraction": sim_cfg.candidate_bls_negative_fraction,
+        }
     threshold = threshold_at_fpr(scores[labels == 0], args.target_fpr)
     empirical_fpr = float(np.mean(scores[labels == 0] >= threshold))
     overall = detection_metrics(labels, scores)
@@ -207,16 +278,13 @@ def main() -> None:
         "report_schema_version": 1,
         "purpose": "identifiability audit; not a publication gate relaxation",
         "checkpoint": str(Path(args.ckpt).resolve()),
-        "noise_library": str(Path(args.noise_lib).resolve()),
+        "noise_library": (str(Path(args.noise_lib).resolve()) if args.noise_lib else None),
+        "data_dir": (str(Path(args.data_dir).resolve()) if args.data_dir else None),
+        "dataset_config_sha256": (
+            dataset_metadata.get("config_hash") if dataset_metadata else None),
         "seed": int(args.seed),
         "n": int(args.n),
-        "candidate_protocol": {
-            "source": "blind_astropy_bls_for_both_classes",
-            "forced_positive_fraction": audit_cfg.candidate_bls_positive_fraction,
-            "forced_negative_fraction": audit_cfg.candidate_bls_negative_fraction,
-            "checkpoint_positive_fraction": sim_cfg.candidate_bls_positive_fraction,
-            "checkpoint_negative_fraction": sim_cfg.candidate_bls_negative_fraction,
-        },
+        "candidate_protocol": candidate_protocol,
         "operating_point": {
             "predeclared_target_fpr": float(args.target_fpr),
             "score_threshold": threshold,
@@ -231,7 +299,7 @@ def main() -> None:
         },
         "predeclared_strata": strata,
         "real_noise_source_strata": source_report,
-        "source_label_count": len(noise.source_labels),
+        "source_label_count": source_label_count,
         "interpretation_rule": (
             "Do not rerun the same detector if low completeness is broad across "
             "sources and low-information strata.  First compare a genuinely "

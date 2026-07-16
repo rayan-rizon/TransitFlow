@@ -235,7 +235,8 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
                 else "segment_uniform_legacy")
         required_keys = {
             "global", "local", "theta_std", "theta_char_std", "d",
-            "sigma_feat", "posterior_valid",
+            "sigma_feat", "sigma", "posterior_valid", "regime",
+            "noise_source_index", "fold_P",
         }
         if configs["model"].posterior_transform == "prior_normal":
             required_keys.add("theta_char_prior_normal")
