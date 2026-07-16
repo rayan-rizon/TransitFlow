@@ -33,13 +33,15 @@ space (needed for the importance-sampling diagnostic).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import math
 
 import numpy as np
-import torch
 from scipy.special import ndtr, ndtri
+
+if TYPE_CHECKING:
+    import torch
 
 # Canonical ordering of the inference targets.  Everything downstream relies on
 # this exact order, so it is defined once here.
@@ -223,8 +225,12 @@ class TransitPrior:
     # ------------------------------------------------------------------ #
     # physical <-> standardized (torch, differentiable, device-aware)
     # ------------------------------------------------------------------ #
-    def torch_buffers(self, device=None, dtype=torch.float32):
+    def torch_buffers(self, device=None, dtype=None):
         """Return (log_mask, u_mean, u_std, u_low, u_high) as tensors."""
+        import torch
+
+        if dtype is None:
+            dtype = torch.float32
         t = lambda a: torch.as_tensor(a, device=device, dtype=dtype)  # noqa: E731
         return (
             torch.as_tensor(self._log, device=device, dtype=torch.bool),
@@ -235,6 +241,8 @@ class TransitPrior:
         )
 
     def std_to_physical_torch(self, z: torch.Tensor, clip: bool = True) -> torch.Tensor:
+        import torch
+
         log_mask, u_mean, u_std, u_low, u_high = self.torch_buffers(z.device, z.dtype)
         u = z * u_std + u_mean
         if clip:
@@ -242,6 +250,8 @@ class TransitPrior:
         return torch.where(log_mask, torch.exp(u), u)
 
     def physical_to_std_torch(self, phys: torch.Tensor) -> torch.Tensor:
+        import torch
+
         log_mask, u_mean, u_std, _, _ = self.torch_buffers(phys.device, phys.dtype)
         safe = torch.where(log_mask, torch.clamp(phys, min=1e-12), phys)
         u = torch.where(log_mask, torch.log(safe), phys)

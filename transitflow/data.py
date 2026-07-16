@@ -25,11 +25,9 @@ import time
 from dataclasses import asdict
 
 import numpy as np
-import torch
 
 from .noise import NoiseLibrary
 from .simulator import SimConfig, TransitSimulator
-from .utils import batch_to_torch
 
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
 _OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std",
@@ -301,6 +299,10 @@ class DiskIterator:
         raw["valid"] = raw["d"] == 1
         if "posterior_valid" in raw:
             raw["posterior_valid"] = raw["posterior_valid"].astype(bool)
+        # Data generation workers use this module too.  Keep the PyTorch-only
+        # conversion on the training path so spawned CPU workers do not each
+        # import a large CUDA runtime merely to write NumPy shards.
+        from .utils import batch_to_torch
         return batch_to_torch(raw, self.device)
 
     def close(self):

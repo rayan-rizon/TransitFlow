@@ -3,6 +3,8 @@
 import numpy as np
 import json
 import os
+import subprocess
+import sys
 
 import transitflow.data as data_module
 from transitflow.data import DiskDataset, DiskIterator, generate_to_disk
@@ -33,6 +35,24 @@ def test_parallel_dataset_generation_uses_spawn_context(monkeypatch):
     )
     assert data_module._dataset_mp_context() is sentinel
     assert requested == ["spawn"]
+
+
+def test_data_generation_import_does_not_load_torch():
+    """Spawned CPU workers must not initialize PyTorch just to write shards."""
+    probe = subprocess.run(
+        [sys.executable, "-c", "import sys; import transitflow.data; "
+         "raise SystemExit('torch' in sys.modules)"],
+        cwd=os.getcwd(), check=False,
+    )
+    assert probe.returncode == 0
+
+
+def test_lazy_public_training_exports_preserve_api():
+    from transitflow import TrainConfig, preflight, train
+
+    assert TrainConfig.__name__ == "TrainConfig"
+    assert callable(train)
+    assert callable(preflight)
 
 
 def test_generate_and_load_disk_dataset(tmp_path):
