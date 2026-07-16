@@ -893,11 +893,11 @@ def main() -> None:
     )
     ap.add_argument("--workers", type=int, default=16)
     ap.add_argument(
-        "--dataset-worker-memory-mib", type=float, default=640.0,
-        help="conservative RAM budget per spawned Astropy dataset worker",
+        "--dataset-worker-memory-mib", type=float, default=1280.0,
+        help="startup-safe RAM budget per spawned Astropy dataset worker",
     )
     ap.add_argument(
-        "--dataset-worker-reserve-gib", type=float, default=4.0,
+        "--dataset-worker-reserve-gib", type=float, default=6.0,
         help="RAM held back for the supervisor, OS, and generation parent",
     )
     ap.add_argument("--shard-size", type=int, default=10_000)

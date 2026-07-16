@@ -65,10 +65,10 @@ def test_full_run_disk_preflight_reports_capacity(monkeypatch, tmp_path):
 
 def test_dataset_worker_preflight_caps_16_gib_node():
     report = dataset_worker_preflight(
-        61, memory_bytes=16 * 1024 ** 3, reserve_gib=4.0, worker_mib=640.0)
+        61, memory_bytes=16 * 1024 ** 3, reserve_gib=6.0, worker_mib=1280.0)
 
-    assert report["capacity_workers"] == 19
-    assert report["effective_workers"] == 19
+    assert report["capacity_workers"] == 8
+    assert report["effective_workers"] == 8
     assert report["cap_applied"] is True
 
 
