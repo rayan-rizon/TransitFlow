@@ -118,6 +118,58 @@ def read_json(path: Path) -> dict:
         return json.load(f)
 
 
+def identifiability_preflight(report_path: Path, min_sources: int,
+                              required_auc: float = 0.99) -> dict:
+    """Fail closed before a full run when blind detection is not identifiable.
+
+    This development audit is not a substitute for the final external-lockbox
+    gate. It prevents allocating that irreversible experiment when a fixed,
+    source-provenance-bearing BLS trial already rules out the required
+    end-to-end discrimination target.
+    """
+    failures: list[str] = []
+    try:
+        report = read_json(report_path)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return {
+            "pass": False,
+            "report_path": str(report_path),
+            "failures": [f"unreadable report: {type(exc).__name__}"],
+        }
+    protocol = report.get("candidate_protocol", {})
+    source_count = int(report.get("source_label_count", 0))
+    source_rows = report.get("real_noise_source_strata", {})
+    auc = report.get("overall", {}).get("roc_auc")
+    proposal = report.get("bls_top1_period_recovery_within_1pct", {})
+    if int(report.get("report_schema_version", -1)) != 1:
+        failures.append("unsupported identifiability report schema")
+    if protocol.get("source") != "pre_generated_blind_bls_dataset":
+        failures.append("report does not use a fixed blind-BLS dataset")
+    if (float(protocol.get("candidate_bls_positive_fraction", 0.0)) != 1.0
+            or float(protocol.get("candidate_bls_negative_fraction", 0.0)) != 1.0):
+        failures.append("report does not use BLS candidates for both labels")
+    if source_count < min_sources or len(source_rows) < min_sources:
+        failures.append(f"source audit has fewer than {min_sources} evaluable targets")
+    if not isinstance(auc, (int, float)) or not 0.0 <= float(auc) <= 1.0:
+        failures.append("report has no finite overall ROC-AUC")
+    elif float(auc) < required_auc:
+        failures.append(f"blind-BLS ROC-AUC below {required_auc:.2f}")
+    if not isinstance(proposal.get("fraction"), (int, float)):
+        failures.append("report lacks BLS proposal-recovery diagnostic")
+    return {
+        "pass": not failures,
+        "report_path": str(report_path),
+        "report_sha256": _sha256_file(report_path),
+        "required_auc": float(required_auc),
+        "observed_auc": None if not isinstance(auc, (int, float)) else float(auc),
+        "min_sources": int(min_sources),
+        "source_label_count": source_count,
+        "source_rows": len(source_rows),
+        "bls_top1_period_recovery_within_1pct": proposal.get("fraction"),
+        "failures": failures,
+    }
+
+
 def git_sha(cwd: Path) -> str | None:
     try:
         return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=cwd,
@@ -868,6 +920,10 @@ def main() -> None:
         help="newly frozen target-level evaluation archive; required for a full run "
              "and forbidden from overlapping development targets")
     ap.add_argument("--min-publication-eval-targets", type=int, default=30)
+    ap.add_argument(
+        "--identifiability-report", default=None,
+        help="fixed held-out blind-BLS audit required before a full publication run",
+    )
     ap.add_argument("--build-noise-lib", action="store_true")
     ap.add_argument("--noise-workers", type=int, default=1,
                     help="parallel target downloads when building the noise library")
@@ -1016,6 +1072,28 @@ def main() -> None:
         raise SystemExit(
             "a new --publication-eval-noise-lib is required for a full run; "
             "the inspected development evaluation targets are not a lockbox")
+    full_publication_attempt = bool(
+        not args.smoke and not args.fast_check and not args.stop_after_synthetic)
+    identifiability_gate = {"required": full_publication_attempt, "pass": None}
+    if full_publication_attempt:
+        if args.identifiability_report is None:
+            raise SystemExit(
+                "a fixed held-out --identifiability-report is required before "
+                "a full run; do not spend the publication lockbox on an "
+                "unidentified detector")
+        identifiability_gate = identifiability_preflight(
+            Path(args.identifiability_report).resolve(),
+            args.min_publication_eval_targets)
+        identifiability_gate["required"] = True
+        (out_dir / "identifiability_preflight.json").write_text(
+            json.dumps(identifiability_gate, indent=2))
+        if not identifiability_gate["pass"]:
+            raise SystemExit(
+                "identifiability preflight failed before full-run allocation: "
+                + "; ".join(identifiability_gate["failures"]))
+    else:
+        (out_dir / "identifiability_preflight.json").write_text(
+            json.dumps(identifiability_gate, indent=2))
     data_dir = Path(args.data_dir).resolve() if args.data_dir else out_dir / "data"
     run_dir = Path(args.run_dir).resolve() if args.run_dir else out_dir / "run"
     if args.smoke:

@@ -18,6 +18,7 @@ from scripts.run_publishable_vast import (
     dataset_worker_preflight,
     external_lockbox_synthetic_failure_blocks_downstream,
     full_run_disk_preflight,
+    identifiability_preflight,
     prepare_noise_four_way_split,
     prepare_noise_splits,
     prepare_noise_train_calibration_split,
@@ -47,6 +48,31 @@ def test_noise_target_count_gate_fails_closed():
         assert "14 independent targets" in str(exc)
     else:
         raise AssertionError("underpowered noise library did not fail")
+
+
+def test_identifiability_preflight_requires_fixed_blind_bls_report(tmp_path):
+    report_path = tmp_path / "report.json"
+    report_path.write_text(json.dumps({
+        "report_schema_version": 1,
+        "candidate_protocol": {
+            "source": "pre_generated_blind_bls_dataset",
+            "candidate_bls_positive_fraction": 1.0,
+            "candidate_bls_negative_fraction": 1.0,
+        },
+        "overall": {"roc_auc": 0.991},
+        "source_label_count": 30,
+        "real_noise_source_strata": {str(i): {} for i in range(30)},
+        "bls_top1_period_recovery_within_1pct": {"fraction": 0.8},
+    }))
+    passed = identifiability_preflight(report_path, min_sources=30)
+    assert passed["pass"] is True
+
+    report = json.loads(report_path.read_text())
+    report["overall"]["roc_auc"] = 0.91
+    report_path.write_text(json.dumps(report))
+    failed = identifiability_preflight(report_path, min_sources=30)
+    assert failed["pass"] is False
+    assert "blind-BLS ROC-AUC below 0.99" in failed["failures"]
 
 
 def test_full_run_disk_preflight_reports_capacity(monkeypatch, tmp_path):
