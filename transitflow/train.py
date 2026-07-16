@@ -68,6 +68,8 @@ class TrainConfig:
     # --- data source ---
     data_source: str = "simulate"            # "simulate" (on the fly) | "disk"
     data_dir: Optional[str] = None           # required when data_source == "disk"
+    detection_data_dir: Optional[str] = None # optional BLS-domain detector data
+    detection_validation_data_dir: Optional[str] = None
     # --- data prefetch (keeps a GPU fed by the CPU simulator) ---
     num_workers: int = 0                     # >0 spawns prefetch worker processes
     prefetch: int = 8
@@ -88,16 +90,28 @@ def _lr_at(step: int, cfg: TrainConfig) -> float:
     return 0.5 * cfg.lr * (1.0 + np.cos(np.pi * min(progress, 1.0)))
 
 
-def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
-    """Forward pass returning the component losses (differentiable)."""
+def compute_losses(model: TransitFlow, batch: dict, lambda_det: float,
+                   detection_batch: dict | None = None) -> dict:
+    """Joint loss with optional detector-domain batch.
+
+    Posterior supervision remains on exact-candidate rows in ``batch``.  When
+    supplied, ``detection_batch`` is an independently generated all-BLS
+    candidate sample, so the classifier is trained on the same candidate
+    process used by the fair evaluation without contaminating posterior labels.
+    """
     noise_feat = batch["sigma_feat"] if model.cfg.use_noise_feature else None
     pg = batch.get("periodogram") if model.cfg.use_periodogram else None
     eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
     dil = batch.get("dil_feat") if model.cfg.use_dilution_feature else None
     e = model.embed(batch["global"], batch["local"], noise_feat, pg, eph, dil)
+    det_batch = detection_batch if detection_batch is not None else batch
+    det_noise = det_batch["sigma_feat"] if model.cfg.use_noise_feature else None
+    det_pg = det_batch.get("periodogram") if model.cfg.use_periodogram else None
+    det_eph = det_batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+    det_dil = det_batch.get("dil_feat") if model.cfg.use_dilution_feature else None
     det_logits = model.detect_logits_from_inputs(
-        batch["global"], batch["local"], noise_feat, pg, eph, dil)
-    d = batch["d"].float()
+        det_batch["global"], det_batch["local"], det_noise, det_pg, det_eph, det_dil)
+    d = det_batch["d"].float()
     l_det = F.binary_cross_entropy_with_logits(det_logits, d)
 
     mask = batch.get("posterior_valid", batch["valid"])
@@ -120,7 +134,8 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
 
 
 @torch.no_grad()
-def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> dict:
+def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int,
+             detection_val_iter=None) -> dict:
     """Validation losses, detection accuracy, and ROC-AUC."""
     from .evaluation import detection_metrics
 
@@ -129,17 +144,18 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> 
     all_d, all_p = [], []
     for _ in range(n_batches):
         batch = next(val_iter)
-        out = compute_losses(model, batch, cfg.lambda_det)
+        det_batch = next(detection_val_iter) if detection_val_iter is not None else batch
+        out = compute_losses(model, batch, cfg.lambda_det, det_batch)
         agg["posterior"] += float(out["posterior"])
         agg["detection"] += float(out["detection"])
-        noise_feat = batch["sigma_feat"] if model.cfg.use_noise_feature else None
-        pg = batch.get("periodogram") if model.cfg.use_periodogram else None
-        eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
-        dil = batch.get("dil_feat") if model.cfg.use_dilution_feature else None
+        noise_feat = det_batch["sigma_feat"] if model.cfg.use_noise_feature else None
+        pg = det_batch.get("periodogram") if model.cfg.use_periodogram else None
+        eph = det_batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
+        dil = det_batch.get("dil_feat") if model.cfg.use_dilution_feature else None
         prob = torch.sigmoid(model.detect_logits_from_inputs(
-            batch["global"], batch["local"], noise_feat, pg, eph, dil))
-        agg["det_acc"] += float(((prob > 0.5).long() == batch["d"]).float().mean())
-        all_d.append(batch["d"].cpu().numpy())
+            det_batch["global"], det_batch["local"], noise_feat, pg, eph, dil))
+        agg["det_acc"] += float(((prob > 0.5).long() == det_batch["d"]).float().mean())
+        all_d.append(det_batch["d"].cpu().numpy())
         all_p.append(prob.cpu().numpy())
     model.train()
     out = {k: v / n_batches for k, v in agg.items()}
@@ -271,6 +287,18 @@ def train(
     val_simulator = TransitSimulator(sim_cfg, noise_library=noise_library)
     val_iter = SimulatorIterator(val_simulator, train_cfg.batch_size, device,
                                  seed=train_cfg.seed + 99991)
+    detection_iter = None
+    detection_val_iter = None
+    if train_cfg.detection_data_dir:
+        from .data import DiskIterator
+        detection_iter = DiskIterator(train_cfg.detection_data_dir,
+                                      train_cfg.batch_size, device, shuffle=True,
+                                      seed=train_cfg.seed + 424242)
+    if train_cfg.detection_validation_data_dir:
+        from .data import DiskIterator
+        detection_val_iter = DiskIterator(train_cfg.detection_validation_data_dir,
+                                          train_cfg.batch_size, device, shuffle=True,
+                                          seed=train_cfg.seed + 525252)
 
     model = TransitFlow(model_cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=train_cfg.lr,
@@ -313,12 +341,13 @@ def train(
                 g["lr"] = _lr_at(step, train_cfg)
             _t = time.time()
             batch = next(train_iter)
+            detection_batch = next(detection_iter) if detection_iter is not None else None
             data_wait += time.time() - _t
             opt.zero_grad(set_to_none=True)
             use_amp = train_cfg.amp and device.type == "cuda"
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16,
                                 enabled=use_amp):
-                out = compute_losses(model, batch, train_cfg.lambda_det)
+                out = compute_losses(model, batch, train_cfg.lambda_det, detection_batch)
 
             # NaN/inf guard: never burn GPU hours optimizing a diverged loss
             if not torch.isfinite(out["total"]):
@@ -382,7 +411,8 @@ def train(
                           f"| wait {data_frac*100:.0f}% | eta {_human_time(eta)}{warn}")
 
             if train_cfg.eval_every and (step + 1) % train_cfg.eval_every == 0:
-                val = evaluate(model, val_iter, train_cfg, train_cfg.eval_batches)
+                val = evaluate(model, val_iter, train_cfg, train_cfg.eval_batches,
+                               detection_val_iter)
                 history["val"].append((step, val))
                 if writer:
                     for k, v in val.items():
@@ -418,6 +448,10 @@ def train(
             print("interrupted — saving latest checkpoint")
     finally:
         train_iter.close()
+        if detection_iter is not None:
+            detection_iter.close()
+        if detection_val_iter is not None:
+            detection_val_iter.close()
 
     # final checkpoint
     final_step = completed_step

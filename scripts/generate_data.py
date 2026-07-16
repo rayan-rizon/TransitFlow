@@ -39,10 +39,23 @@ def main() -> None:
     ap.add_argument("--shard-size", type=int, default=50000)
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--candidate-domain", choices=("publication", "bls_detection"),
+                    default="publication",
+                    help="publication keeps posterior-capable exact rows; "
+                    "bls_detection uses Astropy-BLS candidates for both labels")
     args = ap.parse_args()
 
     cfg = build_configs(args.config)
     sim_cfg = cfg["simulator"]
+    if args.candidate_domain == "bls_detection":
+        # Detection is evaluated after the same BLS proposal on every object.
+        # This dataset is intentionally detection-only: posterior labels remain
+        # in the separate exact-candidate publication dataset.
+        sim_cfg.candidate_bls_positive_fraction = 1.0
+        sim_cfg.candidate_bls_negative_fraction = 1.0
+        sim_cfg.candidate_jitter_fraction = 0.0
+        sim_cfg.candidate_harmonic_fraction = 0.0
+        sim_cfg.candidate_random_positive_fraction = 0.0
     print(f"generating {args.n:,} light curves "
           f"(n_global={sim_cfg.n_global}, n_local={sim_cfg.n_local}, "
           f"n_raw={sim_cfg.n_raw}) with {args.workers} workers -> {args.out}")

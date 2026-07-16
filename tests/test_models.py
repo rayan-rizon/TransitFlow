@@ -76,3 +76,15 @@ def test_detection_embedding_can_be_ephemeris_invariant(
             batch["global"], batch["local"], batch["sigma_feat"], None, eph_b)
     assert not torch.allclose(posterior_a, posterior_b)
     assert torch.allclose(detection_a, detection_b)
+
+
+def test_detection_loss_accepts_an_independent_candidate_batch(
+        fast_simulator, tiny_model_cfg, rng):
+    model = TransitFlow(tiny_model_cfg)
+    posterior_batch = _batch_t(fast_simulator, rng, n=8)
+    detection_batch = _batch_t(fast_simulator, rng, n=8)
+    out = compute_losses(model, posterior_batch, lambda_det=1.0,
+                         detection_batch=detection_batch)
+    assert torch.isfinite(out["total"])
+    out["total"].backward()
+    assert any(p.grad is not None for p in model.parameters())

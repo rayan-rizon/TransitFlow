@@ -40,6 +40,10 @@ def main() -> None:
     ap.add_argument("--noise-lib", default=None, help="path to a real-noise .npz")
     ap.add_argument("--data-dir", default=None,
                     help="train from a pre-generated disk dataset (recommended on GPU)")
+    ap.add_argument("--detection-data-dir", default=None,
+                    help="independent all-BLS-candidate dataset for detector loss")
+    ap.add_argument("--detection-validation-data-dir", default=None,
+                    help="independent all-BLS-candidate dataset for detector selection")
     ap.add_argument("--expect-device", default=None,
                     help="abort/ warn if not on this device, e.g. cuda")
     ap.add_argument("--no-preflight", action="store_true",
@@ -64,6 +68,10 @@ def main() -> None:
     if args.data_dir:
         overrides["train"]["data_source"] = "disk"
         overrides["train"]["data_dir"] = args.data_dir
+    if args.detection_data_dir:
+        overrides["train"]["detection_data_dir"] = args.detection_data_dir
+    if args.detection_validation_data_dir:
+        overrides["train"]["detection_validation_data_dir"] = args.detection_validation_data_dir
     if args.expect_device:
         overrides["train"]["expect_device"] = args.expect_device
     if args.resume is not None:
