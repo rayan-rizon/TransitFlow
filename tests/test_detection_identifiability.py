@@ -10,6 +10,12 @@ _MODULE = importlib.util.module_from_spec(_SPEC)
 assert _SPEC.loader is not None
 _SPEC.loader.exec_module(_MODULE)
 
+_GENERATOR = Path(__file__).parents[1] / "scripts" / "generate_identifiability_dataset.py"
+_GENERATOR_SPEC = importlib.util.spec_from_file_location("identifiability_generator", _GENERATOR)
+_GENERATOR_MODULE = importlib.util.module_from_spec(_GENERATOR_SPEC)
+assert _GENERATOR_SPEC.loader is not None
+_GENERATOR_SPEC.loader.exec_module(_GENERATOR_MODULE)
+
 
 def test_wilson_interval_and_conservative_fpr_threshold():
     lo, hi = _MODULE.wilson_interval(50, 100)
@@ -57,3 +63,15 @@ def test_disk_audit_requires_provenance_schema(tmp_path):
         assert "schema" in str(exc)
     else:
         raise AssertionError("legacy dataset was accepted for source audit")
+
+
+def test_generator_forces_blind_bls_for_both_labels():
+    from transitflow.simulator import SimConfig
+
+    cfg = SimConfig(candidate_bls_positive_fraction=0.25,
+                    candidate_bls_negative_fraction=0.5,
+                    candidate_harmonic_fraction=0.1)
+    audit = _GENERATOR_MODULE.fair_bls_detector_config(cfg)
+    assert audit.candidate_bls_positive_fraction == 1.0
+    assert audit.candidate_bls_negative_fraction == 1.0
+    assert audit.candidate_harmonic_fraction == 0.0
