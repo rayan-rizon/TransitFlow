@@ -80,6 +80,36 @@ def test_tls_passes_explicit_thread_budget(monkeypatch):
     result = tls_module.tls_detect(np.arange(20.0), np.ones(20),
                                    np.array([1.0, 2.0]), use_threads=3)
     assert result["score"] == 4.2
+    assert result["best_period"] == 2.0
+    assert result["fit"] is True
+
+
+def test_tls_rejects_nonfinite_no_fit_result(monkeypatch):
+    class FakeTLS:
+        def power(self, **kwargs):
+            return type("Result", (), {"SDE": float("nan"), "period": 2.0})()
+
+    monkeypatch.setattr(tls_module, "_HAS_TLS", True)
+    monkeypatch.setattr(tls_module, "transitleastsquares", lambda t, f: FakeTLS())
+    result = tls_module.tls_detect(np.arange(20.0), np.ones(20),
+                                   np.array([1.0, 2.0]))
+    assert result["score"] == 0.0
+    assert np.isnan(result["best_period"])
+    assert result["fit"] is False
+
+
+def test_tls_rejects_zero_score_no_fit_result(monkeypatch):
+    class FakeTLS:
+        def power(self, **kwargs):
+            return type("Result", (), {"SDE": 0.0, "period": 2.0})()
+
+    monkeypatch.setattr(tls_module, "_HAS_TLS", True)
+    monkeypatch.setattr(tls_module, "transitleastsquares", lambda t, f: FakeTLS())
+    result = tls_module.tls_detect(np.arange(20.0), np.ones(20),
+                                   np.array([1.0, 2.0]))
+    assert result["score"] == 0.0
+    assert np.isnan(result["best_period"])
+    assert result["fit"] is False
 
 
 def test_tls_bootstrap_reports_transitflow_minus_tls():

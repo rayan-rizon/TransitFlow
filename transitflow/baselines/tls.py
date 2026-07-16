@@ -17,7 +17,12 @@ def has_tls() -> bool:
 
 def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
                use_threads: int = 1) -> dict:
-    """Run Transit Least Squares and return the peak detection score."""
+    """Run Transit Least Squares and return a finite, auditable peak result.
+
+    TLS can return an object even when it was unable to fit a transit.  A
+    no-fit is not an exception, but it must not be silently counted as a
+    successful search or leak NaNs into a detection metric.
+    """
     if not _HAS_TLS:
         raise RuntimeError("transitleastsquares is not installed")
     times = np.asarray(times, dtype=float)
@@ -27,7 +32,7 @@ def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
     times = times[ok]
     flux = flux[ok]
     if times.size < 10:
-        return {"score": 0.0, "best_period": float("nan")}
+        return {"score": 0.0, "best_period": float("nan"), "fit": False}
     model = transitleastsquares(times, flux)
     res = model.power(
         period_min=float(periods.min()),
@@ -39,7 +44,13 @@ def tls_detect(times: np.ndarray, flux: np.ndarray, periods: np.ndarray,
     score = getattr(res, "SDE", None)
     if score is None:
         score = getattr(res, "snr", 0.0)
+    score = float(score)
+    best_period = float(getattr(res, "period", float("nan")))
+    if not (np.isfinite(score) and score > 0.0 and np.isfinite(best_period) and
+            best_period > 0.0):
+        return {"score": 0.0, "best_period": float("nan"), "fit": False}
     return {
-        "score": float(score),
-        "best_period": float(getattr(res, "period", float("nan"))),
+        "score": score,
+        "best_period": best_period,
+        "fit": True,
     }

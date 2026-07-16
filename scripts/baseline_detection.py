@@ -32,14 +32,19 @@ from transitflow.views import (
 
 def _tls_score_worker(
     payload: tuple[np.ndarray, np.ndarray, np.ndarray, int],
-) -> tuple[float, str | None]:
+) -> tuple[float, float, bool, str | None]:
     """Top-level worker so TLS searches can be parallelized safely on Linux."""
     times, flux, periods, use_threads = payload
     try:
-        score = float(tls_detect(times, flux, periods, use_threads=use_threads)["score"])
-        return score, None
+        result = tls_detect(times, flux, periods, use_threads=use_threads)
+        return (
+            float(result["score"]),
+            float(result["best_period"]),
+            bool(result["fit"]),
+            None,
+        )
     except Exception as exc:
-        return 0.0, f"{type(exc).__name__}: {exc}"
+        return 0.0, float("nan"), False, f"{type(exc).__name__}: {exc}"
 
 
 def bootstrap_detection_metrics(labels: np.ndarray, bls_scores: np.ndarray,
@@ -192,7 +197,9 @@ def main() -> None:
     bls_success: list[bool] = []
     tls_failures: list[str] = []
     tls_success: list[bool] = []
+    tls_fit: list[bool] = []
     tls_jobs: list[tuple[np.ndarray, np.ndarray, np.ndarray, int]] = []
+    tls_candidate_periods, tls_true_periods = [], []
     candidate_periods, true_periods = [], []
     t0 = time.time()
     print(
@@ -286,6 +293,7 @@ def main() -> None:
                     tls_threads,
                 ))
                 tls_labels.append(int(b["d"][i]))
+                tls_true_periods.append(float(b["theta_phys"][i, 0]))
             labels.append(int(b["d"][i]))
             if args.candidate_source == "simulator":
                 tf_scores.append(float(p_det[i]))
@@ -304,16 +312,25 @@ def main() -> None:
               f"{tls_threads} thread(s) ==")
         ctx = mp.get_context("fork" if os.name != "nt" else "spawn")
         with ctx.Pool(tls_workers) as pool:
-            for done, (score, error) in enumerate(
+            for done, (score, best_period, fit, error) in enumerate(
                     pool.imap(_tls_score_worker, tls_jobs), start=1):
                 tls_scores.append(score)
                 tls_success.append(error is None)
+                tls_fit.append(fit)
+                tls_candidate_periods.append(best_period)
                 if error is not None:
                     tls_failures.append(error)
                 if done % max(1, min(100, len(tls_jobs) // 10)) == 0 or done == len(tls_jobs):
                     print(f"  TLS {done}/{len(tls_jobs)}")
     tls_labels_arr = np.array(tls_labels, dtype=int) if tls_labels else None
     tls_scores_arr = np.array(tls_scores, dtype=float) if tls_scores else None
+    tls_fit_arr = np.array(tls_fit, dtype=bool) if tls_fit else None
+    tls_candidate_periods_arr = (
+        np.array(tls_candidate_periods, dtype=float) if tls_candidate_periods else None
+    )
+    tls_true_periods_arr = (
+        np.array(tls_true_periods, dtype=float) if tls_true_periods else None
+    )
     candidate_periods_arr = np.asarray(candidate_periods[:args.n], dtype=float)
     true_periods_arr = np.asarray(true_periods[:args.n], dtype=float)
 
@@ -355,6 +372,8 @@ def main() -> None:
             "n_failed": int(len(tls_failures)),
             "failure_rate": float(len(tls_failures) / max(len(tls_labels_arr), 1)),
             "failure_examples": tls_failures[:10],
+            "n_no_fit": int((~tls_fit_arr).sum()),
+            "no_fit_rate": float((~tls_fit_arr).mean()),
             "roc_auc": tls_m["roc_auc"],
             "average_precision": tls_m["average_precision"],
             "brier_score": tls_m["brier_score"],
@@ -399,6 +418,19 @@ def main() -> None:
             "median_abs_fractional_error": float(np.median(frac)),
             "within_1pct": float(np.mean(frac <= 0.01)),
         }
+    if (tls_labels_arr is not None and tls_fit_arr is not None and
+            tls_candidate_periods_arr is not None and tls_true_periods_arr is not None):
+        tls_planets = (tls_labels_arr == 1) & tls_fit_arr & \
+            np.isfinite(tls_candidate_periods_arr) & np.isfinite(tls_true_periods_arr)
+        if tls_planets.any():
+            tls_frac = np.abs(
+                tls_candidate_periods_arr[tls_planets] /
+                tls_true_periods_arr[tls_planets] - 1.0)
+            report["tls_candidate_period_recovery"] = {
+                "n_planets": int(tls_planets.sum()),
+                "median_abs_fractional_error": float(np.median(tls_frac)),
+                "within_1pct": float(np.mean(tls_frac <= 0.01)),
+            }
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     score_path = Path(args.out).with_suffix(".scores.npz")
     np.savez_compressed(
@@ -410,6 +442,11 @@ def main() -> None:
         true_periods=true_periods_arr,
         tls_labels=np.asarray([]) if tls_labels_arr is None else tls_labels_arr,
         tls_scores=np.asarray([]) if tls_scores_arr is None else tls_scores_arr,
+        tls_fit=np.asarray([]) if tls_fit_arr is None else tls_fit_arr,
+        tls_candidate_periods=(np.asarray([]) if tls_candidate_periods_arr is None
+                               else tls_candidate_periods_arr),
+        tls_true_periods=(np.asarray([]) if tls_true_periods_arr is None
+                          else tls_true_periods_arr),
         bls_success=np.asarray(bls_success, dtype=bool),
         tls_success=np.asarray(tls_success, dtype=bool),
     )
