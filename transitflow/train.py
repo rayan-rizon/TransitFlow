@@ -51,6 +51,8 @@ class TrainConfig:
     lr: float = 3e-4
     weight_decay: float = 1e-5
     lambda_det: float = 1.0
+    detection_loss: str = "bce"            # bce | focal (development ablations)
+    detection_focal_gamma: float = 2.0
     grad_clip: float = 5.0
     warmup_steps: int = 500
     eval_every: int = 2000
@@ -91,8 +93,31 @@ def _lr_at(step: int, cfg: TrainConfig) -> float:
     return 0.5 * cfg.lr * (1.0 + np.cos(np.pi * min(progress, 1.0)))
 
 
+def detector_loss(logits: torch.Tensor, labels: torch.Tensor, *,
+                  kind: str = "bce", focal_gamma: float = 2.0) -> torch.Tensor:
+    """Binary detector loss with an optional, explicit hard-example weighting.
+
+    Focal loss is only an ablation option: BCE is the fixed publication default.
+    Its per-example weighting is derived from the numerically stable BCE-with-
+    logits term, so it never introduces a probability-space underflow path.
+    """
+    per_example = F.binary_cross_entropy_with_logits(
+        logits, labels, reduction="none")
+    if kind == "bce":
+        return per_example.mean()
+    if kind != "focal":
+        raise ValueError(f"unknown detection_loss {kind!r}; expected 'bce' or 'focal'")
+    if focal_gamma < 0:
+        raise ValueError("detection_focal_gamma must be non-negative")
+    # p_t = exp(-BCE) is the model probability assigned to the true class.
+    # This downweights easy examples and preserves the BCE limit at gamma=0.
+    return (((1.0 - torch.exp(-per_example)) ** focal_gamma) * per_example).mean()
+
+
 def compute_losses(model: TransitFlow, batch: dict, lambda_det: float,
-                   detection_batch: dict | None = None) -> dict:
+                   detection_batch: dict | None = None,
+                   detection_loss_kind: str = "bce",
+                   detection_focal_gamma: float = 2.0) -> dict:
     """Joint loss with optional detector-domain batch.
 
     Posterior supervision remains on exact-candidate rows in ``batch``.  When
@@ -113,7 +138,9 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float,
     det_logits = model.detect_logits_from_inputs(
         det_batch["global"], det_batch["local"], det_noise, det_pg, det_eph, det_dil)
     d = det_batch["d"].float()
-    l_det = F.binary_cross_entropy_with_logits(det_logits, d)
+    l_det = detector_loss(
+        det_logits, d, kind=detection_loss_kind,
+        focal_gamma=detection_focal_gamma)
 
     mask = batch.get("posterior_valid", batch["valid"])
     target = batch["theta_std"]
@@ -146,7 +173,9 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int,
     for _ in range(n_batches):
         batch = next(val_iter)
         det_batch = next(detection_val_iter) if detection_val_iter is not None else batch
-        out = compute_losses(model, batch, cfg.lambda_det, det_batch)
+        out = compute_losses(
+            model, batch, cfg.lambda_det, det_batch,
+            cfg.detection_loss, cfg.detection_focal_gamma)
         agg["posterior"] += float(out["posterior"])
         agg["detection"] += float(out["detection"])
         noise_feat = det_batch["sigma_feat"] if model.cfg.use_noise_feature else None
@@ -371,7 +400,9 @@ def train(
             use_amp = train_cfg.amp and device.type == "cuda"
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16,
                                 enabled=use_amp):
-                out = compute_losses(model, batch, train_cfg.lambda_det, detection_batch)
+                out = compute_losses(
+                    model, batch, train_cfg.lambda_det, detection_batch,
+                    train_cfg.detection_loss, train_cfg.detection_focal_gamma)
 
             # NaN/inf guard: never burn GPU hours optimizing a diverged loss
             if not torch.isfinite(out["total"]):

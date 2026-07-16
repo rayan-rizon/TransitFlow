@@ -949,6 +949,10 @@ def main() -> None:
                     help="override training steps; useful for fast metric checks")
     ap.add_argument("--train-eval-every", type=int, default=None,
                     help="override checkpoint-validation interval for a development run")
+    ap.add_argument("--detection-loss", choices=("bce", "focal"), default=None,
+                    help="override detector loss for a provenance-recorded development ablation")
+    ap.add_argument("--detection-focal-gamma", type=float, default=None,
+                    help="override focal-loss gamma for a development ablation")
     ap.add_argument("--fast-check", action="store_true",
                     help="short metric-oriented run: smaller data/eval/MCMC, same report schema")
     ap.add_argument(
@@ -1269,7 +1273,14 @@ def main() -> None:
         from scripts._config import build_configs
     except ImportError:  # direct ``python scripts/run_publishable_vast.py``
         from _config import build_configs
-    expected_steps = int(steps or build_configs(args.config)["train"].n_steps)
+    training_overrides = {"train": {}}
+    if args.detection_loss is not None:
+        training_overrides["train"]["detection_loss"] = args.detection_loss
+    if args.detection_focal_gamma is not None:
+        training_overrides["train"]["detection_focal_gamma"] = \
+            args.detection_focal_gamma
+    effective_train_cfg = build_configs(args.config, training_overrides)["train"]
+    expected_steps = int(steps or effective_train_cfg.n_steps)
     training_provenance = {
         "schema_version": 3,
         "config_sha256": _sha256_file((repo / args.config).resolve()),
@@ -1295,6 +1306,8 @@ def main() -> None:
         },
         "posterior_validation_rows": int(posterior_validation_rows),
         "train_eval_every": args.train_eval_every,
+        "detection_loss": effective_train_cfg.detection_loss,
+        "detection_focal_gamma": effective_train_cfg.detection_focal_gamma,
         "train_seed": int(args.train_seed),
         "steps": int(expected_steps),
     }
@@ -1330,6 +1343,10 @@ def main() -> None:
              "--seed", str(args.train_seed),
              *([] if args.train_eval_every is None else [
                  "--eval-every", str(args.train_eval_every)]),
+             *([] if args.detection_loss is None else [
+                 "--detection-loss", args.detection_loss]),
+             *([] if args.detection_focal_gamma is None else [
+                 "--detection-focal-gamma", str(args.detection_focal_gamma)]),
              *([] if validation_noise_lib is None else [
                  "--noise-lib", str(validation_noise_lib)]),
              *train_steps],

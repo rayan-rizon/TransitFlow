@@ -29,6 +29,10 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=None)
     ap.add_argument("--eval-every", type=int, default=None,
                     help="checkpoint-validation interval in training steps")
+    ap.add_argument("--detection-loss", choices=("bce", "focal"), default=None,
+                    help="detector loss; focal is a development ablation, BCE is default")
+    ap.add_argument("--detection-focal-gamma", type=float, default=None,
+                    help="focal-loss gamma (must be non-negative)")
     ap.add_argument("--seed", type=int, default=None,
                     help="override the training seed recorded in the config")
     ap.add_argument("--device", default=None)
@@ -61,6 +65,10 @@ def main() -> None:
         overrides["train"]["n_steps"] = args.steps
     if args.eval_every is not None:
         overrides["train"]["eval_every"] = args.eval_every
+    if args.detection_loss is not None:
+        overrides["train"]["detection_loss"] = args.detection_loss
+    if args.detection_focal_gamma is not None:
+        overrides["train"]["detection_focal_gamma"] = args.detection_focal_gamma
     if args.seed is not None:
         overrides["train"]["seed"] = args.seed
     if args.device:

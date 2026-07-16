@@ -7,8 +7,11 @@ import pytest
 
 from transitflow.models.transitflow import ModelConfig
 from transitflow.simulator import SimConfig
+import torch
+
 from transitflow.train import (
     TrainConfig,
+    detector_loss,
     is_better_detection_checkpoint,
     load_checkpoint,
     train,
@@ -35,6 +38,19 @@ def test_detection_checkpoint_selection_matches_auc_gate():
 
     assert not is_better_detection_checkpoint(lower_auc_higher_ap, incumbent)
     assert is_better_detection_checkpoint(equal_auc_higher_ap, incumbent)
+
+
+def test_focal_detector_loss_has_bce_limit_and_downweights_easy_examples():
+    logits = torch.tensor([5.0, 0.0])
+    labels = torch.tensor([1.0, 1.0])
+    bce = detector_loss(logits, labels, kind="bce")
+
+    assert torch.allclose(detector_loss(
+        logits, labels, kind="focal", focal_gamma=0.0), bce)
+    assert detector_loss(logits, labels, kind="focal", focal_gamma=2.0) < bce
+
+    with pytest.raises(ValueError, match="non-negative"):
+        detector_loss(logits, labels, kind="focal", focal_gamma=-1.0)
 
 
 def test_run_dir_artifacts_and_checkpoints(tmp_path):
