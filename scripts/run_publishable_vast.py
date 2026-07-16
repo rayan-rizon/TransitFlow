@@ -165,8 +165,9 @@ def simulator_config_for_candidate_domain(config_path: str,
 def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
                               shard_size: int, seed: int,
                               noise_lib: Path | None,
-                              candidate_domain: str = "publication") -> bool:
-    """Accept a reusable disk dataset only when its provenance is exact."""
+                              candidate_domain: str = "publication",
+                              require_complete: bool = True) -> bool:
+    """Validate a complete dataset or a provenance-safe resumable prefix."""
     import numpy as np
 
     meta_path = data_dir / "dataset_meta.json"
@@ -197,7 +198,9 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
         if configs["model"].posterior_transform == "prior_normal":
             required_keys.add("theta_char_prior_normal")
         shard_schema_valid = True
-        for idx, name in enumerate(sorted(expected_names)):
+        names_to_validate = expected_names if require_complete else actual_names
+        for name in sorted(names_to_validate):
+            idx = int(name.removeprefix("shard_").removesuffix(".npz"))
             expected_rows = min(shard_size, n_total - idx * shard_size)
             with np.load(data_dir / name) as shard:
                 if (not required_keys.issubset(shard.files)
@@ -216,8 +219,9 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
             and meta.get("config_hash") == expected_hash
             and meta.get("noise_lib_sha256") == _sha256_file(noise_lib)
             and meta.get("noise_sampling_unit") == expected_sampling_unit
-            and actual_names == expected_names
-            and all((data_dir / name).stat().st_size > 0 for name in expected_names)
+            and (actual_names == expected_names if require_complete
+                 else actual_names.issubset(expected_names))
+            and all((data_dir / name).stat().st_size > 0 for name in names_to_validate)
             and shard_schema_valid
         )
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError,
@@ -1089,7 +1093,9 @@ def main() -> None:
             data_dir, args.config, n_data, args.shard_size,
             args.train_seed, train_noise_lib):
         stale_shards = list(data_dir.glob("shard_*.npz"))
-        if stale_shards:
+        if stale_shards and not validate_existing_dataset(
+                data_dir, args.config, n_data, args.shard_size,
+                args.train_seed, train_noise_lib, require_complete=False):
             raise SystemExit(
                 f"existing dataset failed provenance validation: {data_dir}; "
                 "remove or relocate it before regenerating")
@@ -1129,7 +1135,10 @@ def main() -> None:
                 detector_seed, detector_noise_lib,
                 candidate_domain="bls_detection"):
             stale_shards = list(detector_dir.glob("shard_*.npz"))
-            if stale_shards:
+            if stale_shards and not validate_existing_dataset(
+                    detector_dir, args.config, detector_rows, args.shard_size,
+                    detector_seed, detector_noise_lib,
+                    candidate_domain="bls_detection", require_complete=False):
                 raise SystemExit(
                     "existing all-BLS detector dataset failed provenance "
                     f"validation: {detector_dir}; remove or relocate it "

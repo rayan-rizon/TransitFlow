@@ -582,6 +582,9 @@ def test_existing_dataset_requires_every_exact_provenance_shard(tmp_path):
 
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, None) is False
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, None,
+        require_complete=False) is True
 
     write_shard(data_dir / "shard_00001.npz")
     assert validate_existing_dataset(
