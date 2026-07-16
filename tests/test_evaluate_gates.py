@@ -23,6 +23,7 @@ from scripts.run_publishable_vast import (
     prepare_noise_train_validation_calibration_split,
     prepare_noise_three_way_split,
     require_noise_target_count,
+    simulator_config_for_candidate_domain,
     validate_existing_dataset,
 )
 from transitflow.data import _write_dataset_metadata
@@ -630,3 +631,28 @@ def test_existing_dataset_accepts_target_uniform_noise_provenance(tmp_path):
     )
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, other_noise_path) is False
+
+
+def test_existing_bls_detector_dataset_requires_bls_domain_provenance(tmp_path):
+    data_dir = tmp_path / "detector"
+    data_dir.mkdir()
+    config_path = "configs/default.yaml"
+    sim = simulator_config_for_candidate_domain(
+        config_path, "bls_detection")["simulator"]
+    _write_dataset_metadata(
+        str(data_dir), sim, n_total=10, n_shards=1, shard_size=10,
+        seed=5, noise_lib_path=None)
+    np.savez(data_dir / "shard_00000.npz", **{
+        "global": np.zeros((10, 2)), "local": np.zeros((10, 2)),
+        "theta_std": np.zeros((10, 7)),
+        "theta_char_std": np.zeros((10, 5)),
+        "theta_char_prior_normal": np.zeros((10, 5)),
+        "d": np.zeros(10), "sigma_feat": np.zeros(10),
+        "posterior_valid": np.zeros(10), "candidate_kind": np.ones(10),
+    })
+
+    assert validate_existing_dataset(
+        data_dir, config_path, 10, 10, 5, None,
+        candidate_domain="bls_detection") is True
+    assert validate_existing_dataset(
+        data_dir, config_path, 10, 10, 5, None) is False

@@ -139,16 +139,35 @@ def _sha256_file(path: Path | None) -> str | None:
     return digest.hexdigest()
 
 
-def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
-                              shard_size: int, seed: int,
-                              noise_lib: Path | None) -> bool:
-    """Accept a reusable disk dataset only when its provenance is exact."""
-    import numpy as np
-
+def simulator_config_for_candidate_domain(config_path: str,
+                                          candidate_domain: str = "publication"):
+    """Build the exact simulator configuration used for a candidate domain."""
     try:
         from scripts._config import build_configs
     except ImportError:  # direct ``python scripts/run_publishable_vast.py``
         from _config import build_configs
+
+    configs = build_configs(config_path)
+    if candidate_domain == "publication":
+        return configs
+    if candidate_domain != "bls_detection":
+        raise ValueError(f"unknown candidate domain: {candidate_domain}")
+    # Keep this transformation byte-for-byte aligned with generate_data.py.
+    sim_cfg = configs["simulator"]
+    sim_cfg.candidate_bls_positive_fraction = 1.0
+    sim_cfg.candidate_bls_negative_fraction = 1.0
+    sim_cfg.candidate_jitter_fraction = 0.0
+    sim_cfg.candidate_harmonic_fraction = 0.0
+    sim_cfg.candidate_random_positive_fraction = 0.0
+    return configs
+
+
+def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
+                              shard_size: int, seed: int,
+                              noise_lib: Path | None,
+                              candidate_domain: str = "publication") -> bool:
+    """Accept a reusable disk dataset only when its provenance is exact."""
+    import numpy as np
 
     meta_path = data_dir / "dataset_meta.json"
     if not meta_path.exists():
@@ -156,7 +175,8 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
     try:
         meta = read_json(meta_path)
         expected_shards = (n_total + shard_size - 1) // shard_size
-        configs = build_configs(config_path)
+        configs = simulator_config_for_candidate_domain(
+            config_path, candidate_domain)
         config_json = json.dumps(
             asdict(configs["simulator"]), sort_keys=True)
         expected_hash = hashlib.sha256(config_json.encode("utf-8")).hexdigest()
@@ -1106,7 +1126,8 @@ def main() -> None:
         # seeds alone would still leak source-specific noise morphology.
         if not validate_existing_dataset(
                 detector_dir, args.config, detector_rows, args.shard_size,
-                detector_seed, detector_noise_lib):
+                detector_seed, detector_noise_lib,
+                candidate_domain="bls_detection"):
             stale_shards = list(detector_dir.glob("shard_*.npz"))
             if stale_shards:
                 raise SystemExit(
@@ -1122,7 +1143,8 @@ def main() -> None:
                 repo, logs / f"generate_detector_{label}.log")
             if not validate_existing_dataset(
                     detector_dir, args.config, detector_rows, args.shard_size,
-                    detector_seed, detector_noise_lib):
+                    detector_seed, detector_noise_lib,
+                    candidate_domain="bls_detection"):
                 raise SystemExit(
                     "generated all-BLS detector dataset failed provenance "
                     f"validation: {detector_dir}")
