@@ -43,18 +43,18 @@ simulator:
   n_period_bins: 256
   pg_n_phase: 64
   pg_n_raw: 4096
-  # BLS smoke on held-out development targets recovered the true period for
-  # only ~39% of planets. Match that candidate-error distribution during
-  # detector training; posterior supervision remains exact-candidate only.
+  # Train detection on the exact Astropy BLS candidate procedure used by the
+  # blind comparator. Posterior supervision remains exact-candidate only.
   candidate_jitter_fraction: 0.0
   candidate_period_jitter_log_std: 0.01
   candidate_epoch_jitter_duration_std: 0.5
-  candidate_harmonic_fraction: 0.16
-  candidate_harmonic_factors: [0.5, 2.0, 3.0]
-  candidate_harmonic_weights: [0.025, 0.575, 0.425]
-  candidate_random_positive_fraction: 0.39
+  candidate_harmonic_fraction: 0.0
+  candidate_random_positive_fraction: 0.0
   candidate_bls_negative_fraction: 1.0
-  candidate_bls_positive_fraction: 0.05
+  candidate_bls_positive_fraction: 0.50
+  candidate_bls_backend: astropy
+  candidate_bls_subsample: 3000
+  candidate_bls_n_periods: 200
 
 model:
   param_dim: 5

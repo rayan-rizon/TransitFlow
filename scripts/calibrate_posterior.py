@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -118,6 +119,74 @@ def collect_calibration_cases(
     )
 
 
+def collect_target_balanced_calibration_cases(
+    inference: TransitFlowInference,
+    simulator_config,
+    prior: TransitPrior,
+    noise: NoiseLibrary,
+    model,
+    n_cases: int,
+    n_posterior: int,
+    batch_size: int,
+    seed: int,
+    role: str,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, dict]:
+    """Collect equal-sized calibration selections from each held-out target.
+
+    A segment-uniform draw can let a few long/noisy targets dominate the
+    calibrator-family decision.  Selection is a target-level research gate, so
+    each held-out source target receives equal simulation weight.
+    """
+    if noise.target_ids is None:
+        raise ValueError("target-balanced selection requires target_ids")
+    target_ids = noise.target_ids.astype(str)
+    targets = np.unique(target_ids)
+    if len(targets) < 2:
+        raise ValueError("target-balanced selection requires at least two targets")
+    per_target = int(np.ceil(n_cases / len(targets)))
+    # Each source target should contribute the same number of accepted cases,
+    # but a full training batch per target is wasteful for small smoke runs.
+    # The bounded batch remains large enough for the exact-candidate mask to
+    # yield posterior labels under the configured candidate mixture.
+    target_batch = min(batch_size, max(8, 4 * per_target))
+    chunks = []
+    for index, target in enumerate(targets):
+        mask = target_ids == target
+        target_noise = NoiseLibrary(noise.segments[mask], target_ids[mask])
+        target_simulator = TransitSimulator(
+            simulator_config, prior=prior, noise_library=target_noise)
+        chunks.append(collect_calibration_cases(
+            inference, target_simulator, model, per_target, n_posterior,
+            target_batch, seed + 10_007 * index, f"{role}:{target}"))
+    theta = np.concatenate([chunk[0] for chunk in chunks])[:n_cases]
+    posterior = np.concatenate([chunk[1] for chunk in chunks])[:n_cases]
+    center = np.concatenate([chunk[2] for chunk in chunks])[:n_cases]
+    return theta, posterior, center, {
+        "sampling": "target_uniform_then_simulation_v1",
+        "n_targets": int(len(targets)),
+        "n_cases_requested": int(n_cases),
+        "n_cases_per_target": int(per_target),
+        "batch_size_per_target": int(target_batch),
+        "targets": sorted(targets.tolist()),
+    }
+
+
+def temper_calibration(candidate: PosteriorAffineCalibration,
+                        strength: float) -> PosteriorAffineCalibration:
+    """Shrink a fitted affine calibration toward identity in latent space."""
+    strength = float(strength)
+    if not 0.0 <= strength <= 1.0:
+        raise ValueError("calibration tempering strength must be in [0, 1]")
+    return PosteriorAffineCalibration(
+        np.exp(strength * np.log(candidate.scale)),
+        strength * candidate.offset,
+        1.0 + strength * (candidate.center_slope - 1.0),
+        candidate.lower, candidate.upper, candidate.space,
+        center_quadratic=strength * candidate.center_quadratic,
+        log_scale_slope=strength * candidate.log_scale_slope,
+    )
+
+
 def select_calibration_candidates_by_dimension(
     candidates: dict[str, PosteriorAffineCalibration],
     theta: np.ndarray,
@@ -218,18 +287,29 @@ def main() -> None:
             noise, args.seed + 9001, args.selection_target_fraction)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
-    fit_simulator = TransitSimulator(sc, prior=prior, noise_library=fit_noise)
-    selection_simulator = TransitSimulator(
-        sc, prior=prior, noise_library=selection_noise)
+    # Calibration is defined only for exact-candidate posterior rows.  Avoid
+    # spending CPU on blind BLS candidate searches for rows that this stage
+    # will mask out, while preserving every physical/noise setting of the
+    # checkpoint's forward model.
+    calibration_sc = replace(
+        sc,
+        candidate_bls_negative_fraction=0.0,
+        candidate_bls_positive_fraction=0.0,
+        candidate_harmonic_fraction=0.0,
+        candidate_random_positive_fraction=0.0,
+        candidate_jitter_fraction=0.0,
+    )
+    fit_simulator = TransitSimulator(
+        calibration_sc, prior=prior, noise_library=fit_noise)
     inference = TransitFlowInference(model, prior, sc, amp=args.amp)
     theta, posterior, center = collect_calibration_cases(
         inference, fit_simulator, model, args.n_calibration,
         args.n_posterior, args.batch, args.seed, "calibration-fit")
-    selection_theta, selection_posterior, selection_center = \
-        collect_calibration_cases(
-            inference, selection_simulator, model, args.n_selection,
-            args.n_posterior, args.batch, args.seed + 1_000_003,
-            "calibration-selection")
+    (selection_theta, selection_posterior, selection_center,
+     selection_sampling) = collect_target_balanced_calibration_cases(
+        inference, calibration_sc, prior, selection_noise, model, args.n_selection,
+        args.n_posterior, args.batch, args.seed + 1_000_003,
+        "calibration-selection")
     lower, upper = prior.std_bounds
     if model.cfg.param_dim == 5:
         lower, upper = lower[2:], upper[2:]
@@ -238,18 +318,18 @@ def main() -> None:
         np.ones(theta.shape[1]), lower=lower, upper=upper,
         space=f"bounded_latent_{args.bounded_link}")
     candidates = {"identity": identity}
-    # Conditional calibration can win on a small row-level split while fitting
-    # source-target idiosyncrasies that do not transfer to unseen stars.  The
-    # publication path therefore limits the family to identity vs. the
-    # low-capacity affine form and still selects each dimension on targets held
-    # out from calibration fitting.
+    # Limit the family to a diagonal affine map and its conservative latent
+    # tempering path.  Each variant is chosen only on held-out source targets;
+    # no final-evaluation target is available to this selector.
     fit_diagnostics = {}
     for index, complexity in enumerate(("simple",)):
         candidate, candidate_fit = fit_affine_calibration(
             theta, posterior, center, bounds=(lower, upper),
             optimizer_seed=args.seed + 1000 * index,
             bounded_link=args.bounded_link, complexity=complexity)
-        candidates[complexity] = candidate
+        candidates["simple_050"] = temper_calibration(candidate, 0.50)
+        candidates["simple_075"] = temper_calibration(candidate, 0.75)
+        candidates["simple_100"] = candidate
         fit_diagnostics[complexity] = candidate_fit
     selected_names, selection_scores, selection_scores_by_dimension = \
         select_calibration_candidates_by_dimension(
@@ -259,11 +339,12 @@ def main() -> None:
     hybrid_selection_score = calibration_rank_diagnostics(
         selection_theta, selection_posterior, selection_center, calibration)
     diagnostics = {
-        "selection_protocol": "target_disjoint_identity_vs_simple_v3",
+        "selection_protocol": "target_disjoint_balanced_tempered_simple_v4",
         "selected_complexity": "per_dimension",
         "selected_complexity_by_parameter": dict(
             zip(parameter_names, selected_names)),
         "target_split": target_split,
+        "selection_sampling": selection_sampling,
         "candidate_fit_diagnostics": fit_diagnostics,
         "candidate_selection_scores": selection_scores,
         "candidate_selection_scores_by_dimension": dict(

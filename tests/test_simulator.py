@@ -80,6 +80,29 @@ def test_bls_lite_positive_candidates_are_detection_only(prior):
     assert np.isfinite(batch["local"]).all()
 
 
+def test_astropy_bls_candidates_are_detection_only(prior):
+    import pytest
+    from transitflow.baselines.bls import has_astropy
+    from transitflow.simulator import SimConfig, TransitSimulator
+
+    if not has_astropy():
+        pytest.skip("Astropy BLS is optional in the local test environment")
+    cfg = SimConfig(
+        n_global=64, n_local=41, baseline_days=4.0, n_raw=800,
+        planet_fraction=1.0, frac_real=0.0, frac_gp=0.0, frac_white=1.0,
+        n_radial=30, regime="tess", use_periodogram=False,
+        candidate_bls_positive_fraction=1.0,
+        candidate_bls_backend="astropy", candidate_bls_subsample=400,
+        candidate_bls_n_periods=24)
+    batch = TransitSimulator(cfg, prior=prior).simulate_batch(
+        4, np.random.default_rng(4811))
+
+    assert np.all(batch["candidate_kind"] == 3)
+    assert not np.any(batch["posterior_valid"])
+    assert np.isfinite(batch["global"]).all()
+    assert np.isfinite(batch["local"]).all()
+
+
 def test_positive_candidate_mixture_is_exclusive_and_masks_posterior(
         prior, monkeypatch):
     import transitflow.simulator as simulator_module

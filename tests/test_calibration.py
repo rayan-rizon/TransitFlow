@@ -11,8 +11,10 @@ from transitflow.calibration import (
 from transitflow.noise import NoiseLibrary
 from scripts.calibrate_posterior import (
     combine_calibration_candidates,
+    collect_target_balanced_calibration_cases,
     select_calibration_candidates_by_dimension,
     split_calibration_noise_targets,
+    temper_calibration,
 )
 
 
@@ -26,6 +28,57 @@ def test_affine_calibration_round_trip_and_logdet():
 
     assert np.allclose(cal.inverse(calibrated, center), raw)
     assert np.isclose(cal.log_abs_det, np.log(2.0) + np.log(0.5))
+
+
+def test_tempered_calibration_interpolates_in_latent_space():
+    candidate = PosteriorAffineCalibration(
+        scale=np.array([4.0]), offset=np.array([0.8]),
+        center_slope=np.array([1.6]), lower=np.array([-2.0]),
+        upper=np.array([2.0]), space="bounded_latent_probit",
+        center_quadratic=np.array([0.4]), log_scale_slope=np.array([0.2]))
+    identity = temper_calibration(candidate, 0.0)
+    halfway = temper_calibration(candidate, 0.5)
+
+    assert np.allclose(identity.scale, [1.0])
+    assert np.allclose(identity.offset, [0.0])
+    assert np.allclose(identity.center_slope, [1.0])
+    assert np.allclose(halfway.scale, [2.0])
+    assert np.allclose(halfway.offset, [0.4])
+    assert np.allclose(halfway.center_slope, [1.3])
+
+
+def test_target_balanced_selection_reports_equal_target_allocation(
+        prior, tiny_model_cfg, monkeypatch):
+    from transitflow.simulator import SimConfig
+
+    class DummyInference:
+        pass
+
+    class DummyModel:
+        cfg = type("Config", (), {"param_dim": 5})()
+
+    calls = []
+
+    def fake_collect(_inference, _simulator, _model, n_cases, n_posterior,
+                     batch_size, seed, role):
+        calls.append((n_cases, batch_size, seed, role))
+        return (np.zeros((n_cases, 5)), np.zeros((n_cases, n_posterior, 5)),
+                np.zeros((n_cases, 5)))
+
+    monkeypatch.setattr(
+        "scripts.calibrate_posterior.collect_calibration_cases", fake_collect)
+    noise = NoiseLibrary(
+        np.ones((4, 32)), np.array(["a", "a", "b", "b"]))
+    theta, posterior, center, meta = collect_target_balanced_calibration_cases(
+        DummyInference(), SimConfig(n_raw=32), prior, noise, DummyModel(),
+        n_cases=5, n_posterior=3, batch_size=64, seed=7, role="selection")
+
+    assert theta.shape == (5, 5)
+    assert posterior.shape == (5, 3, 5)
+    assert center.shape == (5, 5)
+    assert [call[0] for call in calls] == [3, 3]
+    assert all(call[1] == 12 for call in calls)
+    assert meta["sampling"] == "target_uniform_then_simulation_v1"
 
 
 def test_bounded_calibration_round_trip_support_and_logdet():

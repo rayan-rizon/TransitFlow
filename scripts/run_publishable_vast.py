@@ -1138,8 +1138,38 @@ def main() -> None:
     if args.amp:
         evaluate_cmd.append("--amp")
     run(evaluate_cmd, repo, logs / "evaluate.log")
+    metrics_path = eval_dir / "metrics.json"
+    synthetic_metrics = read_json(metrics_path)
+    baseline_path = results / "bls_vs_transitflow.json"
+    # The simulator-candidate detector score is an oracle diagnostic, not a
+    # blind-detection gate. When BLS candidates are requested, run the exact
+    # comparator before emitting any synthetic gate report and promote only
+    # that matched-path TransitFlow score to the detection gate.
+    if args.candidate_source == "bls":
+        detection_baseline_cmd = [
+            args.python, "scripts/baseline_detection.py", "--ckpt",
+            str(detector_ckpt), "--n", str(n_detection), "--out",
+            str(baseline_path), "--seed", str(args.eval_seed),
+            "--candidate-source", "bls",
+        ]
+        if eval_noise_lib is not None:
+            detection_baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+        if args.amp:
+            detection_baseline_cmd.append("--amp")
+        run(detection_baseline_cmd, repo, logs / "baseline_detection.log")
+        blind_detection = read_json(baseline_path).get("transitflow", {})
+        if "roc_auc" not in blind_detection:
+            raise SystemExit("fair BLS baseline did not produce TransitFlow AUC")
+        synthetic_metrics["oracle_detection"] = synthetic_metrics.get("detection")
+        synthetic_metrics["detection"] = blind_detection
+        synthetic_metrics["detection_candidate_source"] = "bls"
+        synthetic_metrics["detection_baseline"] = str(baseline_path)
+        synthetic_metrics.setdefault("gate_status", {})[
+            "detection_auc_ge_0.99"] = bool(
+                float(blind_detection["roc_auc"]) >= 0.99)
+        metrics_path.write_text(json.dumps(synthetic_metrics, indent=2))
     synthetic_report = build_synthetic_gate_report(
-        read_json(eval_dir / "metrics.json"), split_meta)
+        synthetic_metrics, split_meta)
     synthetic_report["status"]["calibrator_selection_target_disjoint"] = \
         calibrator_selection_disjoint
     synthetic_report["all_declared_synthetic_gates_pass"] = all(
@@ -1183,19 +1213,20 @@ def main() -> None:
         raise SystemExit(
             "external-lockbox synthetic gate failed; downstream baseline, speed, "
             "and real-data stages were not run")
-    baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt",
-                    str(detector_ckpt),
-                    "--n", str(n_detection), "--out", str(results / "bls_vs_transitflow.json"),
-                    "--seed", str(args.eval_seed),
-                    "--candidate-source", args.candidate_source]
-    if eval_noise_lib is not None:
-        baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
-    if args.with_tls_baseline:
-        baseline_cmd.extend(["--with-tls", "--tls-n", str(tls_baseline_n),
-                             "--tls-workers", str(tls_workers), "--tls-threads", "1"])
-    if args.amp:
-        baseline_cmd.append("--amp")
-    run(baseline_cmd, repo, logs / "baseline_detection.log")
+    if not baseline_path.exists():
+        baseline_cmd = [args.python, "scripts/baseline_detection.py", "--ckpt",
+                        str(detector_ckpt), "--n", str(n_detection), "--out",
+                        str(baseline_path), "--seed", str(args.eval_seed),
+                        "--candidate-source", args.candidate_source]
+        if eval_noise_lib is not None:
+            baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+        if args.with_tls_baseline:
+            baseline_cmd.extend(["--with-tls", "--tls-n", str(tls_baseline_n),
+                                 "--tls-workers", str(tls_workers),
+                                 "--tls-threads", "1"])
+        if args.amp:
+            baseline_cmd.append("--amp")
+        run(baseline_cmd, repo, logs / "baseline_detection.log")
     speed_cmd = [args.python, "scripts/benchmark_speed.py", "--ckpt", str(ckpt),
                  "--n-amortized", str(speed_n_amortized), "--n-post", str(n_posterior),
                  "--n-mcmc", str(speed_n_mcmc), "--mcmc-steps", str(speed_mcmc_steps),

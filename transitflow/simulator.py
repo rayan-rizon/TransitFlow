@@ -102,6 +102,9 @@ class SimConfig:
     candidate_harmonic_fraction: float = 0.0
     candidate_bls_negative_fraction: float = 0.0
     candidate_bls_positive_fraction: float = 0.0
+    candidate_bls_backend: str = "lite"  # lite | astropy
+    candidate_bls_subsample: int = 3000
+    candidate_bls_n_periods: int = 200
     candidate_random_positive_fraction: float = 0.0
     candidate_harmonic_factors: tuple[float, ...] = (0.5, 2.0)
     candidate_harmonic_weights: tuple[float, ...] | None = None
@@ -403,9 +406,37 @@ class TransitSimulator:
             if bls_candidate_mask[i]:
                 n_pg = min(cfg.pg_n_raw, len(ti))
                 pg_step = max(1, len(ti) // max(n_pg, 1))
-                fold_P[i], fold_t0[i], duration[i] = bls_lite_candidate(
-                    ti[::pg_step][:n_pg], fi[::pg_step][:n_pg],
-                    self.period_grid, n_phase=cfg.pg_n_phase)
+                backend = str(cfg.candidate_bls_backend).lower()
+                if backend == "lite":
+                    fold_P[i], fold_t0[i], duration[i] = bls_lite_candidate(
+                        ti[::pg_step][:n_pg], fi[::pg_step][:n_pg],
+                        self.period_grid, n_phase=cfg.pg_n_phase)
+                elif backend == "astropy":
+                    # Training candidates must match the blind evaluation
+                    # procedure.  This is deliberately a separate, explicit
+                    # backend because the inexpensive periodogram candidate
+                    # is only an approximation to Astropy BLS.
+                    from .baselines.bls import bls_detect, has_astropy
+                    if not has_astropy():
+                        raise RuntimeError(
+                            "candidate_bls_backend='astropy' requires astropy")
+                    n_bls = min(max(int(cfg.candidate_bls_subsample), 1), len(ti))
+                    bls_step = max(1, len(ti) // n_bls)
+                    p_lo, p_hi = self.prior.specs[0].low, self.prior.specs[0].high
+                    result = bls_detect(
+                        ti[::bls_step][:n_bls], fi[::bls_step][:n_bls],
+                        period_min=float(p_lo), period_max=float(p_hi),
+                        n_periods=max(int(cfg.candidate_bls_n_periods), 8),
+                        durations=np.asarray(
+                            [0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.24],
+                            dtype=np.float64),
+                    )
+                    fold_P[i] = float(result["best_period"])
+                    fold_t0[i] = float(result["best_t0"])
+                    duration[i] = float(result["best_duration"])
+                else:
+                    raise ValueError(
+                        "candidate_bls_backend must be 'lite' or 'astropy'")
             raw_unprocessed[i, ~valid_cad] = np.nan
             raw_for_views[i, ~valid_cad] = np.nan
             if cfg.flatten_views:
