@@ -621,3 +621,12 @@ def test_existing_dataset_accepts_target_uniform_noise_provenance(tmp_path):
 
     assert validate_existing_dataset(
         data_dir, config_path, 20, 10, 3, noise_path) is True
+
+    other_noise_path = tmp_path / "other_noise.npz"
+    np.savez_compressed(
+        other_noise_path,
+        segments=np.full((4, 8), 2.0),
+        target_ids=np.array(["C", "C", "D", "D"]),
+    )
+    assert validate_existing_dataset(
+        data_dir, config_path, 20, 10, 3, other_noise_path) is False

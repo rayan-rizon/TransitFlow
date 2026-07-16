@@ -1095,17 +1095,37 @@ def main() -> None:
                          min_detector_rows)
     detector_data_dir = out_dir / "detector_bls_train"
     detector_val_dir = out_dir / "detector_bls_validation"
-    for detector_dir, detector_rows, detector_seed, label in (
-        (detector_data_dir, detector_n, args.train_seed + 300001, "train"),
-        (detector_val_dir, detector_val_n, args.train_seed + 400001, "validation"),
+    for detector_dir, detector_rows, detector_seed, label, detector_noise_lib in (
+        (detector_data_dir, detector_n, args.train_seed + 300001, "train",
+         train_noise_lib),
+        (detector_val_dir, detector_val_n, args.train_seed + 400001,
+         "validation", validation_noise_lib),
     ):
-        if not list(detector_dir.glob("shard_*.npz")):
+        # Detection checkpoint selection must be target-disjoint from detector
+        # fitting whenever a development split exists.  Independent simulator
+        # seeds alone would still leak source-specific noise morphology.
+        if not validate_existing_dataset(
+                detector_dir, args.config, detector_rows, args.shard_size,
+                detector_seed, detector_noise_lib):
+            stale_shards = list(detector_dir.glob("shard_*.npz"))
+            if stale_shards:
+                raise SystemExit(
+                    "existing all-BLS detector dataset failed provenance "
+                    f"validation: {detector_dir}; remove or relocate it "
+                    "before regenerating")
             run([args.python, "scripts/generate_data.py", "--config", args.config,
                  "--candidate-domain", "bls_detection", "--n", str(detector_rows),
                  "--workers", str(args.workers), "--shard-size", str(args.shard_size),
                  "--out", str(detector_dir), "--seed", str(detector_seed),
-                 *([] if train_noise_lib is None else ["--noise-lib", str(train_noise_lib)])],
+                 *([] if detector_noise_lib is None else [
+                     "--noise-lib", str(detector_noise_lib)])],
                 repo, logs / f"generate_detector_{label}.log")
+            if not validate_existing_dataset(
+                    detector_dir, args.config, detector_rows, args.shard_size,
+                    detector_seed, detector_noise_lib):
+                raise SystemExit(
+                    "generated all-BLS detector dataset failed provenance "
+                    f"validation: {detector_dir}")
         meta = read_json(detector_dir / "dataset_meta.json")
         sim = meta.get("simulator_config", {})
         if (int(meta.get("n_total", 0)) != detector_rows
@@ -1122,11 +1142,21 @@ def main() -> None:
         from _config import build_configs
     expected_steps = int(steps or build_configs(args.config)["train"].n_steps)
     training_provenance = {
-        "schema_version": 1,
+        "schema_version": 2,
         "config_sha256": _sha256_file((repo / args.config).resolve()),
         "dataset_metadata_sha256": _sha256_file(data_dir / "dataset_meta.json"),
         "detector_dataset_metadata_sha256": _sha256_file(detector_data_dir / "dataset_meta.json"),
         "detector_validation_metadata_sha256": _sha256_file(detector_val_dir / "dataset_meta.json"),
+        "detector_train_noise_lib": None if train_noise_lib is None else {
+            "path": str(train_noise_lib),
+            "sha256": _sha256_file(train_noise_lib),
+            "n_targets": len(noise_target_set(train_noise_lib)),
+        },
+        "detector_validation_noise_lib": None if validation_noise_lib is None else {
+            "path": str(validation_noise_lib),
+            "sha256": _sha256_file(validation_noise_lib),
+            "n_targets": len(noise_target_set(validation_noise_lib)),
+        },
         "validation_noise_lib": None if validation_noise_lib is None else {
             "path": str(validation_noise_lib),
             "sha256": _sha256_file(validation_noise_lib),
