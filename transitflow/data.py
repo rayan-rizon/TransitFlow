@@ -18,6 +18,7 @@ from __future__ import annotations
 import glob
 import hashlib
 import json
+import multiprocessing as mp
 import os
 import subprocess
 import time
@@ -34,6 +35,20 @@ _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
 _OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std",
                   "theta_char_prior_normal", "dil_feat", "posterior_valid",
                   "candidate_kind")
+
+
+def _dataset_mp_context() -> mp.context.BaseContext:
+    """Return the process context used for offline dataset generation.
+
+    Dataset workers import PyTorch and may import Astropy's compiled BLS
+    implementation.  Forking after either runtime has initialized threads can
+    deadlock workers on Linux (typically in a futex wait) and leave a partial
+    dataset without an error.  ``spawn`` starts each worker in a clean Python
+    interpreter, which is slower to initialize but is reproducible and safe
+    across all supported platforms.  Shards make that one-time cost negligible
+    relative to generation and preserve resumability after interruption.
+    """
+    return mp.get_context("spawn")
 
 
 def _gen_shard(args) -> str:
@@ -111,9 +126,7 @@ def generate_to_disk(sim_cfg: SimConfig, n_total: int, out_dir: str,
                             seed, noise_lib_path)
 
     if num_workers and num_workers > 1:
-        import multiprocessing as mp
-        import sys
-        ctx = mp.get_context("spawn" if sys.platform == "darwin" else "fork")
+        ctx = _dataset_mp_context()
         with ctx.Pool(num_workers) as pool:
             for k, p in enumerate(pool.imap_unordered(_gen_shard, tasks)):
                 if verbose:

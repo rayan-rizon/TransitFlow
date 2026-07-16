@@ -4,6 +4,7 @@ import numpy as np
 import json
 import os
 
+import transitflow.data as data_module
 from transitflow.data import DiskDataset, DiskIterator, generate_to_disk
 from transitflow.models.transitflow import ModelConfig
 from transitflow.simulator import SimConfig
@@ -20,6 +21,18 @@ def _model_cfg():
     return ModelConfig(embed_dim=32, global_channels=(16, 32), local_channels=(16, 32),
                        global_dim=32, local_dim=16, fm_hidden=48, fm_blocks=2,
                        fm_time_dim=16, det_hidden=32)
+
+
+def test_parallel_dataset_generation_uses_spawn_context(monkeypatch):
+    """Prevent Linux fork deadlocks after scientific runtimes are imported."""
+    requested = []
+    sentinel = object()
+    monkeypatch.setattr(
+        data_module.mp, "get_context",
+        lambda method: requested.append(method) or sentinel,
+    )
+    assert data_module._dataset_mp_context() is sentinel
+    assert requested == ["spawn"]
 
 
 def test_generate_and_load_disk_dataset(tmp_path):
