@@ -947,6 +947,8 @@ def main() -> None:
     ap.add_argument("--speed-n-amortized", type=int, default=None)
     ap.add_argument("--steps", type=int, default=None,
                     help="override training steps; useful for fast metric checks")
+    ap.add_argument("--train-eval-every", type=int, default=None,
+                    help="override checkpoint-validation interval for a development run")
     ap.add_argument("--fast-check", action="store_true",
                     help="short metric-oriented run: smaller data/eval/MCMC, same report schema")
     ap.add_argument(
@@ -1292,6 +1294,7 @@ def main() -> None:
             "n_targets": len(noise_target_set(validation_noise_lib)),
         },
         "posterior_validation_rows": int(posterior_validation_rows),
+        "train_eval_every": args.train_eval_every,
         "train_seed": int(args.train_seed),
         "steps": int(expected_steps),
     }
@@ -1325,6 +1328,8 @@ def main() -> None:
              "--detection-validation-data-dir", str(detector_val_dir),
              "--expect-device", "cuda", "--no-preflight",
              "--seed", str(args.train_seed),
+             *([] if args.train_eval_every is None else [
+                 "--eval-every", str(args.train_eval_every)]),
              *([] if validation_noise_lib is None else [
                  "--noise-lib", str(validation_noise_lib)]),
              *train_steps],
