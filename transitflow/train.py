@@ -68,6 +68,7 @@ class TrainConfig:
     # --- data source ---
     data_source: str = "simulate"            # "simulate" (on the fly) | "disk"
     data_dir: Optional[str] = None           # required when data_source == "disk"
+    validation_data_dir: Optional[str] = None # target-disjoint posterior validation rows
     detection_data_dir: Optional[str] = None # optional BLS-domain detector data
     detection_validation_data_dir: Optional[str] = None
     # --- data prefetch (keeps a GPU fed by the CPU simulator) ---
@@ -284,9 +285,15 @@ def train(
         train_iter = SimulatorIterator(
             TransitSimulator(sim_cfg, noise_library=noise_library),
             train_cfg.batch_size, device, train_cfg.seed)
-    val_simulator = TransitSimulator(sim_cfg, noise_library=noise_library)
-    val_iter = SimulatorIterator(val_simulator, train_cfg.batch_size, device,
-                                 seed=train_cfg.seed + 99991)
+    val_simulator = None
+    if train_cfg.validation_data_dir:
+        from .data import DiskIterator
+        val_iter = DiskIterator(train_cfg.validation_data_dir, train_cfg.batch_size,
+                                device, shuffle=True, seed=train_cfg.seed + 99991)
+    else:
+        val_simulator = TransitSimulator(sim_cfg, noise_library=noise_library)
+        val_iter = SimulatorIterator(val_simulator, train_cfg.batch_size, device,
+                                     seed=train_cfg.seed + 99991)
     detection_iter = None
     detection_val_iter = None
     if train_cfg.detection_data_dir:
@@ -448,6 +455,8 @@ def train(
             print("interrupted — saving latest checkpoint")
     finally:
         train_iter.close()
+        if val_iter is not train_iter:
+            val_iter.close()
         if detection_iter is not None:
             detection_iter.close()
         if detection_val_iter is not None:

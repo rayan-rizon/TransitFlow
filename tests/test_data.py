@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 import transitflow.data as data_module
+import transitflow.train as train_module
 from transitflow.data import DiskDataset, DiskIterator, generate_to_disk
 from transitflow.models.transitflow import ModelConfig
 from transitflow.simulator import SimConfig
@@ -110,6 +111,30 @@ def test_train_from_disk(tmp_path):
                        eval_every=0, log_every=5, warmup_steps=3, tensorboard=False)
     res = train(_model_cfg(), _sim_cfg(), tcfg, verbose=False)
     assert res["history"]["posterior"][-1] < res["history"]["posterior"][0] + 1.0
+
+
+def test_train_uses_disk_posterior_validation(tmp_path, monkeypatch):
+    train_dir = str(tmp_path / "train")
+    val_dir = str(tmp_path / "validation")
+    cfg = _sim_cfg()
+    for out, seed in ((train_dir, 0), (val_dir, 1)):
+        generate_to_disk(cfg, n_total=128, out_dir=out, shard_size=128,
+                         num_workers=1, seed=seed, verbose=False)
+
+    def no_simulator_validation(*_args, **_kwargs):
+        raise AssertionError("on-the-fly validation must not run with a disk split")
+
+    monkeypatch.setattr(train_module, "SimulatorIterator", no_simulator_validation)
+    result = train(
+        _model_cfg(), cfg,
+        TrainConfig(n_steps=2, batch_size=32, device="cpu", data_source="disk",
+                    data_dir=train_dir, validation_data_dir=val_dir,
+                    run_dir=str(tmp_path / "run"), ckpt_every=2, eval_every=1,
+                    eval_batches=1, log_every=1, warmup_steps=1,
+                    tensorboard=False),
+        verbose=False,
+    )
+    assert result["best"]["step"] >= 0
 
 
 def test_train_prior_normal_target_from_disk(tmp_path):

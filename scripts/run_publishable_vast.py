@@ -882,6 +882,8 @@ def main() -> None:
     ap.add_argument("--n-data", type=int, default=1_000_000)
     ap.add_argument("--detector-data-fraction", type=float, default=0.5,
                     help="independent all-BLS detector rows relative to posterior data")
+    ap.add_argument("--posterior-validation-fraction", type=float, default=0.1,
+                    help="target-disjoint posterior rows for checkpoint selection")
     ap.add_argument("--detector-validation-fraction", type=float, default=0.1,
                     help="held-out fraction of detector rows for checkpoint selection")
     ap.add_argument(
@@ -1176,6 +1178,39 @@ def main() -> None:
     # BLS-only detector data physically separate so its provenance cannot be
     # confused with the exact-candidate posterior training set.
     min_detector_rows = min(int(args.shard_size), int(n_data))
+    posterior_validation_rows = max(
+        int(round(n_data * args.posterior_validation_fraction)),
+        min_detector_rows,
+    )
+    posterior_validation_dir = out_dir / "posterior_validation"
+    if not validate_existing_dataset(
+            posterior_validation_dir, args.config, posterior_validation_rows,
+            args.shard_size, args.train_seed + 200001, validation_noise_lib):
+        stale_shards = list(posterior_validation_dir.glob("shard_*.npz"))
+        if stale_shards and not validate_existing_dataset(
+                posterior_validation_dir, args.config, posterior_validation_rows,
+                args.shard_size, args.train_seed + 200001, validation_noise_lib,
+                require_complete=False):
+            raise SystemExit(
+                "existing posterior validation dataset failed provenance "
+                f"validation: {posterior_validation_dir}; remove or relocate it "
+                "before regenerating")
+        validation_cmd = [
+            args.python, "scripts/generate_data.py", "--config", args.config,
+            "--n", str(posterior_validation_rows), "--workers", str(data_workers),
+            "--shard-size", str(args.shard_size), "--out", str(posterior_validation_dir),
+            "--seed", str(args.train_seed + 200001),
+        ]
+        if validation_noise_lib is not None:
+            validation_cmd.extend(["--noise-lib", str(validation_noise_lib)])
+        run(validation_cmd, repo, logs / "generate_posterior_validation.log")
+        if not validate_existing_dataset(
+                posterior_validation_dir, args.config, posterior_validation_rows,
+                args.shard_size, args.train_seed + 200001, validation_noise_lib):
+            raise SystemExit(
+                "generated posterior validation dataset failed provenance "
+                f"validation: {posterior_validation_dir}")
+
     detector_n = max(int(round(n_data * args.detector_data_fraction)),
                      min_detector_rows)
     detector_val_n = max(int(round(detector_n * args.detector_validation_fraction)),
@@ -1234,9 +1269,11 @@ def main() -> None:
         from _config import build_configs
     expected_steps = int(steps or build_configs(args.config)["train"].n_steps)
     training_provenance = {
-        "schema_version": 2,
+        "schema_version": 3,
         "config_sha256": _sha256_file((repo / args.config).resolve()),
         "dataset_metadata_sha256": _sha256_file(data_dir / "dataset_meta.json"),
+        "posterior_validation_metadata_sha256": _sha256_file(
+            posterior_validation_dir / "dataset_meta.json"),
         "detector_dataset_metadata_sha256": _sha256_file(detector_data_dir / "dataset_meta.json"),
         "detector_validation_metadata_sha256": _sha256_file(detector_val_dir / "dataset_meta.json"),
         "detector_train_noise_lib": None if train_noise_lib is None else {
@@ -1254,6 +1291,7 @@ def main() -> None:
             "sha256": _sha256_file(validation_noise_lib),
             "n_targets": len(noise_target_set(validation_noise_lib)),
         },
+        "posterior_validation_rows": int(posterior_validation_rows),
         "train_seed": int(args.train_seed),
         "steps": int(expected_steps),
     }
@@ -1282,6 +1320,7 @@ def main() -> None:
     if not training_already_complete:
         run([args.python, "scripts/train.py", "--config", args.config,
              "--run-dir", str(run_dir), "--data-dir", str(data_dir),
+             "--validation-data-dir", str(posterior_validation_dir),
              "--detection-data-dir", str(detector_data_dir),
              "--detection-validation-data-dir", str(detector_val_dir),
              "--expect-device", "cuda", "--no-preflight",
