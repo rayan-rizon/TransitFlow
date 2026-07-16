@@ -1,0 +1,589 @@
+{
+  "bls_top1_period_recovery_within_1pct": {
+    "fraction": 0.3503267973856209,
+    "n_planets": 1530,
+    "recovered": 536,
+    "wilson95": [
+      0.32682378206389806,
+      0.37457951658462274
+    ]
+  },
+  "candidate_protocol": {
+    "candidate_bls_negative_fraction": 1.0,
+    "candidate_bls_positive_fraction": 1.0,
+    "source": "pre_generated_blind_bls_dataset"
+  },
+  "checkpoint": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/run/checkpoints/best_detection.pt",
+  "data_dir": "/workspace/TransitFlow_strong/results/development_v21_identifiability_data/data",
+  "dataset_config_sha256": "68834ee8b9d0b16b76ffa1ed2119334bc6bf55805a39bad95ffb6af75fe6cf92",
+  "interpretation_rule": "Do not rerun the same detector if low completeness is broad across sources and low-information strata.  First compare a genuinely independent raw-light-curve reference detector or redefine the scientific population using a published completeness domain.",
+  "n": 3000,
+  "noise_library": null,
+  "operating_point": {
+    "empirical_fpr_including_ties": 0.009523809523809525,
+    "predeclared_target_fpr": 0.01,
+    "score_threshold": 0.9903544187545776
+  },
+  "overall": {
+    "average_precision": 0.9165451168614009,
+    "roc_auc": 0.9100506869414432
+  },
+  "overall_completeness": {
+    "average_precision": 0.9165451168614009,
+    "completeness": 0.3503267973856209,
+    "completeness_wilson95": [
+      0.32682378206389806,
+      0.37457951658462274
+    ],
+    "n_negative": 1470,
+    "n_positive": 1530,
+    "recovered": 536,
+    "roc_auc": 0.9100506869414432
+  },
+  "predeclared_strata": {
+    "a_rs": {
+      "10-25": {
+        "average_precision": 0.785252840460095,
+        "completeness": 0.22727272727272727,
+        "completeness_wilson95": [
+          0.19421180183178727,
+          0.2641169396842486
+        ],
+        "n_negative": 1470,
+        "n_positive": 550,
+        "recovered": 125,
+        "roc_auc": 0.9008188002473717
+      },
+      "<10": {
+        "average_precision": 0.8939851702202753,
+        "completeness": 0.43023255813953487,
+        "completeness_wilson95": [
+          0.3990270574449807,
+          0.4620023819691623
+        ],
+        "n_negative": 1470,
+        "n_positive": 946,
+        "recovered": 407,
+        "roc_auc": 0.9170226230026894
+      },
+      ">=25": {
+        "average_precision": 0.17802234867601197,
+        "completeness": 0.11764705882352941,
+        "completeness_wilson95": [
+          0.04671446664882335,
+          0.26620842770371833
+        ],
+        "n_negative": 1470,
+        "n_positive": 34,
+        "recovered": 4,
+        "roc_auc": 0.865406162464986
+      }
+    },
+    "expected_snr": {
+      "25-75": {
+        "average_precision": 0.8955205006641425,
+        "completeness": 0.6666666666666666,
+        "completeness_wilson95": [
+          0.6109375059162319,
+          0.7180966063528653
+        ],
+        "n_negative": 1470,
+        "n_positive": 294,
+        "recovered": 196,
+        "roc_auc": 0.9586676847609792
+      },
+      "<25": {
+        "average_precision": 0.5706580599535392,
+        "completeness": 0.13267326732673268,
+        "completeness_wilson95": [
+          0.10584214627406006,
+          0.165050597293179
+        ],
+        "n_negative": 1470,
+        "n_positive": 505,
+        "recovered": 67,
+        "roc_auc": 0.8031844817134774
+      },
+      ">=75": {
+        "average_precision": 0.926722771545293,
+        "completeness": 0.3734610123119015,
+        "completeness_wilson95": [
+          0.3391420396136532,
+          0.4091029759889012
+        ],
+        "n_negative": 1470,
+        "n_positive": 731,
+        "recovered": 273,
+        "roc_auc": 0.9643243343849167
+      }
+    },
+    "impact_b": {
+      "0.35-0.70": {
+        "average_precision": 0.8543224781619962,
+        "completeness": 0.41139240506329117,
+        "completeness_wilson95": [
+          0.3679777959541563,
+          0.4562316809562173
+        ],
+        "n_negative": 1470,
+        "n_positive": 474,
+        "recovered": 195,
+        "roc_auc": 0.938614770802836
+      },
+      "<0.35": {
+        "average_precision": 0.8852069012761242,
+        "completeness": 0.5063025210084033,
+        "completeness_wilson95": [
+          0.46151834836415384,
+          0.5509857816765187
+        ],
+        "n_negative": 1470,
+        "n_positive": 476,
+        "recovered": 241,
+        "roc_auc": 0.9473689475790316
+      },
+      ">=0.70": {
+        "average_precision": 0.7219283082148388,
+        "completeness": 0.1724137931034483,
+        "completeness_wilson95": [
+          0.14385315415274505,
+          0.20528522192701312
+        ],
+        "n_negative": 1470,
+        "n_positive": 580,
+        "recovered": 100,
+        "roc_auc": 0.8560802251935257
+      }
+    },
+    "period_days": {
+      "3-7": {
+        "average_precision": 0.7575192468280226,
+        "completeness": 0.30512820512820515,
+        "completeness_wilson95": [
+          0.261513387196412,
+          0.3525445120020529
+        ],
+        "n_negative": 1470,
+        "n_positive": 390,
+        "recovered": 119,
+        "roc_auc": 0.8997976626548055
+      },
+      "<3": {
+        "average_precision": 0.8875997218963535,
+        "completeness": 0.4388235294117647,
+        "completeness_wilson95": [
+          0.40581219784729244,
+          0.4723853305982783
+        ],
+        "n_negative": 1470,
+        "n_positive": 850,
+        "recovered": 373,
+        "roc_auc": 0.9181504601840736
+      },
+      ">=7": {
+        "average_precision": 0.6393573150586528,
+        "completeness": 0.15172413793103448,
+        "completeness_wilson95": [
+          0.11500608495490601,
+          0.19754837617965082
+        ],
+        "n_negative": 1470,
+        "n_positive": 290,
+        "recovered": 44,
+        "roc_auc": 0.9000985221674876
+      }
+    },
+    "rprs": {
+      "0.04-0.09": {
+        "average_precision": 0.8840174909273274,
+        "completeness": 0.41098901098901097,
+        "completeness_wilson95": [
+          0.3667092868423677,
+          0.45675914992839683
+        ],
+        "n_negative": 1470,
+        "n_positive": 455,
+        "recovered": 187,
+        "roc_auc": 0.9540599536517904
+      },
+      "<0.04": {
+        "average_precision": 0.8088612043443358,
+        "completeness": 0.38471502590673573,
+        "completeness_wilson95": [
+          0.3510461623092365,
+          0.4195255208919085
+        ],
+        "n_negative": 1470,
+        "n_positive": 772,
+        "recovered": 297,
+        "roc_auc": 0.8700380670402876
+      },
+      ">=0.09": {
+        "average_precision": 0.7468551635249745,
+        "completeness": 0.1716171617161716,
+        "completeness_wilson95": [
+          0.13334065612283696,
+          0.21811595353861157
+        ],
+        "n_negative": 1470,
+        "n_positive": 303,
+        "recovered": 52,
+        "roc_auc": 0.9459105094182888
+      }
+    }
+  },
+  "purpose": "identifiability audit; not a publication gate relaxation",
+  "real_noise_source_strata": {
+    "0": {
+      "average_precision": 0.8827624981760118,
+      "completeness": 0.5675675675675675,
+      "completeness_wilson95": [
+        0.4091418109016808,
+        0.7132828072284269
+      ],
+      "n_negative": 39,
+      "n_positive": 37,
+      "recovered": 21,
+      "roc_auc": 0.8676368676368676
+    },
+    "1": {
+      "average_precision": 0.9734884990593518,
+      "completeness": 0.5,
+      "completeness_wilson95": [
+        0.3552598959637448,
+        0.6447401040362553
+      ],
+      "n_negative": 32,
+      "n_positive": 42,
+      "recovered": 21,
+      "roc_auc": 0.9598214285714286
+    },
+    "10": {
+      "average_precision": 0.9627985641230524,
+      "completeness": 0.35714285714285715,
+      "completeness_wilson95": [
+        0.22989188315618772,
+        0.5083363428054419
+      ],
+      "n_negative": 32,
+      "n_positive": 42,
+      "recovered": 15,
+      "roc_auc": 0.9404761904761905
+    },
+    "11": {
+      "average_precision": 0.9618863962154403,
+      "completeness": 0.5625,
+      "completeness_wilson95": [
+        0.3932559113685198,
+        0.7183466888495963
+      ],
+      "n_negative": 37,
+      "n_positive": 32,
+      "recovered": 18,
+      "roc_auc": 0.9569256756756757
+    },
+    "12": {
+      "average_precision": 0.9787878222042496,
+      "completeness": 0.3,
+      "completeness_wilson95": [
+        0.18074845229746528,
+        0.45430018818144935
+      ],
+      "n_negative": 36,
+      "n_positive": 40,
+      "recovered": 12,
+      "roc_auc": 0.9736111111111111
+    },
+    "13": {
+      "average_precision": 0.9220294450896485,
+      "completeness": 0.3055555555555556,
+      "completeness_wilson95": [
+        0.1800445159482992,
+        0.4685627285051034
+      ],
+      "n_negative": 34,
+      "n_positive": 36,
+      "recovered": 11,
+      "roc_auc": 0.8978758169934641
+    },
+    "14": {
+      "average_precision": 0.9535218937695717,
+      "completeness": 0.38461538461538464,
+      "completeness_wilson95": [
+        0.24891373465561348,
+        0.5410093854307493
+      ],
+      "n_negative": 40,
+      "n_positive": 39,
+      "recovered": 15,
+      "roc_auc": 0.9352564102564103
+    },
+    "15": {
+      "average_precision": 0.9029586420667846,
+      "completeness": 0.3111111111111111,
+      "completeness_wilson95": [
+        0.1952869926365341,
+        0.45664805577366824
+      ],
+      "n_negative": 36,
+      "n_positive": 45,
+      "recovered": 14,
+      "roc_auc": 0.8635802469135803
+    },
+    "16": {
+      "average_precision": 0.9359687735929574,
+      "completeness": 0.43333333333333335,
+      "completeness_wilson95": [
+        0.2737748557646652,
+        0.6080269299918639
+      ],
+      "n_negative": 38,
+      "n_positive": 30,
+      "recovered": 13,
+      "roc_auc": 0.9377192982456141
+    },
+    "17": {
+      "average_precision": 0.9549225940376151,
+      "completeness": 0.5357142857142857,
+      "completeness_wilson95": [
+        0.358126892344679,
+        0.7046843001720462
+      ],
+      "n_negative": 42,
+      "n_positive": 28,
+      "recovered": 15,
+      "roc_auc": 0.9549319727891157
+    },
+    "18": {
+      "average_precision": 0.9092633911967518,
+      "completeness": 0.38095238095238093,
+      "completeness_wilson95": [
+        0.24999725763955144,
+        0.5318595973284732
+      ],
+      "n_negative": 34,
+      "n_positive": 42,
+      "recovered": 16,
+      "roc_auc": 0.8690476190476191
+    },
+    "19": {
+      "average_precision": 0.9492089957680161,
+      "completeness": 0.18604651162790697,
+      "completeness_wilson95": [
+        0.09741751428996226,
+        0.32617003657274385
+      ],
+      "n_negative": 34,
+      "n_positive": 43,
+      "recovered": 8,
+      "roc_auc": 0.926812585499316
+    },
+    "2": {
+      "average_precision": 0.9747921514510468,
+      "completeness": 0.3235294117647059,
+      "completeness_wilson95": [
+        0.1913164356402551,
+        0.49157105406091794
+      ],
+      "n_negative": 31,
+      "n_positive": 34,
+      "recovered": 11,
+      "roc_auc": 0.9639468690702088
+    },
+    "20": {
+      "average_precision": 0.9674485215763702,
+      "completeness": 0.36363636363636365,
+      "completeness_wilson95": [
+        0.23783529708820186,
+        0.5113362312095656
+      ],
+      "n_negative": 36,
+      "n_positive": 44,
+      "recovered": 16,
+      "roc_auc": 0.9532828282828283
+    },
+    "21": {
+      "average_precision": 0.9810707885304659,
+      "completeness": 0.34615384615384615,
+      "completeness_wilson95": [
+        0.19412230322940519,
+        0.5377942881118919
+      ],
+      "n_negative": 31,
+      "n_positive": 26,
+      "recovered": 9,
+      "roc_auc": 0.9813895781637717
+    },
+    "22": {
+      "average_precision": 0.9929527836504581,
+      "completeness": 0.36363636363636365,
+      "completeness_wilson95": [
+        0.2218717823524236,
+        0.5338382169773361
+      ],
+      "n_negative": 33,
+      "n_positive": 33,
+      "recovered": 12,
+      "roc_auc": 0.9908172635445363
+    },
+    "23": {
+      "average_precision": 0.9556773534301548,
+      "completeness": 0.1875,
+      "completeness_wilson95": [
+        0.08889544689565954,
+        0.3530915520137596
+      ],
+      "n_negative": 35,
+      "n_positive": 32,
+      "recovered": 6,
+      "roc_auc": 0.9544642857142858
+    },
+    "24": {
+      "average_precision": 0.9636880657147442,
+      "completeness": 0.375,
+      "completeness_wilson95": [
+        0.22933887309454212,
+        0.5474559264692255
+      ],
+      "n_negative": 24,
+      "n_positive": 32,
+      "recovered": 12,
+      "roc_auc": 0.94140625
+    },
+    "25": {
+      "average_precision": 0.9635538226384772,
+      "completeness": 0.4594594594594595,
+      "completeness_wilson95": [
+        0.3103856980437303,
+        0.6161595310782052
+      ],
+      "n_negative": 28,
+      "n_positive": 37,
+      "recovered": 17,
+      "roc_auc": 0.943050193050193
+    },
+    "26": {
+      "average_precision": 0.9687485350407122,
+      "completeness": 0.34782608695652173,
+      "completeness_wilson95": [
+        0.22680993370754338,
+        0.49229941157937235
+      ],
+      "n_negative": 31,
+      "n_positive": 46,
+      "recovered": 16,
+      "roc_auc": 0.9474053295932678
+    },
+    "27": {
+      "average_precision": 0.9631653671127355,
+      "completeness": 0.43243243243243246,
+      "completeness_wilson95": [
+        0.28671719277157315,
+        0.5908581890983192
+      ],
+      "n_negative": 37,
+      "n_positive": 37,
+      "recovered": 16,
+      "roc_auc": 0.9532505478451424
+    },
+    "28": {
+      "average_precision": 0.8020841863014436,
+      "completeness": 0.6666666666666666,
+      "completeness_wilson95": [
+        0.5155250737683379,
+        0.7898753292764273
+      ],
+      "n_negative": 38,
+      "n_positive": 42,
+      "recovered": 28,
+      "roc_auc": 0.7738095238095238
+    },
+    "3": {
+      "average_precision": 0.9573208729570841,
+      "completeness": 0.1875,
+      "completeness_wilson95": [
+        0.08889544689565954,
+        0.3530915520137596
+      ],
+      "n_negative": 28,
+      "n_positive": 32,
+      "recovered": 6,
+      "roc_auc": 0.9441964285714286
+    },
+    "4": {
+      "average_precision": 0.9582701689844547,
+      "completeness": 0.358974358974359,
+      "completeness_wilson95": [
+        0.22742085458992867,
+        0.5158185144045146
+      ],
+      "n_negative": 46,
+      "n_positive": 39,
+      "recovered": 14,
+      "roc_auc": 0.9526198439241917
+    },
+    "5": {
+      "average_precision": 0.9463540711922137,
+      "completeness": 0.3333333333333333,
+      "completeness_wilson95": [
+        0.19230498083676134,
+        0.5121994835545616
+      ],
+      "n_negative": 49,
+      "n_positive": 30,
+      "recovered": 10,
+      "roc_auc": 0.9585034013605442
+    },
+    "6": {
+      "average_precision": 0.962111087614517,
+      "completeness": 0.3684210526315789,
+      "completeness_wilson95": [
+        0.23384219247155957,
+        0.5271604044299099
+      ],
+      "n_negative": 46,
+      "n_positive": 38,
+      "recovered": 14,
+      "roc_auc": 0.9639588100686499
+    },
+    "7": {
+      "average_precision": 0.9846501457827046,
+      "completeness": 0.4444444444444444,
+      "completeness_wilson95": [
+        0.2954126874008022,
+        0.6041893824430271
+      ],
+      "n_negative": 32,
+      "n_positive": 36,
+      "recovered": 16,
+      "roc_auc": 0.9817708333333334
+    },
+    "8": {
+      "average_precision": 0.9597597265630532,
+      "completeness": 0.40476190476190477,
+      "completeness_wilson95": [
+        0.27042861147481323,
+        0.5550568724996064
+      ],
+      "n_negative": 33,
+      "n_positive": 42,
+      "recovered": 17,
+      "roc_auc": 0.9415584415584416
+    },
+    "9": {
+      "average_precision": 0.9440571185469198,
+      "completeness": 0.23684210526315788,
+      "completeness_wilson95": [
+        0.12993707017054082,
+        0.39206812363239807
+      ],
+      "n_negative": 39,
+      "n_positive": 38,
+      "recovered": 9,
+      "roc_auc": 0.9345479082321188
+    }
+  },
+  "report_schema_version": 1,
+  "seed": 20260716,
+  "source_label_count": 29
+}
