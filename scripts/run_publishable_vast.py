@@ -789,6 +789,10 @@ def main() -> None:
     ap.add_argument("--data-dir", default=None)
     ap.add_argument("--run-dir", default=None)
     ap.add_argument("--n-data", type=int, default=1_000_000)
+    ap.add_argument("--detector-data-fraction", type=float, default=0.5,
+                    help="independent all-BLS detector rows relative to posterior data")
+    ap.add_argument("--detector-validation-fraction", type=float, default=0.1,
+                    help="held-out fraction of detector rows for checkpoint selection")
     ap.add_argument("--workers", type=int, default=16)
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-sbc", type=int, default=1000)
@@ -1039,6 +1043,34 @@ def main() -> None:
                 args.train_seed, train_noise_lib):
             raise SystemExit(f"generated dataset failed validation: {data_dir}")
 
+    # Detection and posterior use different valid conditioning domains.  Keep
+    # BLS-only detector data physically separate so its provenance cannot be
+    # confused with the exact-candidate posterior training set.
+    min_detector_rows = min(int(args.shard_size), int(n_data))
+    detector_n = max(int(round(n_data * args.detector_data_fraction)),
+                     min_detector_rows)
+    detector_val_n = max(int(round(detector_n * args.detector_validation_fraction)),
+                         min_detector_rows)
+    detector_data_dir = out_dir / "detector_bls_train"
+    detector_val_dir = out_dir / "detector_bls_validation"
+    for detector_dir, detector_rows, detector_seed, label in (
+        (detector_data_dir, detector_n, args.train_seed + 300001, "train"),
+        (detector_val_dir, detector_val_n, args.train_seed + 400001, "validation"),
+    ):
+        if not list(detector_dir.glob("shard_*.npz")):
+            run([args.python, "scripts/generate_data.py", "--config", args.config,
+                 "--candidate-domain", "bls_detection", "--n", str(detector_rows),
+                 "--workers", str(args.workers), "--shard-size", str(args.shard_size),
+                 "--out", str(detector_dir), "--seed", str(detector_seed),
+                 *([] if train_noise_lib is None else ["--noise-lib", str(train_noise_lib)])],
+                repo, logs / f"generate_detector_{label}.log")
+        meta = read_json(detector_dir / "dataset_meta.json")
+        sim = meta.get("simulator_config", {})
+        if (int(meta.get("n_total", 0)) != detector_rows
+                or float(sim.get("candidate_bls_positive_fraction", 0.0)) != 1.0
+                or float(sim.get("candidate_bls_negative_fraction", 0.0)) != 1.0):
+            raise SystemExit(f"invalid all-BLS detector dataset provenance: {detector_dir}")
+
     run([args.python, "scripts/preflight.py", "--config", args.config,
          "--expect", "cuda", "--data-dir", str(data_dir)],
         repo, logs / "preflight.log")
@@ -1051,6 +1083,8 @@ def main() -> None:
         "schema_version": 1,
         "config_sha256": _sha256_file((repo / args.config).resolve()),
         "dataset_metadata_sha256": _sha256_file(data_dir / "dataset_meta.json"),
+        "detector_dataset_metadata_sha256": _sha256_file(detector_data_dir / "dataset_meta.json"),
+        "detector_validation_metadata_sha256": _sha256_file(detector_val_dir / "dataset_meta.json"),
         "validation_noise_lib": None if validation_noise_lib is None else {
             "path": str(validation_noise_lib),
             "sha256": _sha256_file(validation_noise_lib),
@@ -1084,6 +1118,8 @@ def main() -> None:
     if not training_already_complete:
         run([args.python, "scripts/train.py", "--config", args.config,
              "--run-dir", str(run_dir), "--data-dir", str(data_dir),
+             "--detection-data-dir", str(detector_data_dir),
+             "--detection-validation-data-dir", str(detector_val_dir),
              "--expect-device", "cuda", "--no-preflight",
              "--seed", str(args.train_seed),
              *([] if validation_noise_lib is None else [
