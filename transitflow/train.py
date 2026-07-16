@@ -168,6 +168,23 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int,
     return out
 
 
+def is_better_detection_checkpoint(candidate: dict, incumbent: dict) -> bool:
+    """Select detector checkpoints by the publication-gate metric.
+
+    ROC-AUC is the primary blinded detection criterion used by the synthetic and
+    publication gates.  Average precision remains a useful secondary diagnostic,
+    but must never select a lower-AUC checkpoint merely because its AP is higher.
+    The AP tie-break makes the selection deterministic without changing the
+    declared primary endpoint.
+    """
+    candidate_auc = float(candidate.get("roc_auc", float("-inf")))
+    incumbent_auc = float(incumbent.get("roc_auc", float("-inf")))
+    if candidate_auc != incumbent_auc:
+        return candidate_auc > incumbent_auc
+    return float(candidate.get("average_precision", float("-inf"))) > float(
+        incumbent.get("average_precision", float("-inf")))
+
+
 # --------------------------------------------------------------------------- #
 # Checkpointing
 # --------------------------------------------------------------------------- #
@@ -430,8 +447,7 @@ def train(
                         save_checkpoint(model, model_cfg, sim_cfg,
                                         os.path.join(ckpt_dir, "best.pt"), opt,
                                         step, history, best, best_detection)
-                if val.get("average_precision", -1) > best_detection.get(
-                        "average_precision", -1):
+                if is_better_detection_checkpoint(val, best_detection):
                     best_detection = {"step": step, **val}
                     if ckpt_dir:
                         save_checkpoint(model, model_cfg, sim_cfg,

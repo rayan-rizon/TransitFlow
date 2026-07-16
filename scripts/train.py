@@ -105,9 +105,8 @@ def main() -> None:
     print(
         "training complete. best posterior val loss:",
         round(result["best"].get("posterior", float("nan")), 4),
-        "| best detection val AP:",
-        round(result["best_detection"].get(
-            "average_precision", float("nan")), 4),
+        "| best detection val ROC-AUC:",
+        round(result["best_detection"].get("roc_auc", float("nan")), 4),
         "| run_dir:", result["run_dir"],
     )
 

@@ -7,7 +7,12 @@ import pytest
 
 from transitflow.models.transitflow import ModelConfig
 from transitflow.simulator import SimConfig
-from transitflow.train import TrainConfig, load_checkpoint, train
+from transitflow.train import (
+    TrainConfig,
+    is_better_detection_checkpoint,
+    load_checkpoint,
+    train,
+)
 
 pytestmark = pytest.mark.slow
 
@@ -20,6 +25,16 @@ def _tiny_cfgs():
                        global_dim=32, local_dim=16, fm_hidden=48, fm_blocks=2,
                        fm_time_dim=16, det_hidden=32)
     return sim, mcfg
+
+
+def test_detection_checkpoint_selection_matches_auc_gate():
+    """A higher AP cannot override the ROC-AUC publication endpoint."""
+    incumbent = {"roc_auc": 0.991, "average_precision": 0.90}
+    lower_auc_higher_ap = {"roc_auc": 0.989, "average_precision": 0.99}
+    equal_auc_higher_ap = {"roc_auc": 0.991, "average_precision": 0.91}
+
+    assert not is_better_detection_checkpoint(lower_auc_higher_ap, incumbent)
+    assert is_better_detection_checkpoint(equal_auc_higher_ap, incumbent)
 
 
 def test_run_dir_artifacts_and_checkpoints(tmp_path):
