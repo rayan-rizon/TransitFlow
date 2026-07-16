@@ -2,7 +2,10 @@ import numpy as np
 import pytest
 
 from transitflow.baselines.bls import bls_detect
-from scripts.baseline_detection import resolved_bls_search_settings
+from scripts.baseline_detection import (
+    resolved_bls_search_settings,
+    uncalibrated_search_summary,
+)
 from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
 from scripts.baseline_detection import (
@@ -123,6 +126,19 @@ def test_tls_bootstrap_reports_transitflow_minus_tls():
     assert result["comparison"] == "TransitFlow minus TLS"
     assert set(result["ci95"]) == {
         "tls_auc", "tf_auc", "auc_gain", "tls_ap", "tf_ap", "ap_gain"}
+
+
+def test_uncalibrated_search_summary_never_serializes_nan_calibration():
+    summary = uncalibrated_search_summary({
+        "roc_auc": 0.7,
+        "average_precision": 0.6,
+        "brier_score": float("nan"),
+        "expected_calibration_error_10bin": float("nan"),
+    })
+    assert summary["roc_auc"] == 0.7
+    assert summary["average_precision"] == 0.6
+    assert summary["brier_score"] is None
+    assert summary["expected_calibration_error_10bin"] is None
 
 
 def test_mcmc_all_fixed_returns_fixed_samples():

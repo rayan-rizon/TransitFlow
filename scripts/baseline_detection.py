@@ -103,6 +103,20 @@ def bootstrap_tls_detection_metrics(labels: np.ndarray, tls_scores: np.ndarray,
     return result
 
 
+def uncalibrated_search_summary(metrics: dict) -> dict:
+    """Serialize rank metrics without mislabelling a search statistic as a probability."""
+    return {
+        "roc_auc": metrics["roc_auc"],
+        "average_precision": metrics["average_precision"],
+        "brier_score": None,
+        "expected_calibration_error_10bin": None,
+        "score_calibration": (
+            "not applicable: BLS/TLS scores are uncalibrated search statistics, "
+            "not probabilities"
+        ),
+    }
+
+
 def prior_for_checkpoint_simulator(sc) -> TransitPrior:
     """Return the prior encoded by a checkpoint's simulator configuration.
 
@@ -360,11 +374,7 @@ def main() -> None:
         "bls": {
             "n_failed": int(len(bls_failures)),
             "failure_examples": bls_failures[:10],
-            "roc_auc": bls_m["roc_auc"],
-            "average_precision": bls_m["average_precision"],
-            "brier_score": bls_m["brier_score"],
-            "expected_calibration_error_10bin":
-                bls_m["expected_calibration_error_10bin"],
+            **uncalibrated_search_summary(bls_m),
         },
         "tls": None if tls_m is None else {
             "n": int(len(tls_labels_arr)),
@@ -374,11 +384,7 @@ def main() -> None:
             "failure_examples": tls_failures[:10],
             "n_no_fit": int((~tls_fit_arr).sum()),
             "no_fit_rate": float((~tls_fit_arr).mean()),
-            "roc_auc": tls_m["roc_auc"],
-            "average_precision": tls_m["average_precision"],
-            "brier_score": tls_m["brier_score"],
-            "expected_calibration_error_10bin":
-                tls_m["expected_calibration_error_10bin"],
+            **uncalibrated_search_summary(tls_m),
         },
         "transitflow": {
             "roc_auc": tf_m["roc_auc"],

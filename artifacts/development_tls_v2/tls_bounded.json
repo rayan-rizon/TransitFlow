@@ -1,0 +1,63 @@
+{
+  "seed": 20260720,
+  "candidate_source": "bls",
+  "checkpoint": "results/development_v16_scale100k_earlyval/run/checkpoints/best_detection.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "n": 64,
+  "noise_lib": "results/development_v16_scale100k_earlyval/noise_splits/noise_eval.npz",
+  "noise_lib_available": true,
+  "n_planets": 30,
+  "n_negatives": 34,
+  "bls": {
+    "n_failed": 0,
+    "failure_examples": [],
+    "roc_auc": 0.611764705882353,
+    "average_precision": 0.5705186393312607,
+    "brier_score": null,
+    "expected_calibration_error_10bin": null,
+    "score_calibration": "not applicable: BLS/TLS scores are uncalibrated search statistics, not probabilities"
+  },
+  "tls": {
+    "n": 64,
+    "paired_with_transitflow": true,
+    "n_failed": 0,
+    "failure_rate": 0.0,
+    "failure_examples": [],
+    "n_no_fit": 7,
+    "no_fit_rate": 0.109375,
+    "roc_auc": 0.5823529411764706,
+    "average_precision": 0.586262021450139,
+    "brier_score": null,
+    "expected_calibration_error_10bin": null,
+    "score_calibration": "not applicable: BLS/TLS scores are uncalibrated search statistics, not probabilities"
+  },
+  "transitflow": {
+    "roc_auc": 0.9764705882352941,
+    "average_precision": 0.976185504900871,
+    "brier_score": 0.06703323739074424,
+    "expected_calibration_error_10bin": 0.08156477011107198
+  },
+  "auc_gain": 0.3647058823529411,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "bls_subsample": 3000,
+  "bls_n_periods": 200,
+  "tls_backend": "transitleastsquares",
+  "tls_requested": true,
+  "tls_workers": 8,
+  "tls_threads": 1,
+  "uncertainty": {},
+  "tls_uncertainty": {},
+  "candidate_period_recovery": {
+    "n_planets": 30,
+    "median_abs_fractional_error": 1.2120788311055237,
+    "within_1pct": 0.36666666666666664
+  },
+  "tls_candidate_period_recovery": {
+    "n_planets": 27,
+    "median_abs_fractional_error": 0.0007035594947171209,
+    "within_1pct": 0.5555555555555556
+  },
+  "score_data": "results/development_tls_v2/tls_bounded.scores.npz"
+}
