@@ -39,10 +39,12 @@ def main() -> None:
     ap.add_argument("--shard-size", type=int, default=50000)
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--candidate-domain", choices=("publication", "bls_detection"),
+    ap.add_argument("--candidate-domain", choices=(
+        "publication", "bls_detection", "raw_detection"),
                     default="publication",
                     help="publication keeps posterior-capable exact rows; "
-                    "bls_detection uses Astropy-BLS candidates for both labels")
+                    "bls_detection uses Astropy-BLS candidates for both labels; "
+                    "raw_detection is candidate-free Stage-A evidence data")
     args = ap.parse_args()
 
     cfg = build_configs(args.config)
@@ -56,6 +58,9 @@ def main() -> None:
         sim_cfg.candidate_jitter_fraction = 0.0
         sim_cfg.candidate_harmonic_fraction = 0.0
         sim_cfg.candidate_random_positive_fraction = 0.0
+    elif args.candidate_domain == "raw_detection":
+        from transitflow.raw_detection import raw_detector_sim_config
+        sim_cfg = raw_detector_sim_config(sim_cfg)
     print(f"generating {args.n:,} light curves "
           f"(n_global={sim_cfg.n_global}, n_local={sim_cfg.n_local}, "
           f"n_raw={sim_cfg.n_raw}) with {args.workers} workers -> {args.out}")
