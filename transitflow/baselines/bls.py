@@ -48,8 +48,68 @@ def bls_detect(times: np.ndarray, flux: np.ndarray,
                 "best_period": float(res.period[i]),
                 "best_t0": float(res.transit_time[i]),
                 "best_duration": float(res.duration[i]),
-                "power": power, "periods": periods}
+                "power": power, "periods": periods,
+                "transit_times": np.asarray(res.transit_time, dtype=float),
+                "trial_durations": np.asarray(res.duration, dtype=float)}
     return _bls_native(times, flux, periods, durations)
+
+
+def bls_top_candidates(
+    times: np.ndarray,
+    flux: np.ndarray,
+    period_min: float = 0.5,
+    period_max: float = 13.0,
+    n_periods: int = 2000,
+    durations: np.ndarray | None = None,
+    top_k: int = 3,
+    min_log_period_separation: float = 0.025,
+) -> list[dict]:
+    """Return distinct BLS hypotheses, not only the strongest grid point.
+
+    Nearby points on a period grid describe the same hypothesis. We suppress
+    only those local duplicates in log-period; harmonics remain separate so a
+    downstream vetter can adjudicate them. The score is a within-light-curve
+    SDE, never a calibrated probability.
+    """
+    if top_k < 1:
+        raise ValueError("top_k must be at least one")
+    if min_log_period_separation < 0:
+        raise ValueError("min_log_period_separation must be non-negative")
+    result = bls_detect(
+        times, flux, period_min=period_min, period_max=period_max,
+        n_periods=n_periods, durations=durations,
+    )
+    power = np.asarray(result["power"], dtype=float)
+    periods = np.asarray(result["periods"], dtype=float)
+    trial_t0 = np.asarray(result["transit_times"], dtype=float)
+    trial_duration = np.asarray(result["trial_durations"], dtype=float)
+    if not (len(power) == len(periods) == len(trial_t0) == len(trial_duration)):
+        raise RuntimeError("BLS trial arrays have inconsistent lengths")
+    finite = np.isfinite(power) & np.isfinite(periods) & (periods > 0)
+    scale = float(np.std(power[finite])) if finite.any() else 0.0
+    center = float(np.median(power[finite])) if finite.any() else 0.0
+    accepted: list[int] = []
+    for idx in np.argsort(np.where(finite, power, -np.inf))[::-1]:
+        if not finite[idx]:
+            continue
+        log_period = float(np.log(periods[idx]))
+        if any(abs(log_period - float(np.log(periods[j]))) < min_log_period_separation
+               for j in accepted):
+            continue
+        accepted.append(int(idx))
+        if len(accepted) == top_k:
+            break
+    return [
+        {
+            "rank": rank,
+            "score": float((power[idx] - center) / scale) if scale > 0 else 0.0,
+            "peak_power": float(power[idx]),
+            "best_period": float(periods[idx]),
+            "best_t0": float(trial_t0[idx]),
+            "best_duration": float(trial_duration[idx]),
+        }
+        for rank, idx in enumerate(accepted, start=1)
+    ]
 
 
 def _bls_native(times, flux, periods, durations) -> dict:
@@ -58,6 +118,8 @@ def _bls_native(times, flux, periods, durations) -> dict:
     best_power, best_p = -np.inf, periods[0]
     best_t0, best_duration = float(times[0]), float(durations[0])
     powers = np.empty(len(periods))
+    trial_t0 = np.empty(len(periods))
+    trial_duration = np.empty(len(periods))
     for k, P in enumerate(periods):
         phase = (times / P) % 1.0
         order = np.argsort(phase)
@@ -80,6 +142,8 @@ def _bls_native(times, flux, periods, durations) -> dict:
                     best_here_t0 = float(c * P)
                     best_here_duration = float(dur)
         powers[k] = best_here
+        trial_t0[k] = best_here_t0
+        trial_duration[k] = best_here_duration
         if best_here > best_power:
             best_power, best_p = best_here, P
             best_t0, best_duration = best_here_t0, best_here_duration
@@ -87,7 +151,8 @@ def _bls_native(times, flux, periods, durations) -> dict:
             "best_period": float(best_p),
             "best_t0": float(best_t0),
             "best_duration": float(best_duration),
-            "power": powers, "periods": periods}
+            "power": powers, "periods": periods,
+            "transit_times": trial_t0, "trial_durations": trial_duration}
 
 
 def has_astropy() -> bool:
