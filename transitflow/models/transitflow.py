@@ -32,6 +32,13 @@ class ModelConfig:
     use_noise_feature: bool = True
     use_periodogram: bool = False          # box-periodogram branch (period info)
     use_ephemeris_feature: bool = False    # candidate (P, t0_phase) conditioning
+    # Detection is a property of the light curve, not of the ephemeris proposed
+    # by a search routine.  When enabled, the detection head receives the same
+    # views/features as the posterior but with the candidate (P, t0) feature
+    # anchored to its neutral zero value.  The posterior remains explicitly
+    # candidate-conditioned.  This prevents a noisy BLS candidate from acting
+    # as an unintended detection shortcut.
+    detection_ephemeris_invariant: bool = False
     use_dilution_feature: bool = False     # third-light/crowding conditioning
     posterior_transform: str = "standardized"  # standardized | prior_normal
     # embedding
@@ -105,6 +112,38 @@ class TransitFlow(nn.Module):
 
     def detect_logits(self, e: torch.Tensor) -> torch.Tensor:
         return self.detection(e)
+
+    def detection_embed(self, global_view: torch.Tensor, local_view: torch.Tensor,
+                        noise_feature: torch.Tensor | None = None,
+                        periodogram: torch.Tensor | None = None,
+                        ephemeris_feature: torch.Tensor | None = None,
+                        dilution_feature: torch.Tensor | None = None) -> torch.Tensor:
+        """Return the embedding used by the detection head.
+
+        In the publication configuration the posterior is conditioned on the
+        proposed ephemeris, but detection is deliberately invariant to that
+        proposal.  The zero vector is the standardized neutral reference and
+        is used during *training* as well, so inference never introduces an
+        unseen feature value.
+        """
+        if (self.cfg.detection_ephemeris_invariant
+                and self.cfg.use_ephemeris_feature):
+            ephemeris_feature = torch.zeros(
+                global_view.shape[0], 2, device=global_view.device,
+                dtype=global_view.dtype)
+        return self.embed(global_view, local_view, noise_feature, periodogram,
+                          ephemeris_feature, dilution_feature)
+
+    def detect_logits_from_inputs(
+            self, global_view: torch.Tensor, local_view: torch.Tensor,
+            noise_feature: torch.Tensor | None = None,
+            periodogram: torch.Tensor | None = None,
+            ephemeris_feature: torch.Tensor | None = None,
+            dilution_feature: torch.Tensor | None = None) -> torch.Tensor:
+        """Detection logits with the configured candidate-invariance policy."""
+        return self.detect_logits(self.detection_embed(
+            global_view, local_view, noise_feature, periodogram,
+            ephemeris_feature, dilution_feature))
 
     # ---- flow-matching velocity, with the param_dim attribute samplers need ----
     def velocity(self, tau: torch.Tensor, theta: torch.Tensor,

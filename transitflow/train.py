@@ -95,7 +95,8 @@ def compute_losses(model: TransitFlow, batch: dict, lambda_det: float) -> dict:
     eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
     dil = batch.get("dil_feat") if model.cfg.use_dilution_feature else None
     e = model.embed(batch["global"], batch["local"], noise_feat, pg, eph, dil)
-    det_logits = model.detect_logits(e)
+    det_logits = model.detect_logits_from_inputs(
+        batch["global"], batch["local"], noise_feat, pg, eph, dil)
     d = batch["d"].float()
     l_det = F.binary_cross_entropy_with_logits(det_logits, d)
 
@@ -135,8 +136,8 @@ def evaluate(model: TransitFlow, val_iter, cfg: TrainConfig, n_batches: int) -> 
         pg = batch.get("periodogram") if model.cfg.use_periodogram else None
         eph = batch.get("ephem_feat") if model.cfg.use_ephemeris_feature else None
         dil = batch.get("dil_feat") if model.cfg.use_dilution_feature else None
-        e = model.embed(batch["global"], batch["local"], noise_feat, pg, eph, dil)
-        prob = torch.sigmoid(model.detect_logits(e))
+        prob = torch.sigmoid(model.detect_logits_from_inputs(
+            batch["global"], batch["local"], noise_feat, pg, eph, dil))
         agg["det_acc"] += float(((prob > 0.5).long() == batch["d"]).float().mean())
         all_d.append(batch["d"].cpu().numpy())
         all_p.append(prob.cpu().numpy())

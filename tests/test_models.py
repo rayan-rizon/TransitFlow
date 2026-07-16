@@ -50,3 +50,29 @@ def test_num_parameters(tiny_model_cfg):
     model = TransitFlow(tiny_model_cfg)
     assert model.num_parameters() > 0
     assert model.param_dim == 7
+
+
+def test_detection_embedding_can_be_ephemeris_invariant(
+        fast_simulator, rng):
+    """Candidate ephemerides may condition posteriors, never detection logits."""
+    cfg = ModelConfig(
+        param_dim=5, embed_dim=32, use_noise_feature=True,
+        use_ephemeris_feature=True, detection_ephemeris_invariant=True,
+        global_channels=(8, 16), local_channels=(8, 16),
+        global_dim=16, local_dim=16, det_hidden=16, fm_hidden=32,
+        fm_blocks=2, fm_time_dim=16)
+    model = TransitFlow(cfg).eval()
+    batch = _batch_t(fast_simulator, rng, n=4)
+    eph_a = batch["ephem_feat"]
+    eph_b = eph_a + 3.0
+    with torch.no_grad():
+        posterior_a = model.embed(batch["global"], batch["local"],
+                                  batch["sigma_feat"], None, eph_a)
+        posterior_b = model.embed(batch["global"], batch["local"],
+                                  batch["sigma_feat"], None, eph_b)
+        detection_a = model.detect_logits_from_inputs(
+            batch["global"], batch["local"], batch["sigma_feat"], None, eph_a)
+        detection_b = model.detect_logits_from_inputs(
+            batch["global"], batch["local"], batch["sigma_feat"], None, eph_b)
+    assert not torch.allclose(posterior_a, posterior_b)
+    assert torch.allclose(detection_a, detection_b)

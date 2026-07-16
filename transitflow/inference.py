@@ -148,11 +148,46 @@ class TransitFlowInference:
         return e.float()
 
     @torch.no_grad()
+    def detection_embed(self, global_view, local_view, sigma_feat=None,
+                        periodogram=None, ephem_feat=None, dil_feat=None) -> torch.Tensor:
+        """Embedding for detection, respecting candidate-invariance policy."""
+        g = self._to_t(global_view)
+        l = self._to_t(local_view)
+        if g.ndim == 1:
+            g, l = g[None], l[None]
+        nf = None
+        if self.model.cfg.use_noise_feature:
+            nf = self._to_t(sigma_feat) if sigma_feat is not None else \
+                torch.zeros(g.shape[0], device=self.device)
+        pg = None
+        if self.model.cfg.use_periodogram:
+            if periodogram is None:
+                raise ValueError("model expects a periodogram input")
+            pg = self._to_t(periodogram)
+            if pg.ndim == 1:
+                pg = pg[None]
+        eph = None
+        if self.model.cfg.use_ephemeris_feature:
+            if ephem_feat is None:
+                raise ValueError("model expects ephem_feat input")
+            eph = self._to_t(ephem_feat)
+            if eph.ndim == 1:
+                eph = eph[None]
+        dil = None
+        if getattr(self.model.cfg, "use_dilution_feature", False):
+            dil = self._to_t(dil_feat) if dil_feat is not None else \
+                torch.zeros(g.shape[0], device=self.device)
+            dil = dil.reshape(-1)
+        with self._autocast():
+            e = self.model.detection_embed(g, l, nf, pg, eph, dil)
+        return e.float()
+
+    @torch.no_grad()
     def detect(self, global_view, local_view, sigma_feat=None,
                periodogram=None, ephem_feat=None, dil_feat=None) -> np.ndarray:
         with torch.inference_mode():
-            e = self.embed(global_view, local_view, sigma_feat, periodogram,
-                           ephem_feat, dil_feat)
+            e = self.detection_embed(global_view, local_view, sigma_feat,
+                                     periodogram, ephem_feat, dil_feat)
             with self._autocast():
                 logits = self.model.detect_logits(e)
             return torch.sigmoid(logits.float()).cpu().numpy()
@@ -190,8 +225,11 @@ class TransitFlowInference:
         with torch.inference_mode():
             e = self.embed(global_view, local_view, sigma_feat, periodogram,
                            ephem_feat, dil_feat)
+            e_det = self.detection_embed(
+                global_view, local_view, sigma_feat, periodogram,
+                ephem_feat, dil_feat)
             with self._autocast():
-                logits = self.model.detect_logits(e)
+                logits = self.model.detect_logits(e_det)
                 if self.model.head_type == "fmpe":
                     std = sample_ode(self.model.velocity_fn(), e, n_samples,
                                      n_steps=self.ode_steps, method=self.ode_method)
