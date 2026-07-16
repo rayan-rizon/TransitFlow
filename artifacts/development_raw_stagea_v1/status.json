@@ -1,0 +1,23 @@
+{
+  "best": {
+    "average_precision": 0.9073780893407923,
+    "brier_score": 0.13439076729065558,
+    "expected_calibration_error_10bin": 0.061214824358622216,
+    "roc_auc": 0.9007238202627877,
+    "step": 500
+  },
+  "development_only": true,
+  "device": "cuda",
+  "elapsed_s": 39.278703451156616,
+  "loss": 0.07841767370700836,
+  "status": "done",
+  "step": 1500,
+  "total_steps": 1500,
+  "validation": {
+    "average_precision": 0.81777630442771,
+    "brier_score": 0.19515807674122962,
+    "expected_calibration_error_10bin": 0.1806521814179917,
+    "roc_auc": 0.8572385805670778,
+    "step": 1500
+  }
+}
