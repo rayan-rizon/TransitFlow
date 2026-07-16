@@ -251,7 +251,7 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
                     shard_schema_valid = False
                     break
         return bool(
-            int(meta.get("dataset_schema_version", -1)) == 2
+            int(meta.get("dataset_schema_version", -1)) == 3
             and set(meta.get("posterior_target_fields", [])) >= {
                 "theta_char_std", "theta_char_prior_normal"}
             and int(meta.get("n_total", -1)) == n_total
@@ -261,6 +261,9 @@ def validate_existing_dataset(data_dir: Path, config_path: str, n_total: int,
             and meta.get("config_hash") == expected_hash
             and meta.get("noise_lib_sha256") == _sha256_file(noise_lib)
             and meta.get("noise_sampling_unit") == expected_sampling_unit
+            and isinstance(meta.get("noise_provenance"), dict)
+            and meta["noise_provenance"].get("field") == "noise_source_index"
+            and meta["noise_provenance"].get("model_input") is False
             and (actual_names == expected_names if require_complete
                  else actual_names.issubset(expected_names))
             and all((data_dir / name).stat().st_size > 0 for name in names_to_validate)

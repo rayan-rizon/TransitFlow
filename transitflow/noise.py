@@ -204,7 +204,39 @@ class NoiseLibrary:
             return cls(None)
 
     def draw(self, B: int, n: int, rng: np.random.Generator) -> np.ndarray:
-        """Draw ``B`` real OOT segments of length ``n`` (random start offsets)."""
+        """Draw ``B`` real OOT segments of length ``n`` (random start offsets).
+
+        This compatibility wrapper intentionally drops provenance.  New
+        simulation code should use :meth:`draw_with_provenance` so a result can
+        be audited by its independently-held source target without making that
+        identity a model input.
+        """
+        out, _ = self.draw_with_provenance(B, n, rng)
+        return out
+
+    @property
+    def source_labels(self) -> tuple[str, ...]:
+        """Stable source-target labels for provenance metadata.
+
+        An empty tuple means the legacy library lacks target identities.  Such
+        a library may still be used for exploratory work, but cannot support a
+        source-stratified publication claim.
+        """
+        if not self._target_groups or self.target_ids is None:
+            return ()
+        return tuple(str(x) for x in np.unique(self.target_ids))
+
+    def draw_with_provenance(
+            self, B: int, n: int, rng: np.random.Generator,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Draw real OOT segments and their source-target indices.
+
+        ``source_index`` is an audit-only integer into :attr:`source_labels`.
+        It is ``-1`` for a legacy library with no target identities.  It must
+        never be passed to the learned model: retaining it solely alongside
+        labels lets evaluations distinguish target-domain failure from
+        population-wide observational overlap without identity leakage.
+        """
         if not self.available():
             raise RuntimeError("NoiseLibrary is empty")
         K, L = self.segments.shape
@@ -219,8 +251,10 @@ class NoiseLibrary:
                 dtype=np.int64,
                 count=B,
             )
+            source_index = group_idx.astype(np.int32, copy=False)
         else:
             idx = rng.integers(0, K, size=B)
+            source_index = np.full(B, -1, dtype=np.int32)
         out = np.empty((B, n), dtype=np.float64)
         for i, k in enumerate(idx):
             if L >= n:
@@ -229,4 +263,4 @@ class NoiseLibrary:
             else:  # tile if a cached segment is shorter than requested
                 reps = int(np.ceil(n / L))
                 out[i] = np.tile(self.segments[k], reps)[:n]
-        return out
+        return out, source_index

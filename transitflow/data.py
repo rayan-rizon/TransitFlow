@@ -32,7 +32,7 @@ from .simulator import SimConfig, TransitSimulator
 _SHARD_KEYS = ("global", "local", "theta_std", "d", "sigma_feat")
 _OPTIONAL_KEYS = ("periodogram", "ephem_feat", "theta_char_std",
                   "theta_char_prior_normal", "dil_feat", "posterior_valid",
-                  "candidate_kind")
+                  "candidate_kind", "regime", "noise_source_index")
 
 
 def _dataset_mp_context() -> mp.context.BaseContext:
@@ -57,8 +57,8 @@ def _gen_shard(args) -> str:
         return path  # resumable: skip finished shards
     sim = TransitSimulator(sim_cfg, noise_library=NoiseLibrary.load(noise_lib_path))
     rng = np.random.default_rng(seed)
-    g, l, th, thc, thn, d, sf, pg, ef, df, pv, ck = (
-        [], [], [], [], [], [], [], [], [], [], [], [])
+    g, l, th, thc, thn, d, sf, pg, ef, df, pv, ck, rg, nsi = (
+        [], [], [], [], [], [], [], [], [], [], [], [], [], [])
     done = 0
     while done < n:
         bs = min(gen_batch, n - done)
@@ -78,6 +78,8 @@ def _gen_shard(args) -> str:
             df.append(b["dil_feat"].astype(np.float16))
         pv.append(b["posterior_valid"].astype(np.int8))
         ck.append(b["candidate_kind"].astype(np.int8))
+        rg.append(b["regime"].astype(np.int8))
+        nsi.append(b["noise_source_index"].astype(np.int32))
         done += bs
     payload = {
         "global": np.concatenate(g), "local": np.concatenate(l),
@@ -87,6 +89,8 @@ def _gen_shard(args) -> str:
         "theta_char_prior_normal": np.concatenate(thn),
         "posterior_valid": np.concatenate(pv),
         "candidate_kind": np.concatenate(ck),
+        "regime": np.concatenate(rg),
+        "noise_source_index": np.concatenate(nsi),
     }
     if pg:
         payload["periodogram"] = np.concatenate(pg)
@@ -166,9 +170,10 @@ def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
                             noise_lib_path: str | None) -> None:
     cfg = asdict(sim_cfg)
     cfg_json = json.dumps(cfg, sort_keys=True)
-    noise_sampling_unit = NoiseLibrary.load(noise_lib_path).sampling_unit
+    noise_library = NoiseLibrary.load(noise_lib_path)
+    noise_sampling_unit = noise_library.sampling_unit
     metadata = {
-        "dataset_schema_version": 2,
+        "dataset_schema_version": 3,
         "posterior_target_fields": [
             "theta_char_std", "theta_char_prior_normal"],
         "created_unix": time.time(),
@@ -184,6 +189,15 @@ def _write_dataset_metadata(out_dir: str, sim_cfg: SimConfig, n_total: int,
         "noise_lib_path": noise_lib_path,
         "noise_lib_sha256": _sha256_file(noise_lib_path),
         "noise_sampling_unit": noise_sampling_unit,
+        # Labels are metadata, not features.  Shards retain compact indices so
+        # source-stratified checks are possible without duplicating strings per
+        # row or leaking source identity into training.
+        "noise_provenance": {
+            "field": "noise_source_index",
+            "labels": list(noise_library.source_labels),
+            "synthetic_or_unidentified_value": -1,
+            "model_input": False,
+        },
         "realism_flags": {
             "finite_exposure": bool(
                 cfg.get("exposure_minutes", 0.0) > 0

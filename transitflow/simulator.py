@@ -382,9 +382,16 @@ class TransitSimulator:
             flux[gp_mask] += cn
         # real-noise injection (multiplicative real OOT segment)
         real_mask = regime == 0
+        # Audit-only provenance.  It is deliberately absent from all model
+        # conditioning paths; a source identifier is useful for held-out
+        # domain diagnostics but would be unacceptable target-identity leakage
+        # if learned from.
+        noise_source_index = np.full(B, -1, dtype=np.int32)
         if real_mask.any():
-            seg = self.noise_library.draw(int(real_mask.sum()), cfg.n_raw, rng)
+            seg, source_index = self.noise_library.draw_with_provenance(
+                int(real_mask.sum()), cfg.n_raw, rng)
             flux[real_mask] *= seg
+            noise_source_index[real_mask] = source_index
             sigma_white[real_mask] = np.clip(
                 estimate_white_sigma(seg),
                 10.0 ** cfg.sigma_white_log10_low,
@@ -520,6 +527,7 @@ class TransitSimulator:
             "fold_t0": fold_t0.astype(np.float32),
             "duration": duration.astype(np.float32),
             "regime": regime.astype(np.int8),  # 0 real, 1 gp, 2 white
+            "noise_source_index": noise_source_index,
             "dilution": dilution.astype(np.float32),
             "dil_feat": dil_feat,
             "cadence_mask": gap_mask,

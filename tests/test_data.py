@@ -85,6 +85,10 @@ def test_generate_and_load_disk_dataset(tmp_path):
     assert meta["n_shards"] == 3
     assert "config_hash" in meta
     assert meta["noise_sampling_unit"] == "synthetic_only"
+    assert meta["dataset_schema_version"] == 3
+    assert meta["noise_provenance"]["field"] == "noise_source_index"
+    assert meta["noise_provenance"]["model_input"] is False
+    assert "noise_source_index" in ds.keys
     assert meta["realism_flags"]["finite_exposure"] is False
 
 

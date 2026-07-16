@@ -213,6 +213,9 @@ def test_real_noise_sigma_feature_uses_drawn_segment(prior):
     assert b["sigma"].min() >= expected_sigma.min() * 0.8
     assert b["sigma"].max() <= expected_sigma.max() * 1.2
     assert b["sigma_feat"].std() < 0.2
+    # A legacy noise library has no source identities and must say so rather
+    # than inventing provenance.
+    assert set(np.unique(b["noise_source_index"])) == {-1}
 
 
 def test_dilution_attenuates_transit_depth(prior):

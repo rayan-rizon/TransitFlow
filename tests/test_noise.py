@@ -76,6 +76,18 @@ def test_noise_library_draws_source_targets_uniformly(tmp_path):
     assert 0.47 < fraction_b < 0.53
 
 
+def test_noise_library_provenance_tracks_uniform_source_draws():
+    segments = np.concatenate([np.ones((10, 16)), np.full((1, 16), 2.0)])
+    lib = NoiseLibrary(segments, np.array(["A"] * 10 + ["B"]))
+    drawn, source_index = lib.draw_with_provenance(
+        6000, 16, np.random.default_rng(8))
+
+    assert lib.source_labels == ("A", "B")
+    assert np.all(drawn[source_index == 0, 0] == 1.0)
+    assert np.all(drawn[source_index == 1, 0] == 2.0)
+    assert 0.47 < np.mean(source_index == 1) < 0.53
+
+
 def test_estimate_white_sigma_ignores_slow_trend():
     rng = np.random.default_rng(3)
     sigma = 0.002
