@@ -30,6 +30,11 @@ def test_raw_detector_config_disables_all_candidate_paths():
     assert raw.candidate_jitter_fraction == 0.0
 
 
+def test_raw_detector_allows_a_bounded_periodogram_smoke_resolution():
+    raw = raw_detector_sim_config(SimConfig(), n_period_bins=256)
+    assert raw.n_period_bins == 256
+
+
 def test_raw_dataset_validator_rejects_candidate_leakage(tmp_path):
     meta = {
         "dataset_schema_version": 3,

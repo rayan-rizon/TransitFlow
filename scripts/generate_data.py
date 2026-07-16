@@ -39,6 +39,11 @@ def main() -> None:
     ap.add_argument("--shard-size", type=int, default=50000)
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument(
+        "--raw-period-bins", type=int, default=256,
+        help="candidate-free periodogram bins for raw_detection; use a bounded "
+             "development resolution before any higher-resolution sweep",
+    )
     ap.add_argument("--candidate-domain", choices=(
         "publication", "bls_detection", "raw_detection"),
                     default="publication",
@@ -60,7 +65,8 @@ def main() -> None:
         sim_cfg.candidate_random_positive_fraction = 0.0
     elif args.candidate_domain == "raw_detection":
         from transitflow.raw_detection import raw_detector_sim_config
-        sim_cfg = raw_detector_sim_config(sim_cfg)
+        sim_cfg = raw_detector_sim_config(
+            sim_cfg, n_period_bins=args.raw_period_bins)
     print(f"generating {args.n:,} light curves "
           f"(n_global={sim_cfg.n_global}, n_local={sim_cfg.n_local}, "
           f"n_raw={sim_cfg.n_raw}) with {args.workers} workers -> {args.out}")
