@@ -109,14 +109,32 @@ def prior_for_checkpoint_simulator(sc) -> TransitPrior:
     return TransitPrior.from_sim_config(sc)
 
 
+def resolved_bls_search_settings(sc, bls_subsample: int | None,
+                                 n_periods: int | None) -> tuple[int, int]:
+    """Use the checkpoint's BLS proposal unless explicitly overridden.
+
+    The detector is evaluated after a BLS proposal.  Its training candidate
+    distribution is encoded in the checkpoint simulator configuration, so the
+    fair blind comparator must inherit those settings rather than retain stale
+    command-line defaults.
+    """
+    return (
+        max(1, int(sc.candidate_bls_subsample if bls_subsample is None
+                   else bls_subsample)),
+        max(8, int(sc.candidate_bls_n_periods if n_periods is None
+                   else n_periods)),
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default="runs/fmpe_pg/checkpoints/latest.pt")
     ap.add_argument("--n", type=int, default=3000)
     ap.add_argument("--batch", type=int, default=128)
-    ap.add_argument("--bls-subsample", type=int, default=3000,
-                    help="downsample raw LC to this many points for BLS/TLS speed")
-    ap.add_argument("--n-periods", type=int, default=200)
+    ap.add_argument("--bls-subsample", type=int, default=None,
+                    help="override checkpoint BLS cadence subsample")
+    ap.add_argument("--n-periods", type=int, default=None,
+                    help="override checkpoint BLS period-grid size")
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--with-tls", action="store_true",
                     help="also run Transit Least Squares on a bounded subset")
@@ -142,6 +160,8 @@ def main() -> None:
     set_seed(args.seed)
 
     model, _, sc = load_checkpoint(args.ckpt)
+    bls_subsample, n_periods = resolved_bls_search_settings(
+        sc, args.bls_subsample, args.n_periods)
     prior = prior_for_checkpoint_simulator(sc)
     noise_library = NoiseLibrary.load(args.noise_lib)
     if args.noise_lib and not noise_library.available():
@@ -154,7 +174,7 @@ def main() -> None:
     t_full = np.asarray(sim.times, dtype=np.float64)
     if getattr(sc, "exposure_minutes", 0.0) > 0:
         t_full = t_full + 0.5 * (sc.exposure_minutes / (24.0 * max(sc.n_exposure_subsamples, 1)))
-    step = max(1, len(t_full) // max(1, args.bls_subsample))
+    step = max(1, len(t_full) // bls_subsample)
     t_bls = t_full[::step]
     bls_durations = np.asarray(
         [0.04, 0.06, 0.08, 0.10, 0.14, 0.18, 0.24],
@@ -204,7 +224,7 @@ def main() -> None:
                     f_i[ok],
                     period_min=float(p_lo),
                     period_max=float(p_hi),
-                    n_periods=args.n_periods,
+                    n_periods=n_periods,
                     durations=bls_durations,
                 )
                 bls_scores.append(float(res["score"]))
@@ -351,6 +371,8 @@ def main() -> None:
         "auc_gain": tf_m["roc_auc"] - bls_m["roc_auc"],
         "bls_score": "sde",
         "bls_backend": "astropy" if has_astropy() else "native",
+        "bls_subsample": int(bls_subsample),
+        "bls_n_periods": int(n_periods),
         "tls_backend": "transitleastsquares" if tls_m is not None else None,
         "tls_requested": bool(args.with_tls),
         "tls_workers": int(tls_workers) if run_tls else 0,

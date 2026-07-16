@@ -53,8 +53,12 @@ simulator:
   candidate_bls_negative_fraction: 1.0
   candidate_bls_positive_fraction: 0.50
   candidate_bls_backend: astropy
-  candidate_bls_subsample: 3000
-  candidate_bls_n_periods: 200
+  # The BLS proposal grid is shared by BLS-domain detector training and blind
+  # evaluation.  A 200-point grid across 0.5--13 d cannot resolve periods to
+  # 1% over most of the prior; retain enough cadence and period resolution for
+  # a scientifically meaningful recovery test.
+  candidate_bls_subsample: 4096
+  candidate_bls_n_periods: 1000
 
 model:
   param_dim: 5

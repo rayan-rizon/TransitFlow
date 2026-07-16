@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from transitflow.baselines.bls import bls_detect
+from scripts.baseline_detection import resolved_bls_search_settings
 from transitflow.baselines import tls as tls_module
 from transitflow.baselines import mcmc as mcmc_module
 from scripts.baseline_detection import (
@@ -29,6 +30,16 @@ def test_baseline_prior_matches_stellar_density_checkpoint_config():
     assert prior.stellar_density_log10_mean == pytest.approx(0.12)
     assert prior.stellar_density_log10_std == pytest.approx(0.18)
     TransitSimulator(cfg, prior=prior)
+
+
+def test_blind_bls_search_inherits_checkpoint_proposal_settings():
+    class CheckpointSimulator:
+        candidate_bls_subsample = 4096
+        candidate_bls_n_periods = 1000
+
+    cfg = CheckpointSimulator()
+    assert resolved_bls_search_settings(cfg, None, None) == (4096, 1000)
+    assert resolved_bls_search_settings(cfg, 3000, 200) == (3000, 200)
 
 
 def _make_lc(P=3.0, t0=1.0, RpRs=0.1, aRs=12.0, b=0.2, sigma=0.001, seed=0):
