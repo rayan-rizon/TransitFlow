@@ -26,6 +26,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Train TransitFlow")
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--head", choices=["fmpe", "npe"], default=None)
+    ap.add_argument("--separate-detector-embedding", action="store_true",
+                    help="development ablation: isolate detector and posterior encoders")
     ap.add_argument("--steps", type=int, default=None)
     ap.add_argument("--eval-every", type=int, default=None,
                     help="checkpoint-validation interval in training steps")
@@ -61,6 +63,8 @@ def main() -> None:
     overrides = {"train": {}, "model": {}}
     if args.head:
         overrides["model"]["head"] = args.head
+    if args.separate_detector_embedding:
+        overrides["model"]["separate_detection_embedding"] = True
     if args.steps:
         overrides["train"]["n_steps"] = args.steps
     if args.eval_every is not None:

@@ -52,6 +52,7 @@ class ModelConfig:
     # detection head
     det_hidden: int = 128
     det_dropout: float = 0.1
+    separate_detection_embedding: bool = False
     # flow-matching head
     fm_hidden: int = 256
     fm_blocks: int = 4
@@ -74,7 +75,27 @@ class TransitFlow(nn.Module):
                 f"unknown posterior_transform {c.posterior_transform!r}")
         if c.posterior_transform == "prior_normal" and c.param_dim != 5:
             raise ValueError("prior_normal posterior transform requires the 5D model")
-        self.embedding = DualBranchEmbedding(
+        self.embedding = self._make_embedding()
+        # Default remains the shared baseline. The optional second branch is a
+        # development ablation for measuring multi-task gradient interference.
+        self.detector_embedding = (
+            self._make_embedding() if c.separate_detection_embedding else None)
+        self.detection = DetectionHead(c.embed_dim, c.det_hidden, c.det_dropout)
+        if c.head == "fmpe":
+            self.posterior = FlowMatchingHead(
+                c.param_dim, c.embed_dim, c.fm_hidden, c.fm_blocks, c.fm_time_dim)
+        elif c.head == "npe":
+            self.posterior = NPEHead(
+                c.param_dim, c.embed_dim, c.npe_hidden, c.npe_transforms,
+                c.npe_backend)
+        else:
+            raise ValueError(f"unknown head {c.head!r}")
+        self.head_type = c.head
+
+    def _make_embedding(self) -> DualBranchEmbedding:
+        """Construct an embedding branch from the immutable model config."""
+        c = self.cfg
+        return DualBranchEmbedding(
             embed_dim=c.embed_dim,
             global_channels=c.global_channels,
             local_channels=c.local_channels,
@@ -89,17 +110,6 @@ class TransitFlow(nn.Module):
             ephemeris_dim=2,
             use_dilution_feature=c.use_dilution_feature,
         )
-        self.detection = DetectionHead(c.embed_dim, c.det_hidden, c.det_dropout)
-        if c.head == "fmpe":
-            self.posterior = FlowMatchingHead(
-                c.param_dim, c.embed_dim, c.fm_hidden, c.fm_blocks, c.fm_time_dim)
-        elif c.head == "npe":
-            self.posterior = NPEHead(
-                c.param_dim, c.embed_dim, c.npe_hidden, c.npe_transforms,
-                c.npe_backend)
-        else:
-            raise ValueError(f"unknown head {c.head!r}")
-        self.head_type = c.head
 
     # ------------------------------------------------------------------ #
     def embed(self, global_view: torch.Tensor, local_view: torch.Tensor,
@@ -131,8 +141,10 @@ class TransitFlow(nn.Module):
             ephemeris_feature = torch.zeros(
                 global_view.shape[0], 2, device=global_view.device,
                 dtype=global_view.dtype)
-        return self.embed(global_view, local_view, noise_feature, periodogram,
-                          ephemeris_feature, dilution_feature)
+        embedder = (self.detector_embedding
+                    if self.detector_embedding is not None else self.embedding)
+        return embedder(global_view, local_view, noise_feature, periodogram,
+                        ephemeris_feature, dilution_feature)
 
     def detect_logits_from_inputs(
             self, global_view: torch.Tensor, local_view: torch.Tensor,
