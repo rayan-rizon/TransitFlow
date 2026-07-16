@@ -27,3 +27,18 @@ def test_stratum_reports_completeness_and_auc():
     assert result["recovered"] == 1
     assert result["completeness"] == 0.5
     assert result["roc_auc"] > 0.5
+
+
+def test_fair_bls_protocol_removes_oracle_positive_candidates():
+    from transitflow.simulator import SimConfig
+
+    original = SimConfig(
+        candidate_bls_positive_fraction=0.5,
+        candidate_bls_negative_fraction=1.0,
+        candidate_jitter_fraction=0.2,
+    )
+    audit = _MODULE.fair_bls_sim_config(original)
+    assert audit.candidate_bls_positive_fraction == 1.0
+    assert audit.candidate_bls_negative_fraction == 1.0
+    assert audit.candidate_jitter_fraction == 0.0
+    assert original.candidate_bls_positive_fraction == 0.5

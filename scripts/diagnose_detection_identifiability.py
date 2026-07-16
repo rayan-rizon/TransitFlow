@@ -18,6 +18,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -103,6 +104,24 @@ def _three_bin_masks(values: np.ndarray, edges: tuple[float, float]) -> list[np.
     return [values < edges[0], (values >= edges[0]) & (values < edges[1]), values >= edges[1]]
 
 
+def fair_bls_sim_config(sim_cfg):
+    """Force a blind BLS candidate for both labels without altering physics.
+
+    Older development checkpoints may have been trained with a mixed positive
+    candidate distribution.  An identifiability audit must not inherit that
+    convenience setting: using true ephemerides for any positive row would
+    overstate real candidate-stage completeness.
+    """
+    return replace(
+        sim_cfg,
+        candidate_bls_positive_fraction=1.0,
+        candidate_bls_negative_fraction=1.0,
+        candidate_jitter_fraction=0.0,
+        candidate_harmonic_fraction=0.0,
+        candidate_random_positive_fraction=0.0,
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True, help="frozen detector checkpoint")
@@ -126,7 +145,8 @@ def main() -> None:
     noise = NoiseLibrary.load(args.noise_lib)
     if not noise.available() or not noise.source_labels:
         raise SystemExit("--noise-lib must contain real segments and target_ids for source audit")
-    simulator = TransitSimulator(sim_cfg, prior=prior, noise_library=noise)
+    audit_cfg = fair_bls_sim_config(sim_cfg)
+    simulator = TransitSimulator(audit_cfg, prior=prior, noise_library=noise)
     inference = TransitFlowInference(model, prior, sim_cfg, amp=args.amp)
     rng = np.random.default_rng(args.seed)
 
@@ -190,6 +210,13 @@ def main() -> None:
         "noise_library": str(Path(args.noise_lib).resolve()),
         "seed": int(args.seed),
         "n": int(args.n),
+        "candidate_protocol": {
+            "source": "blind_astropy_bls_for_both_classes",
+            "forced_positive_fraction": audit_cfg.candidate_bls_positive_fraction,
+            "forced_negative_fraction": audit_cfg.candidate_bls_negative_fraction,
+            "checkpoint_positive_fraction": sim_cfg.candidate_bls_positive_fraction,
+            "checkpoint_negative_fraction": sim_cfg.candidate_bls_negative_fraction,
+        },
         "operating_point": {
             "predeclared_target_fpr": float(args.target_fpr),
             "score_threshold": threshold,
