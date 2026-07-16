@@ -64,6 +64,23 @@ def test_synthetic_gate_report_separates_required_and_diagnostic_status():
     assert report["all_declared_synthetic_gates_pass"] is False
 
 
+def test_fair_bls_detection_is_a_required_synthetic_gate():
+    metrics = {
+        "detection_candidate_source": "bls",
+        "gate_status": {
+            "characterization_sbc_familywise_alpha_0.05": True,
+            "characterization_coverage_error_le_0.03": True,
+            "detection_auc_ge_0.99": False,
+        },
+    }
+
+    report = build_synthetic_gate_report(metrics, {"all_disjoint": True})
+
+    assert report["status"]["detection_auc_ge_0.99"] is False
+    assert "detection_auc_ge_0.99" not in report["diagnostic_status"]
+    assert report["all_declared_synthetic_gates_pass"] is False
+
+
 def test_failed_external_lockbox_stops_before_downstream_stages():
     failed = {"all_declared_synthetic_gates_pass": False}
     assert external_lockbox_synthetic_failure_blocks_downstream(
@@ -300,6 +317,7 @@ def test_publishable_gate_report_schema_and_status():
     assert report["status"]["real_mcmc_n_ge_16"] is True
     assert report["status"]["real_quality_gated_sample_n_ge_30"] is True
     assert report["status"]["detection_candidate_ephemeris_from_bls"] is True
+    assert report["status"]["fair_candidate_detection_auc_ge_0.99"] is True
     assert report["status"]["final_pass"] is True
     assert report["status"][
         "speedup_ge_1000x_at_converged_mcmc_reference"] is True

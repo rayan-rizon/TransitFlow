@@ -545,10 +545,18 @@ def _gate_value(metrics: dict, key: str) -> bool:
 def build_synthetic_gate_report(metrics: dict, split_meta: dict | None) -> dict:
     """Build a fail-closed development report before costly downstream gates."""
     metric_status = metrics.get("gate_status", {})
-    required_names = (
+    required_names = [
         "characterization_sbc_familywise_alpha_0.05",
         "characterization_coverage_error_le_0.03",
-    )
+    ]
+    # ``evaluate.py`` measures an oracle/exact-candidate score, which is useful
+    # only as a diagnostic.  Once the runner has replaced it with the blind BLS
+    # candidate score, however, it is the actual detection claim and must block
+    # a downstream/full run.  Keeping it diagnostic in that case allowed a
+    # report to say its declared development gates passed while its fair AUC
+    # explicitly failed.
+    if metrics.get("detection_candidate_source") == "bls":
+        required_names.append("detection_auc_ge_0.99")
     status = {
         key: bool(metric_status.get(key, False))
         for key in required_names
@@ -606,6 +614,7 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     max_w_width = float(thresholds.get("max_wasserstein_width_fraction", 0.5))
     min_speedup = float(thresholds.get("min_speedup", 1000.0))
     min_fair_detection_n = int(thresholds.get("min_fair_detection_n", 5000))
+    min_fair_detection_auc = float(thresholds.get("min_fair_detection_auc", 0.99))
 
     real_summary = real.get("summary", real)
     mcmc = real_summary.get("mcmc_agreement", {})
@@ -635,6 +644,8 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
         and convergence.get("mcmc_split_rhat_le_1.01", False)
     )
     raw_speed_pass = float(speed.get("speedup_x", 0.0)) >= min_speedup
+    fair_detection_auc = float(
+        bls.get("transitflow", {}).get("roc_auc", float("-inf")))
     matched_speed_pass = bool(
         speed.get("all_mcmc_converged", False)
         and float(speed.get("speedup_ci95", [0.0])[0]) >= min_speedup)
@@ -663,6 +674,8 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
             bls.get("candidate_source") == "bls",
         "fair_candidate_evaluation_n_ge_5000":
             int(bls.get("n", 0)) >= min_fair_detection_n,
+        "fair_candidate_detection_auc_ge_0.99":
+            fair_detection_auc >= min_fair_detection_auc,
         "fair_candidate_auc_gain_ci95_lower_gt_0":
             bool(auc_gain_ci and float(auc_gain_ci[0]) > 0.0),
         "fair_candidate_ap_gain_ci95_lower_gt_0":
@@ -693,7 +706,8 @@ def build_gate_report(synthetic: dict, real: dict, bls: dict, speed: dict,
     status["final_pass"] = all(status.values())
     diagnostic_status = {
         "oracle_candidate_detection_auc_ge_0.99":
-            _gate_value(synthetic, "detection_auc_ge_0.99"),
+            float(synthetic.get("oracle_detection", synthetic.get(
+                "detection", {})).get("roc_auc", float("-inf"))) >= 0.99,
         "raw_speedup_ge_1000x": raw_speed_pass,
     }
     return {
