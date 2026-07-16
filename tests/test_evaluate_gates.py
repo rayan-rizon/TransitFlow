@@ -15,6 +15,7 @@ from scripts._config import build_configs
 from scripts.run_publishable_vast import (
     build_gate_report,
     build_synthetic_gate_report,
+    dataset_worker_preflight,
     external_lockbox_synthetic_failure_blocks_downstream,
     full_run_disk_preflight,
     prepare_noise_four_way_split,
@@ -60,6 +61,15 @@ def test_full_run_disk_preflight_reports_capacity(monkeypatch, tmp_path):
     assert report["available_gib"] == 15.0
     assert report["required_free_gib"] == 16.0
     assert report["pass"] is False
+
+
+def test_dataset_worker_preflight_caps_16_gib_node():
+    report = dataset_worker_preflight(
+        61, memory_bytes=16 * 1024 ** 3, reserve_gib=4.0, worker_mib=640.0)
+
+    assert report["capacity_workers"] == 19
+    assert report["effective_workers"] == 19
+    assert report["cap_applied"] is True
 
 
 def test_synthetic_gate_report_separates_required_and_diagnostic_status():

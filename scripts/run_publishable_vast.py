@@ -34,6 +34,9 @@ FAST_PYTEST = [
     "tests/test_baselines.py",
 ]
 
+_GIB = 1024 ** 3
+_MIB = 1024 ** 2
+
 
 def full_run_disk_preflight(path: Path, minimum_free_gib: float) -> dict:
     """Record and enforce the storage reserve required by a full run.
@@ -56,6 +59,45 @@ def full_run_disk_preflight(path: Path, minimum_free_gib: float) -> dict:
         "available_gib": float(usage.free / gib),
         "required_free_gib": float(minimum_free_gib),
         "pass": bool(usage.free >= required_bytes),
+    }
+
+
+def memory_limit_bytes(cgroup_root: Path = Path("/sys/fs/cgroup")) -> tuple[int, str]:
+    """Return the enforced memory limit, preferring the cgroup v2 limit."""
+    cgroup_limit = cgroup_root / "memory.max"
+    try:
+        raw = cgroup_limit.read_text().strip()
+        if raw != "max":
+            value = int(raw)
+            if value > 0:
+                return value, "cgroup_v2"
+    except (OSError, ValueError):
+        pass
+    return int(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")), "system"
+
+
+def dataset_worker_preflight(requested_workers: int, *, memory_bytes: int,
+                             reserve_gib: float, worker_mib: float) -> dict:
+    """Cap spawned Astropy workers to a reproducible conservative RAM budget."""
+    if requested_workers < 1:
+        raise ValueError("requested_workers must be positive")
+    if memory_bytes <= 0:
+        raise ValueError("memory_bytes must be positive")
+    if reserve_gib < 0 or worker_mib <= 0:
+        raise ValueError("worker memory reserve and estimate must be positive")
+    reserve_bytes = int(reserve_gib * _GIB)
+    worker_bytes = int(worker_mib * _MIB)
+    budget_bytes = max(0, int(memory_bytes) - reserve_bytes)
+    capacity = max(1, budget_bytes // worker_bytes)
+    effective = min(int(requested_workers), int(capacity))
+    return {
+        "requested_workers": int(requested_workers),
+        "effective_workers": int(effective),
+        "memory_limit_bytes": int(memory_bytes),
+        "reserve_gib": float(reserve_gib),
+        "worker_mib": float(worker_mib),
+        "capacity_workers": int(capacity),
+        "cap_applied": bool(effective < requested_workers),
     }
 
 
@@ -848,6 +890,14 @@ def main() -> None:
              "guards the three provenance-separated datasets and artifacts",
     )
     ap.add_argument("--workers", type=int, default=16)
+    ap.add_argument(
+        "--dataset-worker-memory-mib", type=float, default=640.0,
+        help="conservative RAM budget per spawned Astropy dataset worker",
+    )
+    ap.add_argument(
+        "--dataset-worker-reserve-gib", type=float, default=4.0,
+        help="RAM held back for the supervisor, OS, and generation parent",
+    )
     ap.add_argument("--shard-size", type=int, default=10_000)
     ap.add_argument("--n-sbc", type=int, default=1000)
     ap.add_argument("--n-detection", type=int, default=5000)
@@ -926,6 +976,17 @@ def main() -> None:
             f"{disk_preflight['required_free_gib']:.2f} GiB required; "
             "use a larger-volume instance or explicitly set a justified "
             "--min-full-run-free-gib")
+
+    total_memory_bytes, memory_source = memory_limit_bytes()
+    data_worker_preflight = dataset_worker_preflight(
+        args.workers, memory_bytes=total_memory_bytes,
+        reserve_gib=args.dataset_worker_reserve_gib,
+        worker_mib=args.dataset_worker_memory_mib,
+    )
+    data_worker_preflight["memory_source"] = memory_source
+    data_workers = int(data_worker_preflight["effective_workers"])
+    (out_dir / "dataset_worker_preflight.json").write_text(
+        json.dumps(data_worker_preflight, indent=2))
 
     noise_lib: Path | None
     if str(args.noise_lib).strip().lower() in {"", "none", "null"}:
@@ -1100,7 +1161,7 @@ def main() -> None:
                 f"existing dataset failed provenance validation: {data_dir}; "
                 "remove or relocate it before regenerating")
         generate_cmd = [args.python, "scripts/generate_data.py", "--config", args.config,
-                        "--n", str(n_data), "--workers", str(args.workers),
+                        "--n", str(n_data), "--workers", str(data_workers),
                         "--shard-size", str(args.shard_size), "--out", str(data_dir),
                         "--seed", str(args.train_seed)]
         if train_noise_lib is not None:
@@ -1145,7 +1206,7 @@ def main() -> None:
                     "before regenerating")
             run([args.python, "scripts/generate_data.py", "--config", args.config,
                  "--candidate-domain", "bls_detection", "--n", str(detector_rows),
-                 "--workers", str(args.workers), "--shard-size", str(args.shard_size),
+                 "--workers", str(data_workers), "--shard-size", str(args.shard_size),
                  "--out", str(detector_dir), "--seed", str(detector_seed),
                  *([] if detector_noise_lib is None else [
                      "--noise-lib", str(detector_noise_lib)])],
@@ -1459,6 +1520,7 @@ def main() -> None:
         "noise_validation_fraction": float(args.noise_validation_fraction),
         "noise_eval_fraction": float(args.noise_eval_fraction),
         "noise_workers": int(args.noise_workers),
+        "dataset_worker_preflight": data_worker_preflight,
         "smoke": bool(args.smoke),
         "fast_check": bool(args.fast_check),
         "n_data": int(n_data),
