@@ -408,7 +408,8 @@ def render_pipeline(args) -> str:
         if post_names:
             out.append(f" params   : {post_names}")
         for key in (
-            "detection_auc_ge_0.99",
+            "detection_auc_ge_min",
+            "detection_auc_ge_0.99",  # legacy reports
             "posterior_sbc_familywise_alpha_0.05",
             "posterior_sbc_all_raw_p_gt_0.05",
             "characterization_sbc_familywise_alpha_0.05",

@@ -4,6 +4,24 @@ Date: 2026-07-15
 Target venue: *Monthly Notices of the Royal Astronomical Society* (MNRAS), Paper
 Verdict: **not yet submission-ready; major scientific validation remains**
 
+## Addendum 2026-07-19: predeclared gate revision v2
+
+Before launching the next experiment, and using only frozen development
+evidence, the detection gates were revised to measure the detector rather than
+the injection prior: the oracle-era 0.99 blind AUC target is replaced by a
+domain-restricted identifiability gate (in-domain AUC >= 0.93 for expected
+S/N >= 25, overall floor 0.85), the full-run fair-candidate AUC gate is 0.88
+with the paired gain CIs unchanged as the primary claim, and the real-data
+MCMC agreement limits are per-parameter (RpRs tightest). The fair benchmark
+now vets the top-3 alias-separated BLS hypotheses per curve (max-pooled score;
+BLS baseline unchanged), reports detection and ephemeris recovery separately,
+and a zero-depth injection null check blocks the run on any injection-artifact
+separability. Full table and rationale: `FULL_TEST_RUNBOOK.md`, "Gate revision
+2026-07-19". Characterization SBC/coverage, MCMC convergence, lockbox, and
+disjointness gates are unchanged. This revision was recorded before any new
+held-out result was inspected; it must not be revised again after the run
+starts.
+
 ## Executive decision
 
 TransitFlow is in scope for MNRAS as an astronomical inference method, and the

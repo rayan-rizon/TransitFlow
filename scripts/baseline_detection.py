@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 
-from transitflow.baselines.bls import bls_detect, has_astropy
+from transitflow.baselines.bls import bls_top_candidates, has_astropy
 from transitflow.baselines.tls import has_tls, tls_detect
 from transitflow.evaluation import detection_metrics
 from transitflow.inference import TransitFlowInference
@@ -117,6 +117,61 @@ def uncalibrated_search_summary(metrics: dict) -> dict:
     }
 
 
+def transitflow_candidate_scores(
+    inf, sim, sc, prior,
+    t_full: np.ndarray,
+    raw_flux: np.ndarray,
+    sigma_feat_row: np.ndarray,
+    dil_feat_row: np.ndarray | None,
+    theta_template_row: np.ndarray,
+    candidates: list[dict],
+) -> list[float]:
+    """Score each candidate ephemeris through the identical blind pipeline.
+
+    The model never sees the true ephemeris: every candidate comes from the
+    data-derived search, and multi-candidate vetting takes the maximum score
+    over the alias-separated hypotheses.  This function is shared with the
+    zero-depth injection null check so the artifact-leak test exercises the
+    exact code path of the fair benchmark.
+    """
+    scores: list[float] = []
+    full_ok = np.isfinite(t_full) & np.isfinite(raw_flux)
+    for cand in candidates:
+        cand_p = float(cand["best_period"])
+        cand_t0 = float(cand["best_t0"])
+        cand_dur = float(cand["best_duration"])
+        candidate_flux = flatten_transit_preserving(
+            t_full[full_ok], raw_flux[full_ok], cand_p, cand_t0, cand_dur)
+        gv_i, lv_i = make_views(
+            t_full[full_ok], candidate_flux, cand_p, cand_t0, cand_dur,
+            n_global=sc.n_global, n_local=sc.n_local,
+            n_durations=sc.n_durations, normalize=True,
+        )
+        ephem_phys = theta_template_row[None, :].copy()
+        ephem_phys[0, 0] = cand_p
+        ephem_phys[0, 1] = (cand_t0 / max(cand_p, 1e-12)) % 1.0
+        eph_i = prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)
+        pg_i = None
+        if sc.use_periodogram:
+            n_pg = sc.pg_n_raw
+            t_pg = t_full[full_ok]
+            f_pg = candidate_flux
+            if n_pg < len(t_pg):
+                pg_step = max(1, len(t_pg) // n_pg)
+                t_pg = t_pg[::pg_step][:n_pg]
+                f_pg = f_pg[::pg_step][:n_pg]
+            pg_i = make_periodogram_view(
+                t_pg, f_pg, sim.period_grid,
+                n_phase=sc.pg_n_phase, normalize=True,
+            )[None, :]
+        score_i = inf.detect(
+            gv_i[None, :], lv_i[None, :], sigma_feat_row,
+            periodogram=pg_i, ephem_feat=eph_i, dil_feat=dil_feat_row,
+        )
+        scores.append(float(score_i[0]))
+    return scores
+
+
 def prior_for_checkpoint_simulator(sc) -> TransitPrior:
     """Return the prior encoded by a checkpoint's simulator configuration.
 
@@ -168,6 +223,11 @@ def main() -> None:
     ap.add_argument("--bootstrap", type=int, default=500,
                     help="paired stratified bootstrap replicates for AUC/AP intervals")
     ap.add_argument(
+        "--candidate-top-k", type=int, default=3,
+        help="alias-separated BLS candidate hypotheses scored per light curve; "
+             "the reported TransitFlow score is the maximum over hypotheses "
+             "(1 = legacy top-1 conditioning)")
+    ap.add_argument(
         "--candidate-source", choices=("bls", "simulator"), default="bls",
         help="candidate ephemeris supplied to TransitFlow. 'bls' is the fair "
              "publication comparison; 'simulator' reproduces the historical "
@@ -206,7 +266,11 @@ def main() -> None:
     ))
     tls_threads = max(1, int(args.tls_threads))
 
+    candidate_top_k = max(1, int(args.candidate_top_k))
     labels, bls_scores, tls_labels, tls_scores, tf_scores = [], [], [], [], []
+    top1_periods: list[float] = []
+    candidate_period_rows: list[list[float]] = []
+    selected_candidate_rank: list[int] = []
     bls_failures: list[str] = []
     bls_success: list[bool] = []
     tls_failures: list[str] = []
@@ -238,66 +302,52 @@ def main() -> None:
         for i in range(len(raw)):
             f_i = raw[i][::step]
             ok = np.isfinite(t_bls) & np.isfinite(f_i)
-            res = None
+            cands = None
             try:
-                res = bls_detect(
+                cands = bls_top_candidates(
                     t_bls[ok],
                     f_i[ok],
                     period_min=float(p_lo),
                     period_max=float(p_hi),
                     n_periods=n_periods,
                     durations=bls_durations,
+                    top_k=candidate_top_k,
                 )
-                bls_scores.append(float(res["score"]))
+                # The rank-1 candidate's normalized peak equals the classic
+                # single-search SDE, so the BLS baseline is unchanged by K.
+                bls_scores.append(float(cands[0]["score"]))
                 bls_success.append(True)
             except Exception as exc:
                 bls_scores.append(0.0)
                 bls_success.append(False)
                 bls_failures.append(f"{type(exc).__name__}: {exc}")
             if args.candidate_source == "bls":
-                if res is None:
+                if not cands:
                     # Candidate generation is part of the evaluated pipeline;
                     # a failed search cannot fall back to the simulator's true
                     # ephemeris without leaking the label.
                     tf_scores.append(0.0)
                     candidate_periods.append(float("nan"))
+                    top1_periods.append(float("nan"))
+                    candidate_period_rows.append(
+                        [float("nan")] * candidate_top_k)
+                    selected_candidate_rank.append(-1)
                 else:
-                    cand_p = float(res["best_period"])
-                    cand_t0 = float(res["best_t0"])
-                    cand_dur = float(res["best_duration"])
-                    full_ok = np.isfinite(t_full) & np.isfinite(raw[i])
-                    candidate_flux = flatten_transit_preserving(
-                        t_full[full_ok], raw[i][full_ok], cand_p, cand_t0, cand_dur)
-                    gv_i, lv_i = make_views(
-                        t_full[full_ok], candidate_flux, cand_p, cand_t0, cand_dur,
-                        n_global=sc.n_global, n_local=sc.n_local,
-                        n_durations=sc.n_durations, normalize=True,
-                    )
-                    ephem_phys = b["theta_phys"][i:i + 1].copy()
-                    ephem_phys[0, 0] = cand_p
-                    ephem_phys[0, 1] = (cand_t0 / max(cand_p, 1e-12)) % 1.0
-                    eph_i = prior.physical_to_std(ephem_phys)[:, :2].astype(np.float32)
-                    pg_i = None
-                    if sc.use_periodogram:
-                        n_pg = sc.pg_n_raw
-                        t_pg = t_full[full_ok]
-                        f_pg = candidate_flux
-                        if n_pg < len(t_pg):
-                            pg_step = max(1, len(t_pg) // n_pg)
-                            t_pg = t_pg[::pg_step][:n_pg]
-                            f_pg = f_pg[::pg_step][:n_pg]
-                        pg_i = make_periodogram_view(
-                            t_pg, f_pg, sim.period_grid,
-                            n_phase=sc.pg_n_phase, normalize=True,
-                        )[None, :]
                     dil_i = b.get("dil_feat")
                     dil_i = None if dil_i is None else dil_i[i:i + 1]
-                    score_i = inf.detect(
-                        gv_i[None, :], lv_i[None, :], b["sigma_feat"][i:i + 1],
-                        periodogram=pg_i, ephem_feat=eph_i, dil_feat=dil_i,
+                    cand_scores = transitflow_candidate_scores(
+                        inf, sim, sc, prior, t_full, raw[i],
+                        b["sigma_feat"][i:i + 1], dil_i,
+                        b["theta_phys"][i], cands,
                     )
-                    tf_scores.append(float(score_i[0]))
-                    candidate_periods.append(cand_p)
+                    best = int(np.argmax(cand_scores))
+                    tf_scores.append(float(cand_scores[best]))
+                    candidate_periods.append(float(cands[best]["best_period"]))
+                    top1_periods.append(float(cands[0]["best_period"]))
+                    row = [float(c["best_period"]) for c in cands]
+                    row += [float("nan")] * (candidate_top_k - len(row))
+                    candidate_period_rows.append(row)
+                    selected_candidate_rank.append(int(cands[best]["rank"]))
                 true_periods.append(float(b["theta_phys"][i, 0]))
             if run_tls and len(tls_labels) < args.tls_n:
                 tls_jobs.append((
@@ -363,6 +413,8 @@ def main() -> None:
     report = {
         "seed": int(args.seed),
         "candidate_source": args.candidate_source,
+        "candidate_top_k": (
+            candidate_top_k if args.candidate_source == "bls" else None),
         "checkpoint": args.ckpt,
         "amp": args.amp,
         "amp_dtype": "bfloat16" if args.amp else None,
@@ -419,11 +471,33 @@ def main() -> None:
     if valid_period.any():
         frac = np.abs(candidate_periods_arr[valid_period] /
                       true_periods_arr[valid_period] - 1.0)
-        report["candidate_period_recovery"] = {
+        recovery = {
             "n_planets": int(valid_period.sum()),
+            # ``candidate_periods`` is the hypothesis the vetter selected
+            # (argmax score); detection and ephemeris recovery are reported
+            # as separate outcomes.
             "median_abs_fractional_error": float(np.median(frac)),
+            "within_1pct_selected": float(np.mean(frac <= 0.01)),
             "within_1pct": float(np.mean(frac <= 0.01)),
         }
+        if top1_periods:
+            top1_arr = np.asarray(top1_periods[:args.n], dtype=float)
+            t1_valid = planet_mask & np.isfinite(top1_arr) & \
+                np.isfinite(true_periods_arr)
+            if t1_valid.any():
+                t1_frac = np.abs(top1_arr[t1_valid] /
+                                 true_periods_arr[t1_valid] - 1.0)
+                recovery["within_1pct_top1"] = float(np.mean(t1_frac <= 0.01))
+        if candidate_period_rows:
+            rows_arr = np.asarray(candidate_period_rows[:args.n], dtype=float)
+            with np.errstate(invalid="ignore"):
+                any_frac = np.abs(
+                    rows_arr / true_periods_arr[:, None] - 1.0)
+            any_within = np.nanmin(
+                np.where(np.isfinite(any_frac), any_frac, np.inf), axis=1) <= 0.01
+            recovery["within_1pct_any_candidate"] = float(
+                np.mean(any_within[valid_period]))
+        report["candidate_period_recovery"] = recovery
     if (tls_labels_arr is not None and tls_fit_arr is not None and
             tls_candidate_periods_arr is not None and tls_true_periods_arr is not None):
         tls_planets = (tls_labels_arr == 1) & tls_fit_arr & \
@@ -455,6 +529,12 @@ def main() -> None:
                           else tls_true_periods_arr),
         bls_success=np.asarray(bls_success, dtype=bool),
         tls_success=np.asarray(tls_success, dtype=bool),
+        top1_candidate_periods=np.asarray(top1_periods[:args.n], dtype=float),
+        candidate_periods_topk=(
+            np.asarray(candidate_period_rows[:args.n], dtype=float)
+            if candidate_period_rows else np.zeros((0, candidate_top_k))),
+        selected_candidate_rank=np.asarray(
+            selected_candidate_rank[:args.n], dtype=int),
     )
     report["score_data"] = str(score_path)
     with open(args.out, "w") as fh:

@@ -316,8 +316,13 @@ def main() -> None:
         "posterior_out_of_prior_fraction_any": float(outside.any(axis=-1).mean()),
         "stratified_characterization": stratified_characterization_diagnostics(
             cov_true, cov_samples, cov_sigma, scfg),
+        # evaluate.py measures the oracle/exact-candidate score, so its
+        # detection threshold stays at the oracle diagnostic level; the runner
+        # overwrites this key with the fair blind-candidate decision (and its
+        # own predeclared threshold) when BLS candidates are requested.
+        "detection_auc_min": 0.99,
         "gate_status": {
-            "detection_auc_ge_0.99": bool(det["roc_auc"] >= 0.99),
+            "detection_auc_ge_min": bool(det["roc_auc"] >= 0.99),
             "posterior_sbc_familywise_alpha_0.05": posterior_sbc_gate["pass"],
             "posterior_sbc_all_raw_p_gt_0.05":
                 posterior_sbc_gate["all_raw_p_gt_0.05"],
