@@ -1,0 +1,27 @@
+{
+  "schema_version": 3,
+  "config_sha256": "2c85b3edd824ef8156d73e267d2c0ce6f94af6184e34a5777e902c9a80dd0fc1",
+  "dataset_metadata_sha256": "508a29affadd5287f8dbe41947b3514626759df390836b2e8575cd50994b7270",
+  "posterior_validation_metadata_sha256": "e389553fc12eed7f3542aa6bca0aa73746954282e4452712559482f0d23ff9d1",
+  "detector_dataset_metadata_sha256": "cca353dbe88d1c5aa9d9a3a45a0450133d8597b650617b0e346d9d0ae24fb791",
+  "detector_validation_metadata_sha256": "e41bedbd83748ce9b9dd95e4fe2c552d610e0c525ec36a940a3d71017031005c",
+  "detector_train_noise_lib": {
+    "path": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/noise_splits/noise_train.npz",
+    "sha256": "74ca62e25f1ff567cebcd8aeea5f06182ef1c469f4ba6acdf228b2ba77c3d594",
+    "n_targets": 72
+  },
+  "detector_validation_noise_lib": {
+    "path": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/noise_splits/noise_validation.npz",
+    "sha256": "3140534689cd5bde33079b9d23f70172f9591426ca8aaba7a8c6914f664150a7",
+    "n_targets": 15
+  },
+  "validation_noise_lib": {
+    "path": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/noise_splits/noise_validation.npz",
+    "sha256": "3140534689cd5bde33079b9d23f70172f9591426ca8aaba7a8c6914f664150a7",
+    "n_targets": 15
+  },
+  "posterior_validation_rows": 10000,
+  "train_eval_every": 500,
+  "train_seed": 20260744,
+  "steps": 3000
+}

@@ -1,0 +1,43 @@
+{
+  "run_dir": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/run",
+  "head": "fmpe",
+  "device": "cuda",
+  "params": 4176422,
+  "status": "done",
+  "step": 3000,
+  "total_steps": 3000,
+  "progress": 1.0,
+  "elapsed_s": 317.4,
+  "eta_s": 0.0,
+  "eta": "0m00s",
+  "throughput_lc_per_s": 0.0,
+  "data_wait_frac": 0.0,
+  "loss": {
+    "total": 0.9659253358840942,
+    "posterior": 0.946992039680481,
+    "detection": 0.01893330179154873
+  },
+  "lr": 0.0,
+  "best": {
+    "step": 2999,
+    "posterior": 0.9579490199685097,
+    "detection": 1.4927813559770584,
+    "det_acc": 0.802734375,
+    "roc_auc": 0.8789526158367005,
+    "average_precision": 0.8334733486231991
+  },
+  "best_detection": {
+    "step": 499,
+    "posterior": 1.270292416214943,
+    "detection": 0.3217191696166992,
+    "det_acc": 0.84326171875,
+    "roc_auc": 0.9300012599315055,
+    "average_precision": 0.9374720901024198
+  },
+  "health": {
+    "healthy": true,
+    "device": "cuda",
+    "warnings": []
+  },
+  "updated_unix": 1784221669.891575
+}

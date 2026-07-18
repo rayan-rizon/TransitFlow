@@ -1,0 +1,9 @@
+{
+  "kind": "independent_fair_bls_diagnostic",
+  "candidate_source": "bls",
+  "noise_split": "noise_eval",
+  "lockbox_used": false,
+  "n": 1000,
+  "command": "/venv/main/bin/python scripts/baseline_detection.py --ckpt /workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/run/checkpoints/best_detection.pt --n 1000 --noise-lib /workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/noise_splits/noise_eval.npz --candidate-source bls --bootstrap 200 --seed 20260745 --out /workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/fair_bls_diagnostic.json",
+  "git_sha": "2251570a9a2b2a009ebe4924b77a690bc00bd053"
+}

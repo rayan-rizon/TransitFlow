@@ -1,0 +1,71 @@
+{
+  "seed": 20260745,
+  "candidate_source": "bls",
+  "checkpoint": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/run/checkpoints/best_detection.pt",
+  "amp": false,
+  "amp_dtype": null,
+  "n": 1000,
+  "noise_lib": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/noise_splits/noise_eval.npz",
+  "noise_lib_available": true,
+  "n_planets": 507,
+  "n_negatives": 493,
+  "bls": {
+    "n_failed": 0,
+    "failure_examples": [],
+    "roc_auc": 0.6187372725054111,
+    "average_precision": 0.5853361634964274,
+    "brier_score": NaN,
+    "expected_calibration_error_10bin": NaN
+  },
+  "tls": null,
+  "transitflow": {
+    "roc_auc": 0.915739484939048,
+    "average_precision": 0.9203098464930908,
+    "brier_score": 0.12509201514773716,
+    "expected_calibration_error_10bin": 0.07214914171263809
+  },
+  "auc_gain": 0.2970022124336369,
+  "bls_score": "sde",
+  "bls_backend": "astropy",
+  "tls_backend": null,
+  "tls_requested": false,
+  "tls_workers": 0,
+  "tls_threads": 0,
+  "uncertainty": {
+    "method": "stratified paired percentile bootstrap",
+    "n_bootstrap": 200,
+    "seed": 20270745,
+    "ci95": {
+      "bls_auc": [
+        0.5852079007485467,
+        0.6488054658713108
+      ],
+      "tf_auc": [
+        0.8992445519321788,
+        0.9281326139923425
+      ],
+      "auc_gain": [
+        0.26475849266456236,
+        0.33614868514228796
+      ],
+      "bls_ap": [
+        0.5505777527041357,
+        0.6211187656734671
+      ],
+      "tf_ap": [
+        0.9024640968499726,
+        0.9339304858376818
+      ],
+      "ap_gain": [
+        0.2966081862512732,
+        0.37249310497796895
+      ]
+    }
+  },
+  "candidate_period_recovery": {
+    "n_planets": 507,
+    "median_abs_fractional_error": 0.6913436447335366,
+    "within_1pct": 0.3510848126232742
+  },
+  "score_data": "/workspace/TransitFlow_strong/results/development_v16_scale100k_earlyval/fair_bls_diagnostic.scores.npz"
+}

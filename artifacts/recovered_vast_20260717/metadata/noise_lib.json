@@ -1,0 +1,10 @@
+{
+  "path": "/workspace/TransitFlow_strong/data/development/noise_development_145.npz",
+  "n_segments": 249,
+  "segment_length": 18000,
+  "median": 1.0,
+  "std": 0.0012230224684810886,
+  "has_target_ids": true,
+  "n_unique_targets": 145,
+  "sampling_unit": "source_target_uniform_then_segment_v1"
+}
