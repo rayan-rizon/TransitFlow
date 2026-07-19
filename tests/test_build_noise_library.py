@@ -1,7 +1,10 @@
 import io
 import json
+from unittest.mock import patch
 
 from scripts.build_noise_library import (
+    _collect_target_segments,
+    _extract_corrupt_cache_path,
     emit_logs,
     robust_point_to_point_ppm,
     segment_flux_products,
@@ -70,6 +73,83 @@ def test_extension_archive_requires_matching_provenance(tmp_path):
         assert "absent" in str(exc)
     else:
         raise AssertionError("extension outside new provenance did not fail")
+
+
+def test_extract_corrupt_cache_path_matches_lightkurve_message():
+    message = (
+        "Error in reading Data product /root/.cache/lightkurve/mastDownload/"
+        "TESS/tess2025206162959-s0095-0000000267083739-0292-s/"
+        "tess2025206162959-s0095-0000000267083739-0292-s_lc.fits of type "
+        "TessLightCurve .\nThis file may be corrupt due to an interrupted "
+        "download. Please remove it from your disk and try again."
+    )
+
+    path = _extract_corrupt_cache_path(message)
+
+    assert path == (
+        "/root/.cache/lightkurve/mastDownload/TESS/"
+        "tess2025206162959-s0095-0000000267083739-0292-s/"
+        "tess2025206162959-s0095-0000000267083739-0292-s_lc.fits")
+
+
+def test_extract_corrupt_cache_path_returns_none_for_unrelated_errors():
+    assert _extract_corrupt_cache_path("no data found") is None
+    assert _extract_corrupt_cache_path("") is None
+
+
+def test_collect_target_segments_retries_once_past_corrupt_cache(tmp_path):
+    corrupt_file = tmp_path / "truncated.fits"
+    corrupt_file.write_bytes(b"short")
+    corrupt_message = (
+        f"Error in reading Data product {corrupt_file} of type generic .\n"
+        "This file may be corrupt due to an interrupted download. Please "
+        "remove it from your disk and try again."
+    )
+    outcomes = [
+        ("HIP 1", [], ["  downloading HIP 1 ..."],
+         {"target": "HIP 1", "accepted": False, "error": corrupt_message}),
+        ("HIP 1", [np.zeros(4)], ["  downloading HIP 1 ..."],
+         {"target": "HIP 1", "accepted": True, "n_segments": 1}),
+    ]
+
+    with patch(
+        "scripts.build_noise_library._collect_target_segments_once",
+        side_effect=outcomes,
+    ) as mocked:
+        tgt, segments, logs, metrics = _collect_target_segments(
+            "HIP 1", "TESS", 4, 1, 2500.0)
+
+    assert mocked.call_count == 2
+    assert not corrupt_file.exists()
+    assert metrics["accepted"] is True
+    assert len(segments) == 1
+    assert any("retrying HIP 1" in line for line in logs)
+
+
+def test_collect_target_segments_gives_up_after_max_retries(tmp_path):
+    corrupt_file = tmp_path / "always_truncated.fits"
+
+    def always_corrupt(*args, **kwargs):
+        corrupt_file.write_bytes(b"short")
+        message = (
+            f"Error in reading Data product {corrupt_file} of type "
+            "generic .\nThis file may be corrupt due to an interrupted "
+            "download. Please remove it from your disk and try again."
+        )
+        return (
+            "HIP 2", [], ["  downloading HIP 2 ..."],
+            {"target": "HIP 2", "accepted": False, "error": message},
+        )
+
+    with patch(
+        "scripts.build_noise_library._collect_target_segments_once",
+        side_effect=always_corrupt,
+    ) as mocked:
+        tgt, segments, logs, metrics = _collect_target_segments(
+            "HIP 2", "TESS", 4, 1, 2500.0, max_retries=1)
+
+    assert mocked.call_count == 2
+    assert metrics["accepted"] is False
 
 
 def test_emit_logs_uses_fallback_after_closed_primary_stream():

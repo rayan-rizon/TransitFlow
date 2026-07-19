@@ -21,11 +21,29 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
+
+_CORRUPT_CACHE_PATH_RE = re.compile(
+    r"Error in reading Data product (\S+) of type")
+
+
+def _extract_corrupt_cache_path(message: str) -> str | None:
+    """Return the cache file path named in a truncated-download error.
+
+    Interrupted MAST downloads (a dropped connection, or an earlier run
+    killed mid-transfer) leave a short file in the lightkurve cache;
+    astropy/lightkurve refuse to read it and name the exact path in the
+    error text, instructing the user to delete it and retry. Extracting
+    that path lets a single retry recover automatically instead of
+    permanently losing the target.
+    """
+    match = _CORRUPT_CACHE_PATH_RE.search(message)
+    return match.group(1) if match else None
 
 
 def emit_logs(lines: list[str], primary=None, fallback=None) -> None:
@@ -113,6 +131,32 @@ def segment_flux_products(
 
 
 def _collect_target_segments(
+        tgt: str, mission: str, n_raw: int, max_segments: int,
+        max_point_to_point_ppm: float, max_retries: int = 1) \
+        -> tuple[str, list[np.ndarray], list[str], dict]:
+    """Collect ``tgt``'s segments, retrying once past a corrupt cache entry.
+
+    A single retry (not a loop) purges the exact file astropy/lightkurve
+    named as truncated and re-attempts the whole target; a second failure
+    for any reason falls through to the normal skip path.
+    """
+    all_logs: list[str] = []
+    for attempt in range(max_retries + 1):
+        tgt_r, segments, logs, metrics = _collect_target_segments_once(
+            tgt, mission, n_raw, max_segments, max_point_to_point_ppm)
+        all_logs.extend(logs)
+        corrupt_path = _extract_corrupt_cache_path(metrics.get("error", ""))
+        if corrupt_path is None or attempt == max_retries:
+            return tgt_r, segments, all_logs, metrics
+        try:
+            os.remove(corrupt_path)
+        except OSError:
+            return tgt_r, segments, all_logs, metrics
+        all_logs.append(f"  retrying {tgt} after purging corrupt cache file")
+    return tgt_r, segments, all_logs, metrics
+
+
+def _collect_target_segments_once(
         tgt: str, mission: str, n_raw: int, max_segments: int,
         max_point_to_point_ppm: float) \
         -> tuple[str, list[np.ndarray], list[str], dict]:
