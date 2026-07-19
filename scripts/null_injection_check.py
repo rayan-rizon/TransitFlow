@@ -11,6 +11,12 @@ Predeclared decision rule: the check passes when the 95% paired bootstrap
 interval for the TransitFlow ROC-AUC contains 0.5, or the point estimate is
 within ``--auc-margin`` (default 0.05) of 0.5.  This is a pipeline-integrity
 diagnostic, not a performance claim.
+
+Hard negatives (eclipsing binaries, single events, sinusoids) are excluded
+from the null simulator: they are deliberate astrophysical content of the
+negative class, so a vetter that down-scores them separates the classes for
+legitimate reasons.  The null isolates the injection/processing path itself:
+zero-depth "positives" versus plain-noise negatives must be exchangeable.
 """
 from __future__ import annotations
 
@@ -80,7 +86,9 @@ def bootstrap_auc_ci(labels: np.ndarray, scores: np.ndarray, n_boot: int,
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", required=True)
-    ap.add_argument("--n", type=int, default=400)
+    ap.add_argument("--n", type=int, default=800,
+                    help="at n=400 the 0.05 AUC margin is a ~1.7-sigma decision "
+                         "and unlucky seeds produce false alarms; keep >= 800")
     ap.add_argument("--batch", type=int, default=64)
     ap.add_argument("--noise-lib", default=None)
     ap.add_argument("--seed", type=int, default=20260719)
@@ -93,6 +101,10 @@ def main() -> None:
     set_seed(args.seed)
 
     model, _, sc = load_checkpoint(args.ckpt)
+    # Hard negatives are intended task content, not an artifact channel; with
+    # them present the vetter separates the labels for legitimate reasons and
+    # the null is confounded (expected AUC ~ 0.5 + 0.5*hard_negative_fraction).
+    sc = replace(sc, hard_negative_fraction=0.0)
     bls_subsample, n_periods = resolved_bls_search_settings(sc, None, None)
     prior = zero_depth_prior(sc)
     noise_library = NoiseLibrary.load(args.noise_lib)
@@ -171,6 +183,9 @@ def main() -> None:
     }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
+    score_path = out.with_suffix(".scores.npz")
+    np.savez_compressed(score_path, labels=labels_arr, scores=scores_arr)
+    report["score_data"] = str(score_path)
     out.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     if not passed:

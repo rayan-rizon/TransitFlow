@@ -47,7 +47,13 @@ Two protocol upgrades accompany the revision:
    pushes signal-free (Rp/Rs ~ 1e-6) "positives" through the identical
    injection/search/scoring path; the run is blocked if the detector separates
    them from negatives (AUC 95% CI excluding 0.5 beyond the margin), which
-   would indicate an injection-pipeline artifact leak.
+   would indicate an injection-pipeline artifact leak. Hard negatives
+   (EB/single-event/sinusoid morphologies) are excluded from the null
+   simulator: they are deliberate astrophysical content of the negative class
+   and a vetter legitimately down-scores them, which would confound the null
+   (expected AUC ~ 0.5 + 0.5 x hard_negative_fraction; measured 0.79 vs the
+   0.75 prediction on 2026-07-19 before this exclusion was added). The null
+   compares zero-depth "positives" against plain-noise negatives only.
 
 ## Preconditions
 
@@ -101,8 +107,13 @@ fresh strong-gate checkpoint (a failure blocks everything downstream):
 python3 scripts/null_injection_check.py \
   --ckpt results/calibrated_candidate_strong_fast/run/checkpoints/best_detection.pt \
   --noise-lib results/calibrated_candidate_strong_fast/noise_splits/noise_validation.npz \
-  --n 400 --out results/null_injection_check.json
+  --n 800 --out results/null_injection_check.json
 ```
+
+Use at least `--n 800`: at n=400 the per-run AUC sampling spread (~0.028) makes
+the 0.05 margin a ~1.7-sigma decision and the percentile-bootstrap CI can
+exclude 0.5 on unlucky seeds (observed twice on 2026-07-19; an n=800 rerun gave
+AUC 0.504 with label-permutation p=0.85, confirming a clean injection path).
 
 The full run also requires `--identifiability-report` pointing at a fixed
 held-out blind-BLS audit (e.g. the frozen

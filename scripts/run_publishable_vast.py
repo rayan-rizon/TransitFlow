@@ -1596,6 +1596,14 @@ def main() -> None:
         ]
         if eval_noise_lib is not None:
             detection_baseline_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+        if args.with_tls_baseline:
+            # This synthetic-stage run writes the canonical fair-benchmark
+            # artifact; the later baselines stage skips when the file already
+            # exists, so the equal-sample TLS comparison must be produced here
+            # or it is silently dropped from the gate report.
+            detection_baseline_cmd.extend(
+                ["--with-tls", "--tls-n", str(tls_baseline_n),
+                 "--tls-workers", str(tls_workers), "--tls-threads", "1"])
         if args.amp:
             detection_baseline_cmd.append("--amp")
         run(detection_baseline_cmd, repo, logs / "baseline_detection.log")
