@@ -295,6 +295,64 @@ def test_calibrator_family_selection_uses_heldout_rank_score_per_dimension():
     assert set(scores) == {"identity", "shifted"}
 
 
+def test_candidate_tempering_strength_orders_the_shrinkage_path():
+    from scripts.calibrate_posterior import candidate_tempering_strength
+
+    assert candidate_tempering_strength("identity") == 0.0
+    assert candidate_tempering_strength("simple_050") == 0.5
+    assert candidate_tempering_strength("simple_075") == 0.75
+    assert candidate_tempering_strength("simple_100") == 1.0
+
+
+def test_one_standard_error_rule_prefers_shrinkage_on_a_statistical_tie():
+    """A candidate that only wins inside the selection noise must not be taken.
+
+    This is the seed-0 `RpRs` failure mode: the aggressive correction won the
+    pooled argmin on a handful of selection targets and then failed to transfer.
+    """
+    rng = np.random.default_rng(0)
+    n_targets, per_target, n_post = 8, 20, 101
+    n = n_targets * per_target
+    grid = np.linspace(-1.0, 1.0, n_post)
+    posterior = np.broadcast_to(grid[None, :, None], (n, n_post, 1)).copy()
+    theta = np.linspace(-0.98, 0.98, n)[:, None]
+    center = np.zeros_like(theta)
+    groups = np.repeat(np.arange(n_targets), per_target)
+    candidates = {
+        "identity": PosteriorAffineCalibration(np.ones(1), np.zeros(1)),
+        # A negligible offset: any score difference is far inside target scatter.
+        "simple_100": PosteriorAffineCalibration(np.ones(1), np.full(1, 1e-4)),
+    }
+
+    selected, _, per_dimension = select_calibration_candidates_by_dimension(
+        candidates, theta, posterior, center, groups=groups)
+
+    assert selected == ["identity"]
+    assert per_dimension[0]["_selection_rule"] == "one_standard_error_across_targets"
+    assert per_dimension[0]["_standard_error"] > 0.0
+
+
+def test_one_standard_error_rule_still_takes_a_decisively_better_candidate():
+    """Shrinkage preference must not veto a real, large improvement."""
+    n_targets, per_target, n_post = 6, 20, 101
+    n = n_targets * per_target
+    grid = np.linspace(-1.0, 1.0, n_post)
+    posterior = np.broadcast_to(grid[None, :, None], (n, n_post, 1)).copy()
+    # Truth is shifted a long way up: identity ranks are badly non-uniform.
+    theta = (np.linspace(-0.98, 0.98, n) + 1.0)[:, None]
+    center = np.zeros_like(theta)
+    groups = np.repeat(np.arange(n_targets), per_target)
+    candidates = {
+        "identity": PosteriorAffineCalibration(np.ones(1), np.zeros(1)),
+        "simple_100": PosteriorAffineCalibration(np.ones(1), np.ones(1)),
+    }
+
+    selected, _, _ = select_calibration_candidates_by_dimension(
+        candidates, theta, posterior, center, groups=groups)
+
+    assert selected == ["simple_100"]
+
+
 def test_calibration_rejects_wrong_dimension():
     cal = PosteriorAffineCalibration(np.ones(2), np.zeros(2))
     try:

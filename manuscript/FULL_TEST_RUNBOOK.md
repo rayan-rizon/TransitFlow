@@ -55,6 +55,32 @@ Two protocol upgrades accompany the revision:
    0.75 prediction on 2026-07-19 before this exclusion was added). The null
    compares zero-depth "positives" against plain-noise negatives only.
 
+## Calibrator-selection amendment 2026-07-20 (predeclared, before the next run)
+
+The 2026-07-19 seed-0 full run failed the characterization SBC gate on `RpRs`
+alone (p = 0.0052 against the Bonferroni per-test 0.01), with coverage error
+0.0053 and fair detection ROC-AUC 0.9296 both passing. Diagnosis, recorded in
+`artifacts/mnras_seed0_20260719/README.md`: the calibrator family was chosen by
+a per-dimension `argmin` scored on only 11 selection targets, which selected the
+strongest available correction for `RpRs`; that correction fitted the selection
+stars and failed to transfer to the 31 unseen lockbox stars. SBC is evaluated
+only on exact-ephemeris cases (`posterior_valid`), so candidate-period error is
+excluded as a cause.
+
+`select_calibration_candidates_by_dimension` now scores each candidate **within
+each held-out selection target** and applies a one-standard-error rule: among
+candidates whose mean score lies within one standard error (across targets) of
+the best mean, the least-aggressive correction is selected. This is the standard
+remedy for an over-selected model family and targets cross-noise-domain
+transfer, which is the quantity that actually failed. Selection remains confined
+to the calibration split; no evaluation or lockbox data reaches the selector.
+
+Nothing else changes: the SBC/coverage thresholds, the gate revision v2 limits,
+and every disjointness requirement are unchanged. The amendment is recorded here
+before the next run so it cannot be mistaken for post-hoc tuning. A run that
+still fails `RpRs` is a scientific result about the depth posterior, not a
+reason to weaken the gate.
+
 ## Preconditions
 
 1. Use a clean, committed checkout and record `git rev-parse HEAD`.

@@ -187,13 +187,47 @@ def temper_calibration(candidate: PosteriorAffineCalibration,
     )
 
 
+def candidate_tempering_strength(name: str) -> float:
+    """Shrinkage of a candidate toward identity (0 = identity, 1 = full fit)."""
+    if name == "identity":
+        return 0.0
+    _, _, suffix = name.partition("_")
+    try:
+        return float(suffix) / 100.0
+    except ValueError:
+        return 1.0
+
+
+def _dimension_score(diagnostics: dict, dim: int) -> float:
+    return float(
+        diagnostics["rank_cvm_by_dim"][dim]
+        + 0.25 * diagnostics["rank_coverage_error_by_dim"][dim])
+
+
 def select_calibration_candidates_by_dimension(
     candidates: dict[str, PosteriorAffineCalibration],
     theta: np.ndarray,
     posterior: np.ndarray,
     center: np.ndarray,
+    groups: np.ndarray | None = None,
 ) -> tuple[list[str], dict, list[dict]]:
-    """Select each diagonal dimension on target-held-out calibration cases."""
+    """Select each diagonal dimension on target-held-out calibration cases.
+
+    With ``groups`` (one source-target label per case) the choice uses a
+    one-standard-error rule instead of a bare ``argmin``.  The score is
+    recomputed within each held-out target, so its spread across targets
+    estimates how well a candidate transfers to a *new* noise domain; the
+    least-aggressive candidate whose mean score lies within one standard error
+    of the best mean is then selected.
+
+    This matters because the pooled ``argmin`` is evaluated on a small number of
+    selection targets, and it reliably picks the strongest available correction.
+    That correction fits the selection stars and then fails to transfer: the
+    2026-07-19 seed-0 run chose full-strength tempering for ``RpRs`` on 11
+    targets and missed the SBC gate on 31 unseen lockbox stars (p = 0.0052)
+    while looking best-in-class on the calibration split.  Preferring shrinkage
+    on ties is the standard remedy for an over-selected model family.
+    """
     if not candidates:
         raise ValueError("at least one calibration candidate is required")
     scores = {
@@ -204,19 +238,61 @@ def select_calibration_candidates_by_dimension(
     dimensions = {candidate.dim for candidate in candidates.values()}
     if len(dimensions) != 1:
         raise ValueError("calibration candidates must have equal dimensions")
+    n_dim = dimensions.pop()
+
+    per_group_scores: dict[str, np.ndarray] | None = None
+    if groups is not None:
+        groups = np.asarray(groups)
+        if len(groups) != len(theta):
+            raise ValueError("groups must supply one label per calibration case")
+        unique_groups = np.unique(groups)
+        if len(unique_groups) >= 2:
+            per_group_scores = {}
+            for name, candidate in candidates.items():
+                rows = []
+                for group in unique_groups:
+                    mask = groups == group
+                    if mask.sum() < 2:
+                        continue
+                    group_diagnostics = calibration_rank_diagnostics(
+                        theta[mask], posterior[mask], center[mask], candidate)
+                    rows.append([_dimension_score(group_diagnostics, dim)
+                                 for dim in range(n_dim)])
+                per_group_scores[name] = np.asarray(rows, dtype=float)
+            if any(row.shape[0] < 2 for row in per_group_scores.values()):
+                per_group_scores = None
+
     selected = []
     per_dimension_scores = []
-    for dim in range(dimensions.pop()):
+    for dim in range(n_dim):
         score_by_candidate = {
-            name: float(
-                diagnostics["rank_cvm_by_dim"][dim]
-                + 0.25 * diagnostics["rank_coverage_error_by_dim"][dim])
+            name: _dimension_score(diagnostics, dim)
             for name, diagnostics in scores.items()
         }
+        if per_group_scores is None:
+            selected.append(min(
+                score_by_candidate,
+                key=lambda name: (score_by_candidate[name], name)))
+            per_dimension_scores.append(score_by_candidate)
+            continue
+        means = {name: float(np.mean(rows[:, dim]))
+                 for name, rows in per_group_scores.items()}
+        best = min(means, key=lambda name: (means[name], name))
+        best_rows = per_group_scores[best][:, dim]
+        standard_error = float(
+            np.std(best_rows, ddof=1) / np.sqrt(len(best_rows)))
+        threshold = means[best] + standard_error
+        within = [name for name, value in means.items() if value <= threshold]
         selected.append(min(
-            score_by_candidate,
-            key=lambda name: (score_by_candidate[name], name)))
-        per_dimension_scores.append(score_by_candidate)
+            within,
+            key=lambda name: (candidate_tempering_strength(name), means[name], name)))
+        detail = dict(score_by_candidate)
+        detail["_selection_rule"] = "one_standard_error_across_targets"
+        detail["_group_mean"] = means
+        detail["_best_candidate"] = best
+        detail["_standard_error"] = standard_error
+        detail["_threshold"] = threshold
+        per_dimension_scores.append(detail)
     return selected, scores, per_dimension_scores
 
 
@@ -331,15 +407,23 @@ def main() -> None:
         candidates["simple_075"] = temper_calibration(candidate, 0.75)
         candidates["simple_100"] = candidate
         fit_diagnostics[complexity] = candidate_fit
+    # ``collect_target_balanced_calibration_cases`` concatenates equal-sized
+    # per-target blocks, so the source target of every selection case is
+    # recoverable and the selector can measure cross-target transfer.
+    selection_groups = np.repeat(
+        np.arange(selection_sampling["n_targets"]),
+        selection_sampling["n_cases_per_target"])[:len(selection_theta)]
     selected_names, selection_scores, selection_scores_by_dimension = \
         select_calibration_candidates_by_dimension(
-        candidates, selection_theta, selection_posterior, selection_center)
+        candidates, selection_theta, selection_posterior, selection_center,
+        groups=selection_groups)
     calibration = combine_calibration_candidates(candidates, selected_names)
     parameter_names = list(prior.names[-theta.shape[1]:])
     hybrid_selection_score = calibration_rank_diagnostics(
         selection_theta, selection_posterior, selection_center, calibration)
     diagnostics = {
-        "selection_protocol": "target_disjoint_balanced_tempered_simple_v4",
+        "selection_protocol":
+            "target_disjoint_balanced_tempered_simple_v5_one_standard_error",
         "selected_complexity": "per_dimension",
         "selected_complexity_by_parameter": dict(
             zip(parameter_names, selected_names)),
