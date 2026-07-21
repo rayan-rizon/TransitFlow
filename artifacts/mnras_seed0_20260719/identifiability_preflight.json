@@ -1,0 +1,23 @@
+{
+  "pass": true,
+  "gate_revision": "2026-07-19_predeclared_v2",
+  "report_path": "/workspace/TransitFlow/artifacts/development_v21_identifiability/identifiability_report.json",
+  "report_sha256": "8989ac8983e8b1f5d3c0d737734742ebfdede4fbca40c23a2123ff87ce49bc11",
+  "required_auc": 0.85,
+  "required_domain_auc": 0.93,
+  "domain_snr_bins": [
+    "25-75",
+    ">=75"
+  ],
+  "observed_auc": 0.9100506869414432,
+  "observed_domain_auc": {
+    "25-75": 0.9586676847609792,
+    ">=75": 0.9643243343849167
+  },
+  "min_sources": 25,
+  "source_label_count": 29,
+  "source_rows": 29,
+  "bls_top1_period_recovery_within_1pct": 0.3503267973856209,
+  "failures": [],
+  "required": true
+}

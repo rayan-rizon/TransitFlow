@@ -1,0 +1,12 @@
+
+== attempt 1784496187.048227 ==
+$ /venv/main/bin/python scripts/evaluate.py --ckpt /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/run/checkpoints/best.pt --detector-ckpt /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/run/checkpoints/best_detection.pt --n-sbc 1000 --n-detection 5000 --n-posterior 2000 --out /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/results/synthetic --plots --seed 123 --calibration /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/posterior_calibration.json --noise-lib /workspace/TransitFlow/data/noise_publication_lockbox_20260719.npz --amp
+== detection ==
+{'roc_auc': 0.9399045416025541, 'average_precision': 0.9431275992109667}
+== SBC ==
+SBC uniformity p-values: [0.005, 0.067, 0.829, 0.106, 0.434]
+== coverage ==
+characterization SBC p-values: [0.005, 0.067, 0.829, 0.106, 0.434]
+characterization coverage calibration error: 0.0053
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/results/synthetic/metrics.json
+wrote SBC + coverage figures to /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/results/synthetic

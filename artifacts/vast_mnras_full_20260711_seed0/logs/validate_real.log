@@ -1,0 +1,456 @@
+$ /venv/main/bin/python scripts/validate_real.py --ckpt /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt --detector-ckpt /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt --n-planets 30 --n-post 2000 --with-mcmc 16 --mcmc-steps 15000 --mcmc-walkers 32 --mcmc-processes 16 --seed 20260710 --out /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/real --is-correct-mcmc --is-samples 3000 --min-is-ess-fraction 0.05 --is-jitter-grid 25 --is-jitter-max 10.0 --mcmc-fit-jitter --amp
+== querying archive (P in [0.5, 13.0] d, Rp/Rs in [0.01, 0.15], TESS) ==
+   180 candidate planets
+/venv/main/lib/python3.12/site-packages/lightkurve/prf/__init__.py:7: UserWarning: Warning: the tpfmodel submodule is not available without oktopus installed, which requires a current version of autograd. See #1452 for details.
+  warnings.warn(
+   skip LTT 9779 b: quality {'n_cadences': 18014, 'cadence_fraction_of_training': 1.0007777777777778, 'n_in_transit': 344, 'n_transits': 35, 'sigma': 0.0006318975645571729, 'expected_snr': 60.76525616538571, 'observed_depth': 0.0016438605591930777, 'observed_snr': 48.25002196813986, 'finite_geometry': False, 'impact_parameter': nan}
+   [ 1] TOI-5938 b         p_det=1.000 P_err=0.000
+   skip LHS 1678 d: quality {'n_cadences': 14751, 'cadence_fraction_of_training': 0.8195, 'n_in_transit': 120, 'n_transits': 6, 'sigma': 0.0012776197714115963, 'expected_snr': 6.390197678797759, 'observed_depth': 0.0004661291879370921, 'observed_snr': 3.9966424543137435, 'finite_geometry': True, 'impact_parameter': 0.76}
+   skip TOI-5595 b: quality {'n_cadences': 12873, 'cadence_fraction_of_training': 0.7151666666666666, 'n_in_transit': 201, 'n_transits': 4, 'sigma': 0.003613927246989623, 'expected_snr': 13.448138894436903, 'observed_depth': 0.0030286480997531173, 'observed_snr': 11.881395117864681, 'finite_geometry': True, 'impact_parameter': 0.3338}
+   [ 2] TOI-1478 b         p_det=1.000 P_err=0.000
+   [ 3] TOI-1201 b         p_det=1.000 P_err=0.000
+   [ 4] TOI-2497 b         p_det=0.994 P_err=0.000
+   [ 5] TOI-880.02         p_det=1.000 P_err=0.000
+   [ 6] TIC 9344899 b      p_det=0.994 P_err=0.000
+   skip TOI-1772.01: quality {'n_cadences': 17083, 'cadence_fraction_of_training': 0.9490555555555555, 'n_in_transit': 410, 'n_transits': 4, 'sigma': 0.0007417017217913342, 'expected_snr': 19.316387739006803, 'observed_depth': 0.0006839951887537277, 'observed_snr': 18.673068400675774, 'finite_geometry': False, 'impact_parameter': nan}
+   [ 7] TOI-2152 A b       p_det=1.000 P_err=0.000
+   skip TOI-942 b: quality {'n_cadences': 17493, 'cadence_fraction_of_training': 0.9718333333333333, 'n_in_transit': 510, 'n_transits': 6, 'sigma': 0.0017414485495806983, 'expected_snr': 20.697028963811793, 'observed_depth': 0.0007254880523325236, 'observed_snr': 9.408160220316477, 'finite_geometry': True, 'impact_parameter': 0.05}
+   skip TOI-4363 b: quality {'n_cadences': 14784, 'cadence_fraction_of_training': 0.8213333333333334, 'n_in_transit': 440, 'n_transits': 13, 'sigma': 0.00184436943629633, 'expected_snr': 6.242627043275625, 'observed_depth': 0.0006581040343665023, 'observed_snr': 7.48467547419458, 'finite_geometry': True, 'impact_parameter': 0.537747}
+   skip TOI-1768.01: quality {'n_cadences': 18403, 'cadence_fraction_of_training': 1.0223888888888888, 'n_in_transit': 542, 'n_transits': 4, 'sigma': 0.000994313900537988, 'expected_snr': 19.285900678304692, 'observed_depth': 0.0007086683740402666, 'observed_snr': 16.59278111376399, 'finite_geometry': False, 'impact_parameter': nan}
+   [ 8] HD 63433 b         p_det=0.058 P_err=0.000
+   skip TIC 153919886 b: quality {'n_cadences': 1052, 'cadence_fraction_of_training': 0.058444444444444445, 'n_in_transit': 35, 'n_transits': 12, 'sigma': 0.0014002072259864634, 'expected_snr': 7.416398356311219, 'observed_depth': 0.0015932184084384016, 'observed_snr': 6.731580184200319, 'finite_geometry': True, 'impact_parameter': 0.424458}
+   skip TOI-5486 b: quality {'n_cadences': 9955, 'cadence_fraction_of_training': 0.5530555555555555, 'n_in_transit': 347, 'n_transits': 12, 'sigma': 0.0038997158471338867, 'expected_snr': 20.517853538804705, 'observed_depth': 0.002684954482977675, 'observed_snr': 12.825334526862768, 'finite_geometry': True, 'impact_parameter': 0.661652}
+   skip TOI-4559 b: quality {'n_cadences': 11823, 'cadence_fraction_of_training': 0.6568333333333334, 'n_in_transit': 166, 'n_transits': 6, 'sigma': 0.001774592536521369, 'expected_snr': 8.893884435678302, 'observed_depth': 0.00115896457729181, 'observed_snr': 8.414446543247436, 'finite_geometry': True, 'impact_parameter': 0.47}
+   skip TOI-4443.01: quality {'n_cadences': 16936, 'cadence_fraction_of_training': 0.9408888888888889, 'n_in_transit': 890, 'n_transits': 14, 'sigma': 0.0003885897944509757, 'expected_snr': 18.399979698601978, 'observed_depth': 0.00018602165188508213, 'observed_snr': 14.281279190080642, 'finite_geometry': False, 'impact_parameter': nan}
+   skip TIC 290487717 b: quality {'n_cadences': 791, 'cadence_fraction_of_training': 0.043944444444444446, 'n_in_transit': 30, 'n_transits': 7, 'sigma': 0.001355244498812714, 'expected_snr': 16.71519081254398, 'observed_depth': 0.0035039441280828587, 'observed_snr': 14.161202948029617, 'finite_geometry': True, 'impact_parameter': 0.681224}
+   skip TOI-5734 b: quality {'n_cadences': 16537, 'cadence_fraction_of_training': 0.9187222222222222, 'n_in_transit': 281, 'n_transits': 5, 'sigma': 0.0010750408225562527, 'expected_snr': 14.136754463048103, 'observed_depth': 0.00026511124251160645, 'observed_snr': 4.13386556475496, 'finite_geometry': True, 'impact_parameter': 0.04}
+   [ 9] TOI-2154 b         p_det=1.000 P_err=0.000
+   skip TOI-1243 b: quality {'n_cadences': 18423, 'cadence_fraction_of_training': 1.0235, 'n_in_transit': 160, 'n_transits': 6, 'sigma': 0.0021859920469674207, 'expected_snr': 10.11029848277384, 'observed_depth': 0.0014126505129516964, 'observed_snr': 8.174216671885501, 'finite_geometry': True, 'impact_parameter': 0.78}
+   skip TOI-2120 b: quality {'n_cadences': 14759, 'cadence_fraction_of_training': 0.8199444444444445, 'n_in_transit': 91, 'n_transits': 5, 'sigma': 0.00748278185837502, 'expected_snr': 8.077626108644296, 'observed_depth': 0.005113148868575723, 'observed_snr': 6.518475669521019, 'finite_geometry': True, 'impact_parameter': 0.55}
+   skip TOI-5335 b: quality {'n_cadences': 15364, 'cadence_fraction_of_training': 0.8535555555555555, 'n_in_transit': 404, 'n_transits': 7, 'sigma': 0.004637880740409859, 'expected_snr': 7.005668800251229, 'observed_depth': 0.0012103214123501127, 'observed_snr': 5.245317996091068, 'finite_geometry': True, 'impact_parameter': 0.625349}
+   [10] TOI-6420 b         p_det=1.000 P_err=0.000
+   skip TOI-2068 b: quality {'n_cadences': 16407, 'cadence_fraction_of_training': 0.9115, 'n_in_transit': 247, 'n_transits': 4, 'sigma': 0.0027534331214570445, 'expected_snr': 5.485261441663371, 'observed_depth': 0.0007446408365993085, 'observed_snr': 4.250311830266537, 'finite_geometry': True, 'impact_parameter': 0.46}
+   [11] TOI-7510 b         p_det=1.000 P_err=0.000
+   skip TOI-220 b: quality {'n_cadences': 17644, 'cadence_fraction_of_training': 0.9802222222222222, 'n_in_transit': 133, 'n_transits': 3, 'sigma': 0.0008606781297746318, 'expected_snr': 14.022763935156167, 'observed_depth': 0.0006293899161836647, 'observed_snr': 8.433441438489146, 'finite_geometry': True, 'impact_parameter': 0.836}
+   skip TOI-929 b: quality {'n_cadences': 16876, 'cadence_fraction_of_training': 0.9375555555555556, 'n_in_transit': 344, 'n_transits': 5, 'sigma': 0.002202891047889474, 'expected_snr': 9.929184848656115, 'observed_depth': 0.0012647766210674982, 'observed_snr': 10.648784357301176, 'finite_geometry': True, 'impact_parameter': 0.455358}
+   skip TOI-1669 c: quality {'n_cadences': 16730, 'cadence_fraction_of_training': 0.9294444444444444, 'n_in_transit': 481, 'n_transits': 10, 'sigma': 0.0008264228589001421, 'expected_snr': 10.545791197216898, 'observed_depth': 0.00034339366989044606, 'observed_snr': 9.11302374812952, 'finite_geometry': False, 'impact_parameter': 0.560039}
+   skip TIC 390586021 b: quality {'n_cadences': 980, 'cadence_fraction_of_training': 0.05444444444444444, 'n_in_transit': 33, 'n_transits': 9, 'sigma': 0.0007190097901155064, 'expected_snr': 10.42182030036018, 'observed_depth': 0.0010948413221893993, 'observed_snr': 8.747286406663758, 'finite_geometry': True, 'impact_parameter': 0.340547}
+   skip TOI-1438 c: quality {'n_cadences': 18424, 'cadence_fraction_of_training': 1.0235555555555556, 'n_in_transit': 98, 'n_transits': 3, 'sigma': 0.0012403005164082297, 'expected_snr': 7.5715979735804115, 'observed_depth': 0.00032933043649840954, 'observed_snr': 2.628560534691464, 'finite_geometry': True, 'impact_parameter': 0.902}
+   [12] TOI-159 b          p_det=1.000 P_err=0.000
+   [13] GJ 3929 b          p_det=1.000 P_err=0.000
+   [14] WASP-108 b         p_det=1.000 P_err=0.000
+   skip TOI-5489 c: quality {'n_cadences': 16343, 'cadence_fraction_of_training': 0.9079444444444444, 'n_in_transit': 211, 'n_transits': 5, 'sigma': 0.002695359987609855, 'expected_snr': 4.255367677082235, 'observed_depth': 0.0004141625348439426, 'observed_snr': 2.23200550123904, 'finite_geometry': True, 'impact_parameter': 0.449}
+   skip TOI-4405 b: quality {'n_cadences': 15808, 'cadence_fraction_of_training': 0.8782222222222222, 'n_in_transit': 255, 'n_transits': 4, 'sigma': 0.0036123397203024227, 'expected_snr': 5.1002809052980895, 'observed_depth': 0.001303560330812692, 'observed_snr': 5.762522571251896, 'finite_geometry': True, 'impact_parameter': 0.45336}
+   [15] TOI-620 b          p_det=0.992 P_err=0.000
+   skip TOI-4156 b: quality {'n_cadences': 17631, 'cadence_fraction_of_training': 0.9795, 'n_in_transit': 549, 'n_transits': 6, 'sigma': 0.0014328986671269762, 'expected_snr': 8.132047270948638, 'observed_depth': 0.0003878773319044848, 'observed_snr': 6.342567430548294, 'finite_geometry': True, 'impact_parameter': 0.498781}
+   skip TOI-756 b: quality {'n_cadences': 14909, 'cadence_fraction_of_training': 0.8282777777777778, 'n_in_transit': 568, 'n_transits': 20, 'sigma': 0.005945141850982189, 'expected_snr': 10.48005427877676, 'observed_depth': 0.0026633778290645616, 'observed_snr': 10.676888975872147, 'finite_geometry': False, 'impact_parameter': 0.589}
+   [16] TOI-1728 b         p_det=1.000 P_err=0.000
+   skip TOI-205 b: quality {'n_cadences': 17645, 'cadence_fraction_of_training': 0.9802777777777778, 'n_in_transit': 594, 'n_transits': 7, 'sigma': 0.0007529984085278403, 'expected_snr': 8.046881351797097, 'observed_depth': 0.00032281485841911817, 'observed_snr': 10.44846952270978, 'finite_geometry': True, 'impact_parameter': 0.500661}
+   skip HD 152843 b: quality {'n_cadences': 17240, 'cadence_fraction_of_training': 0.9577777777777777, 'n_in_transit': 327, 'n_transits': 3, 'sigma': 0.0005006076334573263, 'expected_snr': 13.834327739483125, 'observed_depth': 0.0006285002524621941, 'observed_snr': 22.702927653048146, 'finite_geometry': False, 'impact_parameter': 0.2}
+Could not resolve "TOI-2267 A" to a sky position.
+Could not resolve "TOI-2267 A" to a sky position.
+   skip TOI-663 b: quality {'n_cadences': 14736, 'cadence_fraction_of_training': 0.8186666666666667, 'n_in_transit': 398, 'n_transits': 10, 'sigma': 0.0027808298679273817, 'expected_snr': 11.883816443027268, 'observed_depth': 0.0015421692164890866, 'observed_snr': 11.063668294311155, 'finite_geometry': False, 'impact_parameter': 0.19}
+   skip TOI-6393 b: quality {'n_cadences': 76297, 'cadence_fraction_of_training': 4.238722222222222, 'n_in_transit': 1117, 'n_transits': 3, 'sigma': 0.0064874117633574625, 'expected_snr': 5.615327557310045, 'observed_depth': 0.001462897617233505, 'observed_snr': 7.536488748726481, 'finite_geometry': True, 'impact_parameter': 0.549511}
+   [17] TOI-2654 b         p_det=1.000 P_err=0.000
+   skip TOI-1753 b: quality {'n_cadences': 17139, 'cadence_fraction_of_training': 0.9521666666666667, 'n_in_transit': 376, 'n_transits': 5, 'sigma': 0.0019169608778281664, 'expected_snr': 5.5338735738713085, 'observed_depth': 0.00015237915573262928, 'observed_snr': 1.541367635571304, 'finite_geometry': False, 'impact_parameter': 0.270951}
+   [18] TOI-5422 b         p_det=1.000 P_err=0.000
+   skip TOI-2211.01: quality {'n_cadences': 16780, 'cadence_fraction_of_training': 0.9322222222222222, 'n_in_transit': 493, 'n_transits': 8, 'sigma': 0.00071059173348767, 'expected_snr': 9.136829684683066, 'observed_depth': 0.0003316243332097679, 'observed_snr': 10.362145794720549, 'finite_geometry': True, 'impact_parameter': 0.505094}
+   skip TOI-1749 d: quality {'n_cadences': 18424, 'cadence_fraction_of_training': 1.0235555555555556, 'n_in_transit': 158, 'n_transits': 3, 'sigma': 0.003910367816334324, 'expected_snr': 5.697379194474359, 'observed_depth': 0.0023838235567780197, 'observed_snr': 7.662756775060487, 'finite_geometry': False, 'impact_parameter': 0.717}
+   skip TOI-4495 b: quality {'n_cadences': 11996, 'cadence_fraction_of_training': 0.6664444444444444, 'n_in_transit': 438, 'n_transits': 11, 'sigma': 0.0006716861468442489, 'expected_snr': 9.894322534124932, 'observed_depth': 0.00028010975372427804, 'observed_snr': 8.72768163081844, 'finite_geometry': True, 'impact_parameter': 0.26}
+   [19] TOI-3261 b         p_det=1.000 P_err=0.000
+   [20] TOI-1994 b         p_det=1.000 P_err=0.000
+   skip TOI-4479 b: quality {'n_cadences': 18319, 'cadence_fraction_of_training': 1.0177222222222222, 'n_in_transit': 772, 'n_transits': 23, 'sigma': 0.007266807552520658, 'expected_snr': 14.697665875827727, 'observed_depth': 0.003053997848480483, 'observed_snr': 11.677065546946643, 'finite_geometry': True, 'impact_parameter': 0.43}
+   [21] TOI-1288 b         p_det=1.000 P_err=0.000
+   skip TIC 87422071 b: quality {'n_cadences': 15725, 'cadence_fraction_of_training': 0.8736111111111111, 'n_in_transit': 216, 'n_transits': 3, 'sigma': 0.0025092613096299936, 'expected_snr': 26.213995518819154, 'observed_depth': 0.004648561128139939, 'observed_snr': 27.22698371440256, 'finite_geometry': False, 'impact_parameter': 0.718}
+   [22] GJ 3090 b          p_det=1.000 P_err=0.000
+   skip TOI-4495 c: quality {'n_cadences': 11996, 'cadence_fraction_of_training': 0.6664444444444444, 'n_in_transit': 248, 'n_transits': 6, 'sigma': 0.0006710370683352533, 'expected_snr': 19.627993533939133, 'observed_depth': 0.0008201092936206411, 'observed_snr': 19.24646890682042, 'finite_geometry': True, 'impact_parameter': 0.595}
+   skip TOI-1080 b: quality {'n_cadences': 17122, 'cadence_fraction_of_training': 0.9512222222222222, 'n_in_transit': 215, 'n_transits': 7, 'sigma': 0.005626099496921714, 'expected_snr': 7.826596395951731, 'observed_depth': 0.0035163005182903273, 'observed_snr': 9.164268529068638, 'finite_geometry': True, 'impact_parameter': 0.38}
+   [23] TOI-677 b          p_det=1.000 P_err=0.000
+   skip TOI-4561 b: quality {'n_cadences': 17646, 'cadence_fraction_of_training': 0.9803333333333333, 'n_in_transit': 117, 'n_transits': 4, 'sigma': 0.0016073988730467938, 'expected_snr': 2.459917349995008, 'observed_depth': 0.0004935850574085965, 'observed_snr': 3.321477194860003, 'finite_geometry': True, 'impact_parameter': 0.54742}
+   [24] TOI-470 b          p_det=1.000 P_err=0.000
+   skip TOI-1873 b: quality {'n_cadences': 17632, 'cadence_fraction_of_training': 0.9795555555555555, 'n_in_transit': 187, 'n_transits': 4, 'sigma': 0.0014946945965225004, 'expected_snr': 6.6051692863562845, 'observed_depth': 0.0004279551044611418, 'observed_snr': 3.9153135698082617, 'finite_geometry': True, 'impact_parameter': 0.574816}
+   [25] HD 86226 c         p_det=1.000 P_err=0.000
+   skip TOI-1273 b: quality {'n_cadences': 14936, 'cadence_fraction_of_training': 0.8297777777777777, 'n_in_transit': 257, 'n_transits': 6, 'sigma': 0.0012964270305491294, 'expected_snr': 113.96223298074783, 'observed_depth': 0.003803240479143488, 'observed_snr': 47.02970676713989, 'finite_geometry': False, 'impact_parameter': 0.958}
+Could not resolve "TOI-1259 A" to a sky position.
+Could not resolve "TOI-1259 A" to a sky position.
+   skip TOI-2719 b: quality {'n_cadences': 12825, 'cadence_fraction_of_training': 0.7125, 'n_in_transit': 587, 'n_transits': 8, 'sigma': 0.0031887867648607415, 'expected_snr': 8.37470926780649, 'observed_depth': 0.0012721820096091019, 'observed_snr': 9.665911658268643, 'finite_geometry': True, 'impact_parameter': 0.685}
+   [26] TOI-1268 b         p_det=1.000 P_err=0.000
+   skip TOI-1839 c: quality {'n_cadences': 13115, 'cadence_fraction_of_training': 0.7286111111111111, 'n_in_transit': 258, 'n_transits': 7, 'sigma': 0.0011933319129430486, 'expected_snr': 9.027537733521518, 'observed_depth': 0.00043213683768572597, 'observed_snr': 5.816609221643805, 'finite_geometry': True, 'impact_parameter': 0.608422}
+   skip TOI-782 b: quality {'n_cadences': 13364, 'cadence_fraction_of_training': 0.7424444444444445, 'n_in_transit': 102, 'n_transits': 3, 'sigma': 0.004014731382845723, 'expected_snr': 9.238231507571975, 'observed_depth': 0.0037351962072142975, 'observed_snr': 9.396303000917792, 'finite_geometry': True, 'impact_parameter': 0.46}
+   skip HD 73583 b: quality {'n_cadences': 12966, 'cadence_fraction_of_training': 0.7203333333333334, 'n_in_transit': 252, 'n_transits': 4, 'sigma': 0.0005286434347898576, 'expected_snr': 46.42633978890166, 'observed_depth': 0.00016588610829093575, 'observed_snr': 4.981354458767977, 'finite_geometry': True, 'impact_parameter': 0.566}
+   skip TOI-5726.01: quality {'n_cadences': 17630, 'cadence_fraction_of_training': 0.9794444444444445, 'n_in_transit': 281, 'n_transits': 5, 'sigma': 0.0006677010804560114, 'expected_snr': 11.08212860621672, 'observed_depth': 0.0003611684042936769, 'observed_snr': 9.067359426733406, 'finite_geometry': False, 'impact_parameter': nan}
+   skip TOI-421 b: quality {'n_cadences': 17322, 'cadence_fraction_of_training': 0.9623333333333334, 'n_in_transit': 130, 'n_transits': 5, 'sigma': 0.0007132932986427282, 'expected_snr': 12.442622892157015, 'observed_depth': 0.00037186148451640033, 'observed_snr': 5.944081165395169, 'finite_geometry': False, 'impact_parameter': 0.942}
+   [27] TOI-540 b          p_det=0.999 P_err=0.000
+   skip TOI-2196 b: quality {'n_cadences': 12650, 'cadence_fraction_of_training': 0.7027777777777777, 'n_in_transit': 632, 'n_transits': 18, 'sigma': 0.0024031025524889615, 'expected_snr': 9.924020835652717, 'observed_depth': 0.001062572543737983, 'observed_snr': 11.115904941229815, 'finite_geometry': True, 'impact_parameter': 0.712}
+   skip LHS 1903 b: quality {'n_cadences': 16516, 'cadence_fraction_of_training': 0.9175555555555556, 'n_in_transit': 469, 'n_transits': 13, 'sigma': 0.0013371619320710418, 'expected_snr': 8.951744447010956, 'observed_depth': 0.0005668346045250017, 'observed_snr': 9.18034014581763, 'finite_geometry': True, 'impact_parameter': 0.174}
+   skip TIC 88692598 b: quality {'n_cadences': 1216, 'cadence_fraction_of_training': 0.06755555555555555, 'n_in_transit': 36, 'n_transits': 11, 'sigma': 0.0009141344251987314, 'expected_snr': 6.422356216754748, 'observed_depth': 0.0008692642317426058, 'observed_snr': 5.705490622259166, 'finite_geometry': True, 'impact_parameter': 0.380498}
+   skip TOI-1794 b: quality {'n_cadences': 15250, 'cadence_fraction_of_training': 0.8472222222222222, 'n_in_transit': 235, 'n_transits': 3, 'sigma': 0.0008735866416455799, 'expected_snr': 9.25543375286477, 'observed_depth': 0.0006524841872398435, 'observed_snr': 11.44980097946397, 'finite_geometry': True, 'impact_parameter': 0.493868}
+   skip TOI-5605 b: quality {'n_cadences': 18368, 'cadence_fraction_of_training': 1.0204444444444445, 'n_in_transit': 285, 'n_transits': 5, 'sigma': 0.0017938716614898397, 'expected_snr': 9.307780280658282, 'observed_depth': 0.0008420222413461076, 'observed_snr': 7.9241853260097574, 'finite_geometry': True, 'impact_parameter': 0.607475}
+   skip TOI-1470 b: quality {'n_cadences': 12841, 'cadence_fraction_of_training': 0.7133888888888889, 'n_in_transit': 267, 'n_transits': 10, 'sigma': 0.002787596783795684, 'expected_snr': 10.637629842558498, 'observed_depth': 0.0016098067836652907, 'observed_snr': 9.436249797588117, 'finite_geometry': True, 'impact_parameter': 0.59}
+Warning: 30% (5871/19412) of the cadences will be ignored due to the quality mask (quality_bitmask=17087).
+   skip TOI-406 c: quality {'n_cadences': 13012, 'cadence_fraction_of_training': 0.7228888888888889, 'n_in_transit': 158, 'n_transits': 7, 'sigma': 0.002084377841669049, 'expected_snr': 5.3194287284012844, 'observed_depth': 0.0008727529319344507, 'observed_snr': 5.263121698385162, 'finite_geometry': True, 'impact_parameter': 0.73}
+   skip TIC 178172313 b: quality {'n_cadences': 15672, 'cadence_fraction_of_training': 0.8706666666666667, 'n_in_transit': 322, 'n_transits': 6, 'sigma': 0.002003665830868231, 'expected_snr': 8.304232251968903, 'observed_depth': 0.0010852104514911254, 'observed_snr': 9.718888763651215, 'finite_geometry': True, 'impact_parameter': 0.682622}
+   skip TIC 231949697 b: quality {'n_cadences': 14837, 'cadence_fraction_of_training': 0.8242777777777778, 'n_in_transit': 685, 'n_transits': 27, 'sigma': 0.002008561275992919, 'expected_snr': 10.392691385048904, 'observed_depth': 0.0006046183350497669, 'observed_snr': 7.878463245656269, 'finite_geometry': True, 'impact_parameter': 0.810103}
+   skip LHS 1678 c: quality {'n_cadences': 14751, 'cadence_fraction_of_training': 0.8195, 'n_in_transit': 255, 'n_transits': 7, 'sigma': 0.0012771019471982204, 'expected_snr': 8.58315797305502, 'observed_depth': 0.00048153368132675123, 'observed_snr': 6.021035569276615, 'finite_geometry': True, 'impact_parameter': 0.44}
+   [28] TIC 150070085 b    p_det=0.000 P_err=0.000
+   skip TOI-1294 b: quality {'n_cadences': 18746, 'cadence_fraction_of_training': 1.0414444444444444, 'n_in_transit': 546, 'n_transits': 7, 'sigma': 0.0016398933840516639, 'expected_snr': 50.660083106328294, 'observed_depth': 0.0026226234008521754, 'observed_snr': 37.36944428310069, 'finite_geometry': False, 'impact_parameter': 0.859948}
+   skip TOI-1064 b: quality {'n_cadences': 16591, 'cadence_fraction_of_training': 0.9217222222222222, 'n_in_transit': 235, 'n_transits': 4, 'sigma': 0.0010994136461993762, 'expected_snr': 14.882335020914587, 'observed_depth': 0.00030651010995896844, 'observed_snr': 4.27383362682931, 'finite_geometry': True, 'impact_parameter': 0.728}
+   [29] TOI-163 b          p_det=1.000 P_err=0.000
+   [30] TOI-954 b          p_det=1.000 P_err=0.000
+   [checkpoint] saved 30 detection records to /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/real/records_checkpoint.json
+== MCMC shape agreement (first 16 detected planets) ==
+   TOI-5938 b         W(P)=0.0000 W(RpRs)=0.0154 ESS=0.000
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [388.88139449 404.11113931 450.80816881 279.46055253 207.51498835
+ 116.63315349]
+   TOI-1478 b         W(P)=0.0000 W(RpRs)=0.0410 ESS=0.000
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [575.35709846 575.36652869 538.27952531 228.38546808 235.68384646
+ 131.76884433]
+   TOI-1201 b         W(P)=0.0000 W(RpRs)=0.0029 ESS=0.016
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [334.18237228 368.58900853 370.32422987 285.13074892 224.71031353
+ 130.30211049]
+   TOI-2497 b         W(P)=0.0000 W(RpRs)=0.0036 ESS=0.001
+   TOI-880.02         W(P)=0.0000 W(RpRs)=0.0042 ESS=0.000
+   TIC 9344899 b      W(P)=0.0000 W(RpRs)=0.0068 ESS=0.007
+The chain is shorter than 50 times the integrated autocorrelation time for 4 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [375.56996759 399.47606457 459.30564802 314.69856016 258.90768112
+  95.82877639]
+   TOI-2152 A b       W(P)=0.0000 W(RpRs)=0.0017 ESS=0.011
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [220.77794574 322.94843272 402.59059939 322.54541705 250.2327334
+  89.14591694]
+   TOI-2154 b         W(P)=0.0000 W(RpRs)=0.0046 ESS=0.001
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [342.43992229 311.42238279 348.58818613 171.8016186  164.12221392
+  98.50135186]
+   TOI-6420 b         W(P)=0.0000 W(RpRs)=0.0037 ESS=0.046
+   TOI-7510 b         W(P)=0.0000 W(RpRs)=0.0192 ESS=0.001
+The chain is shorter than 50 times the integrated autocorrelation time for 4 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [1618.63547066 1671.67642813 1638.81352094 1524.93980488  231.50118002
+  236.31572115]
+   TOI-159 b          W(P)=0.0000 W(RpRs)=0.0053 ESS=0.000
+   GJ 3929 b          W(P)=0.0000 W(RpRs)=0.0041 ESS=0.012
+The chain is shorter than 50 times the integrated autocorrelation time for 5 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [338.72571505 430.16599766 461.37187377 324.24721287 328.50789064
+ 105.74195945]
+   WASP-108 b         W(P)=0.0000 W(RpRs)=0.0026 ESS=0.000
+   TOI-620 b          W(P)=0.0000 W(RpRs)=0.0109 ESS=0.000
+The chain is shorter than 50 times the integrated autocorrelation time for 1 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [267.19675654 293.35803992 334.46589877 266.8141409  167.2377851
+  96.11785937]
+   TOI-1728 b         W(P)=0.0000 W(RpRs)=0.0035 ESS=0.003
+The chain is shorter than 50 times the integrated autocorrelation time for 3 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [352.19720894 316.30975409 409.49557035 218.24452269 142.28057342
+  88.2669608 ]
+   TOI-2654 b         W(P)=0.0000 W(RpRs)=0.0052 ESS=0.004
+
+== SUMMARY ==
+{
+  "seed": 20260710,
+  "n_planets": 30,
+  "checkpoint": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt",
+  "detector_checkpoint": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "detection": {
+    "threshold": 0.9,
+    "n_detected": 28,
+    "detected_fraction": 0.9333333333333333,
+    "median_p_detect": 1.0
+  },
+  "per_param": {
+    "P": {
+      "n": 30,
+      "median_frac_err": 4.182705198897641e-09,
+      "coverage_68": 0.0,
+      "coverage_95": 0.0,
+      "mean_abs_z": NaN
+    },
+    "RpRs": {
+      "n": 30,
+      "median_frac_err": 0.06455169354282674,
+      "coverage_68": 0.5,
+      "coverage_95": 0.7333333333333333,
+      "mean_abs_z": 1.7737471340333208
+    },
+    "aRs": {
+      "n": 30,
+      "median_frac_err": 0.18726201223321232,
+      "coverage_68": 0.13333333333333333,
+      "coverage_95": 0.4,
+      "mean_abs_z": 2.637217860260592
+    },
+    "b": {
+      "n": 30,
+      "median_frac_err": 0.28501897964580947,
+      "coverage_68": 0.6333333333333333,
+      "coverage_95": 0.8666666666666667,
+      "mean_abs_z": 1.2778215771966617
+    }
+  },
+  "detected_per_param": {
+    "P": {
+      "n": 28,
+      "median_frac_err": 3.95080818078053e-09,
+      "coverage_68": 0.0,
+      "coverage_95": 0.0,
+      "mean_abs_z": NaN
+    },
+    "RpRs": {
+      "n": 28,
+      "median_frac_err": 0.05502802209875898,
+      "coverage_68": 0.5357142857142857,
+      "coverage_95": 0.7857142857142857,
+      "mean_abs_z": 1.265783318158064
+    },
+    "aRs": {
+      "n": 28,
+      "median_frac_err": 0.17654865851863916,
+      "coverage_68": 0.14285714285714285,
+      "coverage_95": 0.42857142857142855,
+      "mean_abs_z": 2.628818397848381
+    },
+    "b": {
+      "n": 28,
+      "median_frac_err": 0.2784846138379856,
+      "coverage_68": 0.6428571428571429,
+      "coverage_95": 0.8571428571428571,
+      "mean_abs_z": 1.2869629995488732
+    }
+  },
+  "mcmc_agreement": {
+    "P": {
+      "n": 16,
+      "median_wasserstein": 1.5565438049591762e-08,
+      "median_wasserstein_prior_fraction": 1.245235043967341e-09,
+      "median_wasserstein_prior_fraction_ci95": [
+        3.7476279857173724e-10,
+        3.0683142426823904e-09
+      ],
+      "median_wasserstein_width_fraction": 15565.438049591761,
+      "median_wasserstein_width_fraction_ci95": [
+        4684.534982146715,
+        38353.92803352988
+      ]
+    },
+    "RpRs": {
+      "n": 16,
+      "median_wasserstein": 0.004381050753060249,
+      "median_wasserstein_prior_fraction": 0.031293219664716064,
+      "median_wasserstein_prior_fraction_ci95": [
+        0.02588793695116448,
+        0.05761923778748572
+      ],
+      "median_wasserstein_width_fraction": 0.43428921316430935,
+      "median_wasserstein_width_fraction_ci95": [
+        0.2900647247198757,
+        0.7597286962035344
+      ]
+    },
+    "aRs": {
+      "n": 16,
+      "median_wasserstein": 1.8130631455242674,
+      "median_wasserstein_prior_fraction": 0.0385758116068993,
+      "median_wasserstein_prior_fraction_ci95": [
+        0.020289337852227488,
+        0.05103583953165152
+      ],
+      "median_wasserstein_width_fraction": 0.6941161178727592,
+      "median_wasserstein_width_fraction_ci95": [
+        0.49903788723564746,
+        1.2989437087132585
+      ]
+    },
+    "b": {
+      "n": 16,
+      "median_wasserstein": 0.12149287887404242,
+      "median_wasserstein_prior_fraction": 0.11044807170367492,
+      "median_wasserstein_prior_fraction_ci95": [
+        0.06288380777892416,
+        0.19364919132321376
+      ],
+      "median_wasserstein_width_fraction": 0.35930514513244716,
+      "median_wasserstein_width_fraction_ci95": [
+        0.2136469072782933,
+        0.7093451668131145
+      ]
+    }
+  },
+  "importance_correction": {
+    "enabled": true,
+    "n_samples": 3000,
+    "min_ess_fraction_required": 0.05,
+    "n_valid": 0,
+    "n_total": 16,
+    "mean_ess_fraction": 0.006512189769321617,
+    "median_ess_fraction": 0.0010177184583812443,
+    "min_ess_fraction": 0.0003333333333333333,
+    "min_effective_samples": 1.0,
+    "jitter_grid_size": 25,
+    "jitter_max": 10.0,
+    "median_jitter_scale_profile": 1.0584731656599122
+  },
+  "mcmc_conditioning": {
+    "ephemeris_fixed": true,
+    "acceptance_fraction_median": 0.33735937499999996,
+    "fit_jitter": true,
+    "n_eff_median": 668.2861142140473,
+    "n_eff_min": 143.56845377605316,
+    "tau_multiple_min": 8.973028361003323,
+    "jitter_median": 1.0549104670793183
+  },
+  "mcmc_stratified": {
+    "impact": {
+      "high_b": {
+        "n": 3,
+        "RpRs_median_prior_fraction": 0.032836302958954164,
+        "RpRs_median_width_fraction": 0.27834742422906256,
+        "aRs_median_prior_fraction": 0.04318595914878873,
+        "aRs_median_width_fraction": 0.9773765817896066,
+        "b_median_prior_fraction": 0.08138123088175084,
+        "b_median_width_fraction": 0.3734082333599116
+      },
+      "low_b": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.043050330408099774,
+        "RpRs_median_width_fraction": 0.5168407015189073,
+        "aRs_median_prior_fraction": 0.046739616829266716,
+        "aRs_median_width_fraction": 1.4281270686193355,
+        "b_median_prior_fraction": 0.06736011538391039,
+        "b_median_width_fraction": 0.26056895679103
+      },
+      "mid_b": {
+        "n": 7,
+        "RpRs_median_prior_fraction": 0.02588793695116448,
+        "RpRs_median_width_fraction": 0.44608512400607214,
+        "aRs_median_prior_fraction": 0.030133368092027893,
+        "aRs_median_width_fraction": 0.560169022071135,
+        "b_median_prior_fraction": 0.19364919132321376,
+        "b_median_width_fraction": 0.39530119174590206
+      }
+    },
+    "observed_snr": {
+      "high_snr": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.029362119955059322,
+        "RpRs_median_width_fraction": 0.3102259639605526,
+        "aRs_median_prior_fraction": 0.03138160238776466,
+        "aRs_median_width_fraction": 0.8389476502489644,
+        "b_median_prior_fraction": 0.12916266422182157,
+        "b_median_width_fraction": 0.5484561838686919
+      },
+      "low_snr": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.02952810029185879,
+        "RpRs_median_width_fraction": 0.73790592271412,
+        "aRs_median_prior_fraction": 0.0290540649503903,
+        "aRs_median_width_fraction": 0.35891815762570944,
+        "b_median_prior_fraction": 0.0961721577321904,
+        "b_median_width_fraction": 0.3183100867648525
+      },
+      "mid_snr": {
+        "n": 4,
+        "RpRs_median_prior_fraction": 0.042791159099211384,
+        "RpRs_median_width_fraction": 0.5140956299525326,
+        "aRs_median_prior_fraction": 0.04500276380796639,
+        "aRs_median_width_fraction": 0.8441571141922022,
+        "b_median_prior_fraction": 0.15033667923888921,
+        "b_median_width_fraction": 0.4745927131760126
+      }
+    },
+    "rprs": {
+      "deep": {
+        "n": 5,
+        "RpRs_median_prior_fraction": 0.037170896627652994,
+        "RpRs_median_width_fraction": 0.31759825381310886,
+        "aRs_median_prior_fraction": 0.04138514912292313,
+        "aRs_median_width_fraction": 0.9773765817896066,
+        "b_median_prior_fraction": 0.31876490340113267,
+        "b_median_width_fraction": 0.846155400932197
+      },
+      "medium": {
+        "n": 9,
+        "RpRs_median_prior_fraction": 0.02643935509001795,
+        "RpRs_median_width_fraction": 0.42249330232254656,
+        "aRs_median_prior_fraction": 0.03818193512951736,
+        "aRs_median_width_fraction": 0.6877135170371961,
+        "b_median_prior_fraction": 0.09033384609172329,
+        "b_median_width_fraction": 0.3452020569049828
+      },
+      "shallow": {
+        "n": 2,
+        "RpRs_median_prior_fraction": 0.02952810029185879,
+        "RpRs_median_width_fraction": 0.9356423451348865,
+        "aRs_median_prior_fraction": 0.01035820491855078,
+        "aRs_median_width_fraction": 0.1899379499530644,
+        "b_median_prior_fraction": 0.07767473462936372,
+        "b_median_width_fraction": 0.27290116479177473
+      }
+    },
+    "a_rs": {
+      "compact": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.031293219664716064,
+        "RpRs_median_width_fraction": 0.3102259639605526,
+        "aRs_median_prior_fraction": 0.027894936522245495,
+        "aRs_median_width_fraction": 1.2037297650230958,
+        "b_median_prior_fraction": 0.1296776771007766,
+        "b_median_width_fraction": 0.366384628914626
+      },
+      "mid": {
+        "n": 10,
+        "RpRs_median_prior_fraction": 0.033238480420446304,
+        "RpRs_median_width_fraction": 0.5140956299525326,
+        "aRs_median_prior_fraction": 0.03857581160689931,
+        "aRs_median_width_fraction": 0.6761666972233578,
+        "b_median_prior_fraction": 0.08585753848673706,
+        "b_median_width_fraction": 0.33241317499231693
+      }
+    },
+    "n_transits": {
+      "many": {
+        "n": 10,
+        "RpRs_median_prior_fraction": 0.02952810029185879,
+        "RpRs_median_width_fraction": 0.38184168890959047,
+        "aRs_median_prior_fraction": 0.03455152808815458,
+        "aRs_median_width_fraction": 0.820998229599563,
+        "b_median_prior_fraction": 0.15347384905517508,
+        "b_median_width_fraction": 0.3914341963350856
+      },
+      "several": {
+        "n": 6,
+        "RpRs_median_prior_fraction": 0.06323950025904411,
+        "RpRs_median_width_fraction": 0.5911109992630406,
+        "aRs_median_prior_fraction": 0.03978354212622025,
+        "aRs_median_width_fraction": 0.6941161178727592,
+        "b_median_prior_fraction": 0.0781735044437189,
+        "b_median_width_fraction": 0.20131469927754855
+      }
+    }
+  },
+  "gate_status": {
+    "detected_fraction_ge_0.9": true,
+    "mcmc_characterization_prior_fraction_le_0.1": false,
+    "mcmc_characterization_width_fraction_le_0.5_diagnostic": false,
+    "mcmc_chain_length_ge_50_tau": false,
+    "mcmc_effective_samples_ge_400": false,
+    "importance_correction_min_ess_fraction_ge_0.05": false
+  },
+  "diagnostic_status": {
+    "archive_detected_char_cov68_ge_0.5": false,
+    "archive_detected_char_cov95_ge_0.8": false
+  }
+}
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/real/real_validation.json

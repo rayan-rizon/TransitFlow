@@ -1,0 +1,427 @@
+
+== attempt 1784495883.529443 ==
+$ /venv/main/bin/python scripts/calibrate_posterior.py --ckpt /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/run/checkpoints/best.pt --noise-lib /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/noise_splits/noise_calibration.npz --out /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/posterior_calibration.json --n-calibration 1000 --n-posterior 2000 --n-selection 500 --diagnostic-data /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/posterior_calibration_inputs.npz --seed 7123 --amp
+  calibration-fit 24/1000
+  calibration-fit 60/1000
+  calibration-fit 99/1000
+  calibration-fit 125/1000
+  calibration-fit 160/1000
+  calibration-fit 197/1000
+  calibration-fit 230/1000
+  calibration-fit 264/1000
+  calibration-fit 301/1000
+  calibration-fit 342/1000
+  calibration-fit 372/1000
+  calibration-fit 405/1000
+  calibration-fit 437/1000
+  calibration-fit 464/1000
+  calibration-fit 497/1000
+  calibration-fit 537/1000
+  calibration-fit 565/1000
+  calibration-fit 599/1000
+  calibration-fit 635/1000
+  calibration-fit 670/1000
+  calibration-fit 704/1000
+  calibration-fit 735/1000
+  calibration-fit 763/1000
+  calibration-fit 789/1000
+  calibration-fit 812/1000
+  calibration-fit 845/1000
+  calibration-fit 874/1000
+  calibration-fit 908/1000
+  calibration-fit 937/1000
+  calibration-fit 966/1000
+  calibration-fit 1000/1000
+  calibration-selection:HIP 103572 42/46
+  calibration-selection:HIP 103572 46/46
+  calibration-selection:HIP 10629 34/46
+  calibration-selection:HIP 10629 46/46
+  calibration-selection:HIP 109450 32/46
+  calibration-selection:HIP 109450 46/46
+  calibration-selection:HIP 117427 30/46
+  calibration-selection:HIP 117427 46/46
+  calibration-selection:HIP 16544 35/46
+  calibration-selection:HIP 16544 46/46
+  calibration-selection:HIP 27281 36/46
+  calibration-selection:HIP 27281 46/46
+  calibration-selection:HIP 459 30/46
+  calibration-selection:HIP 459 46/46
+  calibration-selection:HIP 61998 26/46
+  calibration-selection:HIP 61998 46/46
+  calibration-selection:HIP 66047 38/46
+  calibration-selection:HIP 66047 46/46
+  calibration-selection:HIP 98828 30/46
+  calibration-selection:HIP 98828 46/46
+  calibration-selection:HIP 99868 29/46
+  calibration-selection:HIP 99868 46/46
+{
+  "scale": [
+    1.1537722451715031,
+    1.5739323537006915,
+    1.14399408627135,
+    0.9839600078212242,
+    0.9922304921138083
+  ],
+  "offset": [
+    0.018505353810636782,
+    0.05847195270569583,
+    -0.02828271005286824,
+    0.04552124256227069,
+    -0.04285240238917498
+  ],
+  "center_slope": [
+    0.9206385489023312,
+    1.170408391027257,
+    1.10290010749805,
+    1.033979925660916,
+    0.9606969236232448
+  ],
+  "center_quadratic": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "space": "bounded_latent_probit",
+  "log_scale_slope": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "lower": [
+    -1.7320508075688772,
+    -1.7320508075688767,
+    -1.7320508075688772,
+    -1.732050807568877,
+    -1.732050807568877
+  ],
+  "upper": [
+    1.7320508075688772,
+    1.7320508075688772,
+    1.7320508075688772,
+    1.732050807568877,
+    1.732050807568877
+  ],
+  "selection_protocol": "target_disjoint_balanced_tempered_simple_v4",
+  "selected_complexity": "per_dimension",
+  "selected_complexity_by_parameter": {
+    "RpRs": "simple_100",
+    "aRs": "simple_100",
+    "b": "simple_075",
+    "q1": "simple_100",
+    "q2": "simple_100"
+  },
+  "target_split": {
+    "seed": 16124,
+    "selection_fraction_requested": 0.33,
+    "fit_targets": [
+      "HIP 10301",
+      "HIP 1031",
+      "HIP 108028",
+      "HIP 112441",
+      "HIP 114477",
+      "HIP 21368",
+      "HIP 27923",
+      "HIP 42532",
+      "HIP 490",
+      "HIP 52888",
+      "HIP 53837",
+      "HIP 58254",
+      "HIP 58331",
+      "HIP 76747",
+      "HIP 79715",
+      "HIP 79946",
+      "HIP 86991",
+      "HIP 89733",
+      "HIP 91701",
+      "HIP 93745"
+    ],
+    "selection_targets": [
+      "HIP 103572",
+      "HIP 10629",
+      "HIP 109450",
+      "HIP 117427",
+      "HIP 16544",
+      "HIP 27281",
+      "HIP 459",
+      "HIP 61998",
+      "HIP 66047",
+      "HIP 98828",
+      "HIP 99868"
+    ],
+    "target_overlap": [],
+    "n_fit_segments": 39,
+    "n_selection_segments": 16
+  },
+  "selection_sampling": {
+    "sampling": "target_uniform_then_simulation_v1",
+    "n_targets": 11,
+    "n_cases_requested": 500,
+    "n_cases_per_target": 46,
+    "batch_size_per_target": 64,
+    "targets": [
+      "HIP 103572",
+      "HIP 10629",
+      "HIP 109450",
+      "HIP 117427",
+      "HIP 16544",
+      "HIP 27281",
+      "HIP 459",
+      "HIP 61998",
+      "HIP 66047",
+      "HIP 98828",
+      "HIP 99868"
+    ]
+  },
+  "candidate_fit_diagnostics": {
+    "simple": {
+      "n_calibration": 1000,
+      "n_posterior": 2000,
+      "levels": [
+        0.1,
+        0.2,
+        0.30000000000000004,
+        0.4,
+        0.5,
+        0.6,
+        0.7000000000000001,
+        0.8,
+        0.9
+      ],
+      "space": "bounded_latent_probit",
+      "complexity": "simple",
+      "coverage_error_before_by_dim": [
+        0.010000000000000028,
+        0.012555555555555537,
+        0.015000000000000001,
+        0.007444444444444434,
+        0.004444444444444442
+      ],
+      "coverage_error_after_by_dim": [
+        0.008222222222222249,
+        0.004000000000000005,
+        0.005777777777777783,
+        0.0020000000000000187,
+        0.00422222222222222
+      ],
+      "coverage_error_before_mean": 0.009888888888888888,
+      "coverage_error_after_mean": 0.004844444444444455,
+      "rank_cvm_before_by_dim": [
+        0.04365857017814487,
+        0.017032571737703027,
+        0.019108990030872904,
+        0.02625651347761161,
+        0.020204516821740626
+      ],
+      "rank_cvm_after_by_dim": [
+        0.0056429602160568216,
+        0.004872448050005249,
+        0.008807468421742992,
+        0.006525929052633041,
+        0.004079031747853893
+      ],
+      "rank_coverage_error_before_by_dim": [
+        0.00944444444444447,
+        0.012999999999999982,
+        0.014444444444444439,
+        0.008111111111111102,
+        0.004444444444444442
+      ],
+      "rank_coverage_error_after_by_dim": [
+        0.007666666666666692,
+        0.003333333333333338,
+        0.006222222222222228,
+        0.0015555555555555492,
+        0.0039999999999999975
+      ],
+      "offset": [
+        0.018505353810636782,
+        0.05847195270569583,
+        -0.03771028007049099,
+        0.04552124256227069,
+        -0.04285240238917498
+      ],
+      "center_slope": [
+        0.9206385489023312,
+        1.170408391027257,
+        1.1372001433307335,
+        1.033979925660916,
+        0.9606969236232448
+      ],
+      "center_quadratic": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "scale": [
+        1.1537722451715031,
+        1.5739323537006915,
+        1.1964605198625906,
+        0.9839600078212242,
+        0.9922304921138083
+      ],
+      "log_scale_slope": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "lower": [
+        -1.7320508075688772,
+        -1.7320508075688767,
+        -1.7320508075688772,
+        -1.732050807568877,
+        -1.732050807568877
+      ],
+      "upper": [
+        1.7320508075688772,
+        1.7320508075688772,
+        1.7320508075688772,
+        1.732050807568877,
+        1.732050807568877
+      ],
+      "calibration_input_sha256": "32f64aa7c68b3fab111d1566eac2b303a7c234e42baca380470c9515097f4030"
+    }
+  },
+  "candidate_selection_scores": {
+    "identity": {
+      "n": 500,
+      "rank_cvm_by_dim": [
+        0.060217460092567836,
+        0.015314666173312428,
+        0.022443751914508408,
+        0.03517451492202842,
+        0.03070532527103401
+      ],
+      "rank_coverage_error_by_dim": [
+        0.02244444444444442,
+        0.011555555555555543,
+        0.019777777777777766,
+        0.026888888888888903,
+        0.02444444444444442
+      ],
+      "rank_cvm_mean": 0.03277114367469022,
+      "rank_coverage_error_mean": 0.021022222222222213,
+      "selection_score": 0.03802669923024578
+    },
+    "simple_050": {
+      "n": 500,
+      "rank_cvm_by_dim": [
+        0.03115123593053733,
+        0.016302622488421917,
+        0.01994424729088566,
+        0.025943833564066814,
+        0.023066078990587022
+      ],
+      "rank_coverage_error_by_dim": [
+        0.02044444444444442,
+        0.016222222222222193,
+        0.02488888888888888,
+        0.030000000000000013,
+        0.025777777777777757
+      ],
+      "rank_cvm_mean": 0.023281603652899746,
+      "rank_coverage_error_mean": 0.023466666666666653,
+      "selection_score": 0.02914827031956641
+    },
+    "simple_075": {
+      "n": 500,
+      "rank_cvm_by_dim": [
+        0.017828334190271394,
+        0.015115538362890027,
+        0.018895158109949753,
+        0.022191777756637703,
+        0.019980427923345388
+      ],
+      "rank_coverage_error_by_dim": [
+        0.012666666666666644,
+        0.007111111111111114,
+        0.02399999999999998,
+        0.02888888888888891,
+        0.02777777777777776
+      ],
+      "rank_cvm_mean": 0.018802247268618854,
+      "rank_coverage_error_mean": 0.020088888888888882,
+      "selection_score": 0.023824469490841074
+    },
+    "simple_100": {
+      "n": 500,
+      "rank_cvm_by_dim": [
+        0.009310048334998053,
+        0.01320708143383693,
+        0.018748693287800083,
+        0.019936122993200057,
+        0.017664087862100324
+      ],
+      "rank_coverage_error_by_dim": [
+        0.011333333333333325,
+        0.013111111111111112,
+        0.02511111111111109,
+        0.033333333333333354,
+        0.028222222222222204
+      ],
+      "rank_cvm_mean": 0.01577320678238709,
+      "rank_coverage_error_mean": 0.022222222222222216,
+      "selection_score": 0.021328762337942644
+    }
+  },
+  "candidate_selection_scores_by_dimension": {
+    "RpRs": {
+      "identity": 0.06582857120367894,
+      "simple_050": 0.036262347041648435,
+      "simple_075": 0.020995000856938055,
+      "simple_100": 0.012143381668331385
+    },
+    "aRs": {
+      "identity": 0.018203555062201313,
+      "simple_050": 0.020358178043977465,
+      "simple_075": 0.016893316140667806,
+      "simple_100": 0.01648485921161471
+    },
+    "b": {
+      "identity": 0.02738819635895285,
+      "simple_050": 0.02616646951310788,
+      "simple_075": 0.024895158109949748,
+      "simple_100": 0.025026471065577857
+    },
+    "q1": {
+      "identity": 0.04189673714425065,
+      "simple_050": 0.03344383356406681,
+      "simple_075": 0.02941399997885993,
+      "simple_100": 0.028269456326533396
+    },
+    "q2": {
+      "identity": 0.036816436382145115,
+      "simple_050": 0.029510523435031463,
+      "simple_075": 0.02692487236778983,
+      "simple_100": 0.024719643417655875
+    }
+  },
+  "hybrid_selection_score": {
+    "n": 500,
+    "rank_cvm_by_dim": [
+      0.009310048334998053,
+      0.01320708143383693,
+      0.018895158109949753,
+      0.019936122993200057,
+      0.017664087862100324
+    ],
+    "rank_coverage_error_by_dim": [
+      0.011333333333333325,
+      0.013111111111111112,
+      0.02399999999999998,
+      0.033333333333333354,
+      0.028222222222222204
+    ],
+    "rank_cvm_mean": 0.015802499746817023,
+    "rank_coverage_error_mean": 0.021999999999999995,
+    "selection_score": 0.02130249974681702
+  }
+}
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/posterior_calibration.json

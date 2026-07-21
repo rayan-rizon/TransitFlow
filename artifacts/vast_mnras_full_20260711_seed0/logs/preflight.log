@@ -1,0 +1,15 @@
+$ /venv/main/bin/python scripts/preflight.py --config configs/publishable.yaml --expect cuda --data-dir /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/data
+================================================================
+ PREFLIGHT
+================================================================
+  device                : cuda
+  params                : 4176422
+  lc_per_s              : 2921.9
+  data_wait_frac        : 0.025
+  finite_losses         : True
+  loss_trending_down    : True
+  checkpoint_ok         : True
+  projected_full_run_h  : 1.46
+  projected_cost_usd    : 0.58
+  VERDICT: PASS
+================================================================

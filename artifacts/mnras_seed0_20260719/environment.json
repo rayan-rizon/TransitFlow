@@ -1,0 +1,13 @@
+{
+  "created_unix": 1784474794.5478868,
+  "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+  "platform": "Linux-5.15.0-181-generic-x86_64-with-glibc2.39",
+  "git_sha": "56fe48a81d11dd7f24b51df366272d28ec4171c9",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "torch": {
+    "version": "2.12.0+cu130",
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3090"
+  }
+}

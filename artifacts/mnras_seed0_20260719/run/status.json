@@ -1,0 +1,43 @@
+{
+  "run_dir": "/workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/run",
+  "head": "fmpe",
+  "device": "cuda",
+  "params": 4176422,
+  "status": "done",
+  "step": 60000,
+  "total_steps": 60000,
+  "progress": 1.0,
+  "elapsed_s": 7256.4,
+  "eta_s": 0.0,
+  "eta": "0m00s",
+  "throughput_lc_per_s": 0.0,
+  "data_wait_frac": 0.0,
+  "loss": {
+    "total": 1.0186071395874023,
+    "posterior": 0.879039466381073,
+    "detection": 0.13956767320632935
+  },
+  "lr": 0.0,
+  "best": {
+    "step": 41999,
+    "posterior": 0.766649141907692,
+    "detection": 1.6200170665979385,
+    "det_acc": 0.79833984375,
+    "roc_auc": 0.9107897469937085,
+    "average_precision": 0.8881384590434251
+  },
+  "best_detection": {
+    "step": 3999,
+    "posterior": 1.0214460641145706,
+    "detection": 0.27283428981900215,
+    "det_acc": 0.85986328125,
+    "roc_auc": 0.9459815697671644,
+    "average_precision": 0.9523533398055091
+  },
+  "health": {
+    "healthy": true,
+    "device": "cuda",
+    "warnings": []
+  },
+  "updated_unix": 1784495882.8614733
+}

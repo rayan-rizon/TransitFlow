@@ -1,0 +1,35 @@
+$ /venv/main/bin/python scripts/benchmark_speed.py --ckpt /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt --n-amortized 512 --n-post 2000 --n-mcmc 5 --mcmc-steps 15000 --mcmc-walkers 32 --out /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/speed.json --noise-lib /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/noise_splits/noise_eval.npz --amp
+The chain is shorter than 50 times the integrated autocorrelation time for 8 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [439.78029824 497.03493025 728.13722561 887.99862111 905.14327298
+ 676.35301561 540.36667676 457.54734414]
+The chain is shorter than 50 times the integrated autocorrelation time for 8 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [1260.43913964 1197.76113832 1227.86997428 1415.29159909 1246.40030358
+ 1169.55890615 1090.96203856 1165.49461583]
+The chain is shorter than 50 times the integrated autocorrelation time for 7 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [ 163.50698528  317.49857505 1129.95669423 1259.34751479 1322.36364272
+ 1010.12192616 1051.22831095 1172.72801254]
+The chain is shorter than 50 times the integrated autocorrelation time for 7 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [ 191.76115655  857.65388817 1573.05732017  867.5967351   909.06312852
+ 1048.7338392  1192.14563167 1614.79238949]
+The chain is shorter than 50 times the integrated autocorrelation time for 8 parameter(s). Use this estimate with caution and run a longer chain!
+N/50 = 300;
+tau: [ 403.89902212  484.37081638  997.99690321  927.76982206  619.04151639
+  731.93242101  665.79094678 1071.18639017]
+{
+  "device": "cuda",
+  "amp": true,
+  "amp_dtype": "bfloat16",
+  "noise_lib": "/workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/noise_splits/noise_eval.npz",
+  "noise_lib_available": true,
+  "amortized_ms_per_object": 36.382,
+  "amortized_posterior_samples": 2000,
+  "mcmc_backend": "emcee",
+  "mcmc_s_per_object": 473.1,
+  "mcmc_steps": 15000,
+  "mcmc_walkers": 32,
+  "speedup_x": 13003.7
+}

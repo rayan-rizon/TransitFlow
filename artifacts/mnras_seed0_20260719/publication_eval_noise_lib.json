@@ -1,0 +1,10 @@
+{
+  "path": "/workspace/TransitFlow/data/noise_publication_lockbox_20260719.npz",
+  "n_segments": 50,
+  "segment_length": 18000,
+  "median": 1.0000001892593,
+  "std": 0.0005563524026728741,
+  "has_target_ids": true,
+  "n_unique_targets": 31,
+  "sampling_unit": "source_target_uniform_then_segment_v1"
+}

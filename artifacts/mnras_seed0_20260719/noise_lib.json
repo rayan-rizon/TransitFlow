@@ -1,0 +1,10 @@
+{
+  "path": "/workspace/TransitFlow/data/noise_lib_gaia_tess_360_20260719.npz",
+  "n_segments": 261,
+  "segment_length": 18000,
+  "median": 1.0,
+  "std": 0.0011987354578039614,
+  "has_target_ids": true,
+  "n_unique_targets": 152,
+  "sampling_unit": "source_target_uniform_then_segment_v1"
+}

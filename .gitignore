@@ -12,6 +12,8 @@ data/
 *.npz
 !artifacts/*.scores.npz
 *.log
+# Stage logs kept inside a retained artifact bundle are evidence, not scratch.
+!artifacts/**/*.log
 *.tmp
 *.png
 !docs/*.png
@@ -28,3 +30,10 @@ artifacts/vast_publishable_*/
 artifacts/canonical/vast_publishable_*/
 # Timestamped Vast handoff bundles are local evidence, not source artifacts.
 artifacts/vast_[0-9]*/
+# Generated locally and rebuilt on demand.
+output/
+.graphify_root
+.graphify_python
+scratch/
+*.orig
+*.rej

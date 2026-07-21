@@ -1,0 +1,10 @@
+{
+  "requested_workers": 44,
+  "effective_workers": 29,
+  "memory_limit_bytes": 32193380352,
+  "reserve_gib": 4.0,
+  "worker_mib": 900.0,
+  "capacity_workers": 29,
+  "cap_applied": true,
+  "memory_source": "cgroup_v2"
+}

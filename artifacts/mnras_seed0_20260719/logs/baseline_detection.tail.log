@@ -1,0 +1,40 @@
+Searching for best T0 for period 2.32185 days
+Searching for best T0 for period 12.66367 days
+Searching for best T0 for period 0.92432 days
+Searching for best T0 for period 2.75326 days
+Searching for best T0 for period 1.03399 days
+Searching for best T0 for period 2.60732 days
+Searching for best T0 for period 12.39202 days
+Searching for best T0 for period 10.36880 days
+Searching for best T0 for period 4.65396 days
+Searching for best T0 for period 4.18094 days
+Searching for best T0 for period 1.09802 days
+Searching for best T0 for period 0.75446 days
+/venv/main/lib/python3.12/site-packages/transitleastsquares/stats.py:458: RuntimeWarning: divide by zero encountered in scalar divide
+  snr_pink_per_transit[i] = (1 - mean_flux) / pinknoise
+Searching for best T0 for period 8.53113 days
+Searching for best T0 for period 9.72157 days
+Searching for best T0 for period 7.72355 days
+Searching for best T0 for period 4.53979 days
+Searching for best T0 for period 3.11748 days
+Searching for best T0 for period 8.64608 days
+Searching for best T0 for period 2.93371 days
+Searching for best T0 for period 12.63615 days
+Searching for best T0 for period 2.55770 days
+Searching for best T0 for period 10.43239 days
+Searching for best T0 for period 1.42471 days
+Searching for best T0 for period 4.59640 days
+Searching for best T0 for period 11.67158 days
+Searching for best T0 for period 9.79948 days
+Searching for best T0 for period 1.17435 days
+Searching for best T0 for period 1.06587 days
+Searching for best T0 for period 11.33224 days
+  TLS 5000/5000
+
+== DETECTION BASELINE ==
+  BLS         ROC-AUC 0.6873  AP 0.6396
+  TLS         ROC-AUC 0.6613  AP 0.6334
+  TransitFlow ROC-AUC 0.9296  AP 0.9354
+  gain        +0.2423 AUC
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/results/bls_vs_transitflow.json
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/results/bls_vs_transitflow.scores.npz

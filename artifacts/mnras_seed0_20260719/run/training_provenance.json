@@ -1,0 +1,30 @@
+{
+  "schema_version": 4,
+  "config_sha256": "205bf30d45d4a19326df500b4d3da1b181d6bcf2bd335ec84b8bcd0dd8966009",
+  "dataset_metadata_sha256": "14880066b2333aaee2a229062b17e25447bef323d5108c01081ce063228f5be3",
+  "posterior_validation_metadata_sha256": "da6b6e0ffd8081469c7172ba3706190174a0a6509a1934f738ce37f7d6a01f33",
+  "detector_dataset_metadata_sha256": "cade717a018ca8be01e984373c5499437a35c8a1fd8e66cfe6c713d1b1525168",
+  "detector_validation_metadata_sha256": "7a08ebea6f909bfa746f03d40e4a91722ed94141b844596ad72e9d3f778311ec",
+  "detector_train_noise_lib": {
+    "path": "/workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/noise_splits/noise_train.npz",
+    "sha256": "31ccf466254f1866d33b395c28aeb390401d0445b36bdb8899952f2a135a8b75",
+    "n_targets": 105
+  },
+  "detector_validation_noise_lib": {
+    "path": "/workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/noise_splits/noise_validation.npz",
+    "sha256": "2615f2f51aeef1546bff7d0b0d4cec52d9d38362d3eda69699b0ea9c2f9216d4",
+    "n_targets": 16
+  },
+  "validation_noise_lib": {
+    "path": "/workspace/TransitFlow/results/publishable_runs/mnras_seed0_20260719/noise_splits/noise_validation.npz",
+    "sha256": "2615f2f51aeef1546bff7d0b0d4cec52d9d38362d3eda69699b0ea9c2f9216d4",
+    "n_targets": 16
+  },
+  "posterior_validation_rows": 100000,
+  "train_eval_every": null,
+  "detection_loss": "bce",
+  "detection_focal_gamma": 2.0,
+  "separate_detection_embedding": false,
+  "train_seed": 0,
+  "steps": 60000
+}

@@ -1,0 +1,10 @@
+$ /venv/main/bin/python scripts/evaluate.py --ckpt /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/run/checkpoints/latest.pt --n-sbc 1000 --n-detection 5000 --n-posterior 2000 --out /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/synthetic --plots --seed 123 --noise-lib /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/noise_splits/noise_eval.npz --amp
+== detection ==
+{'roc_auc': 0.9969747049967262, 'average_precision': 0.9961924103500236}
+== SBC ==
+SBC uniformity p-values: [0.0, 0.0, 0.0, 0.0, 0.39]
+== coverage ==
+characterization SBC p-values: [0.0, 0.0, 0.0, 0.0, 0.39]
+characterization coverage calibration error: 0.0960
+wrote /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/synthetic/metrics.json
+wrote SBC + coverage figures to /workspace/TransitFlow/results/publishable_runs/mnras_full_20260711_seed_0/results/synthetic
