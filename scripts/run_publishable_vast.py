@@ -1581,6 +1581,23 @@ def main() -> None:
     run(evaluate_cmd, repo, logs / "evaluate.log")
     metrics_path = eval_dir / "metrics.json"
     synthetic_metrics = read_json(metrics_path)
+    # Period-alias diagnostic: quantifies posterior mass at P/2, 2P and the
+    # per-stratum period SBC, in the evaluation noise domain. Run on every full
+    # run (not fast-check) so alias contamination is archived alongside the
+    # synthetic metrics rather than left as a manual, off-pipeline step.
+    if not args.fast_check and not args.smoke:
+        period_diag_path = eval_dir / "period_alias_diagnostic.json"
+        period_diag_cmd = [
+            args.python, "scripts/diagnose_period.py", "--ckpt", str(ckpt),
+            "--n", str(n_sbc), "--n-post", str(min(n_posterior, 500)),
+            "--seed", str(args.eval_seed),
+            "--out", str(period_diag_path)]
+        if eval_noise_lib is not None:
+            period_diag_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+        run(period_diag_cmd, repo, logs / "diagnose_period.log")
+        if period_diag_path.exists():
+            synthetic_metrics["period_alias_diagnostic"] = str(period_diag_path)
+            metrics_path.write_text(json.dumps(synthetic_metrics, indent=2))
     baseline_path = results / "bls_vs_transitflow.json"
     # The simulator-candidate detector score is an oracle diagnostic, not a
     # blind-detection gate. When BLS candidates are requested, run the exact
@@ -1696,6 +1713,21 @@ def main() -> None:
     if args.amp:
         speed_cmd.append("--amp")
     run(speed_cmd, repo, logs / "speed.log")
+    # BF16-vs-FP32 equivalence: when the pipeline runs inference under autocast
+    # bfloat16 (--amp), verify on this exact checkpoint that BF16 posteriors and
+    # detection probabilities match FP32 within predeclared tolerances. A
+    # failure exits non-zero, so a mixed-precision run cannot silently report
+    # BF16 numbers that FP32 would not support. Skipped in fast-check/smoke and
+    # when --amp is off (FP32 runs need no equivalence proof).
+    if args.amp and not args.fast_check and not args.smoke:
+        equivalence_path = results / "bf16_fp32_equivalence.json"
+        equivalence_cmd = [
+            args.python, "scripts/bf16_fp32_equivalence.py", "--ckpt", str(ckpt),
+            "--n", str(min(n_sbc, 512)), "--n-post", str(min(n_posterior, 1000)),
+            "--seed", str(args.eval_seed), "--out", str(equivalence_path)]
+        if eval_noise_lib is not None:
+            equivalence_cmd.extend(["--noise-lib", str(eval_noise_lib)])
+        run(equivalence_cmd, repo, logs / "bf16_fp32_equivalence.log")
     real_dir = results / "real"
     cmd = [args.python, "scripts/validate_real.py", "--ckpt", str(ckpt),
            "--detector-ckpt", str(detector_ckpt),
@@ -1719,12 +1751,52 @@ def main() -> None:
         cmd.append("--amp")
     run(cmd, repo, logs / "validate_real.log")
 
+    # Negative-class real-data validation: score real TESS false positives
+    # (TFOPWG FP/FA) through the identical pipeline to measure specificity /
+    # precision / false-positive rate -- the positive-only real stage measures
+    # sensitivity alone. Feeds the positive records checkpoint so precision/F1
+    # are computed against the matched positive class. Full runs only.
+    neg_validation = {}
+    if not args.fast_check and not args.smoke:
+        neg_dir = results / "real_negatives"
+        pos_records = real_dir / "records_checkpoint.json"
+        neg_cmd = [args.python, "scripts/validate_negatives.py",
+                   "--ckpt", str(ckpt), "--detector-ckpt", str(detector_ckpt),
+                   "--n-negatives", str(n_real_planets),
+                   "--n-post", str(min(n_posterior, 500)),
+                   "--threshold", "0.9",
+                   "--seed", str(args.real_seed + 5000),
+                   "--out", str(neg_dir)]
+        if pos_records.exists():
+            neg_cmd.extend(["--positives-records", str(pos_records)])
+        if calibration_path.exists():
+            neg_cmd.extend(["--calibration", str(calibration_path)])
+        if args.amp:
+            neg_cmd.append("--amp")
+        run(neg_cmd, repo, logs / "validate_negatives.log")
+        neg_out = neg_dir / "negative_validation.json"
+        if neg_out.exists():
+            neg_validation = read_json(neg_out)
+
     report = build_gate_report(
         read_json(eval_dir / "metrics.json"),
         read_json(real_dir / "real_validation.json"),
         read_json(results / "bls_vs_transitflow.json"),
         read_json(results / "speed.json"),
     )
+    # Negative-class specificity gate: real false positives must not be flagged
+    # as planets above the operating threshold at more than the predeclared
+    # rate. Only enforced on full runs where the negative stage actually ran.
+    if neg_validation:
+        neg_gate = neg_validation.get("gate_status", {})
+        report["status"]["real_negative_specificity_ge_min"] = bool(
+            neg_gate.get("specificity_ge_min", False))
+        report.setdefault("real_negatives", {})
+        report["real_negatives"] = {
+            "metrics": neg_validation.get("metrics", {}),
+            "gate_status": neg_gate,
+            "pass": neg_validation.get("pass", False),
+        }
     if split_meta is not None:
         report["status"]["noise_target_split_disjoint"] = bool(
             split_meta.get("all_disjoint", False))

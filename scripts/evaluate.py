@@ -108,8 +108,16 @@ def _label(value: float, edges: tuple[float, float], labels: tuple[str, str, str
 def stratified_characterization_diagnostics(theta_true: np.ndarray,
                                             posterior_samples: np.ndarray,
                                             sigma: np.ndarray,
-                                            sim_cfg) -> dict:
-    """Coverage/width diagnostics split by shape and information regime."""
+                                            sim_cfg,
+                                            dilution: np.ndarray | None = None
+                                            ) -> dict:
+    """Coverage/width diagnostics split by shape and information regime.
+
+    Strata cover impact parameter, depth (RpRs), a/Rs, S/N, transit count,
+    orbital period, and (when ``dilution`` is supplied) the dilution nuisance
+    regime, so conditional coverage is reported across every covariate the
+    MNRAS requirement enumerates.
+    """
     theta_true = np.asarray(theta_true)
     posterior_samples = np.asarray(posterior_samples)
     sigma = np.asarray(sigma)
@@ -126,7 +134,18 @@ def stratified_characterization_diagnostics(theta_true: np.ndarray,
         "a_rs": [_label(x, (10.0, 25.0), ("compact", "mid", "wide")) for x in aRs],
         "snr": [_label(x, (25.0, 75.0), ("low_snr", "mid_snr", "high_snr")) for x in snr],
         "n_transits": [_label(x, (3.0, 6.0), ("few", "several", "many")) for x in n_transits],
+        "period": [_label(x, (5.0, 15.0), ("short_P", "mid_P", "long_P")) for x in P],
     }
+    # Dilution is an optional nuisance covariate; stratify by it only when the
+    # simulator supplied real (finite) dilution values, otherwise omit the
+    # stratum rather than emit an all-"unknown" bucket.
+    if dilution is not None:
+        dilution = np.asarray(dilution, dtype=float).reshape(-1)
+        if dilution.shape[0] == theta_true.shape[0] and np.isfinite(
+                dilution).any():
+            specs["dilution"] = [
+                _label(x, (0.05, 0.30), ("undiluted", "mild_dil", "strong_dil"))
+                for x in dilution]
     out = {}
     char_dims = [2, 3, 4]
     char_names = ["RpRs", "aRs", "b"]
@@ -222,6 +241,7 @@ def main() -> None:
     print("== coverage ==")
     # reuse SBC posteriors for coverage by re-sampling a fresh set
     cov_samples, cov_samples_std, cov_true, cov_sigma = [], [], [], []
+    cov_dil = []
     set_seed(component_seeds["coverage"])
     got = 0
     while got < args.n_sbc:
@@ -240,11 +260,18 @@ def main() -> None:
         cov_samples_std.append(s_std)
         cov_true.append(batch["theta_phys"][mask])
         cov_sigma.append(batch["sigma"][mask])
+        # Dilution is a nuisance covariate, not a sampled parameter; collect the
+        # per-source dilution feature (when the simulator provides it) so
+        # conditional coverage can be stratified by dilution regime.
+        cov_dil.append(
+            np.asarray(dil).reshape(-1) if dil is not None
+            else np.full(int(mask.sum()), np.nan))
         got += int(mask.sum())
     cov_samples = np.concatenate(cov_samples)[:args.n_sbc]
     cov_samples_std = np.concatenate(cov_samples_std)[:args.n_sbc]
     cov_true = np.concatenate(cov_true)[:args.n_sbc]
     cov_sigma = np.concatenate(cov_sigma)[:args.n_sbc]
+    cov_dil = np.concatenate(cov_dil)[:args.n_sbc]
     if model.cfg.param_dim == 5:
         cov = central_interval_coverage(cov_true[:, char_dims],
                                         cov_samples[:, :, char_dims])
@@ -315,7 +342,7 @@ def main() -> None:
             clipping_fraction_by_param.tolist(),
         "posterior_out_of_prior_fraction_any": float(outside.any(axis=-1).mean()),
         "stratified_characterization": stratified_characterization_diagnostics(
-            cov_true, cov_samples, cov_sigma, scfg),
+            cov_true, cov_samples, cov_sigma, scfg, dilution=cov_dil),
         # evaluate.py measures the oracle/exact-candidate score, so its
         # detection threshold stays at the oracle diagnostic level; the runner
         # overwrites this key with the fair blind-candidate decision (and its

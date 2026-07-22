@@ -801,3 +801,55 @@ def test_existing_bls_detector_dataset_requires_bls_domain_provenance(tmp_path):
         candidate_domain="bls_detection") is True
     assert validate_existing_dataset(
         data_dir, config_path, 10, 10, 5, None) is False
+
+
+def test_stratified_characterization_covers_period_and_dilution():
+    from scripts.evaluate import stratified_characterization_diagnostics
+
+    rng = np.random.default_rng(0)
+    n = 600
+    # theta columns: [P, t0, RpRs, aRs, b]
+    theta = np.zeros((n, 5))
+    theta[:, 0] = rng.uniform(1.0, 30.0, n)      # period spans short/mid/long
+    theta[:, 2] = rng.uniform(0.03, 0.12, n)     # RpRs
+    theta[:, 3] = rng.uniform(8.0, 30.0, n)      # a/Rs
+    theta[:, 4] = rng.uniform(0.0, 0.9, n)       # impact
+    samples = theta[:, None, :] + 0.01 * rng.standard_normal((n, 40, 5))
+    sigma = np.full(n, 1e-3)
+    sim_cfg = SimpleNamespace(baseline_days=27.0, n_raw=18000)
+    dilution = rng.uniform(0.0, 0.5, n)          # spans all three dilution bins
+
+    out = stratified_characterization_diagnostics(
+        theta, samples, sigma, sim_cfg, dilution=dilution)
+
+    # period stratum is always present; dilution present when finite values given
+    assert "period" in out
+    assert set(out["period"]).issubset({"short_P", "mid_P", "long_P"})
+    assert "dilution" in out
+    assert set(out["dilution"]).issubset(
+        {"undiluted", "mild_dil", "strong_dil"})
+    # each bucket reports coverage for the characterization params
+    any_bucket = next(iter(out["period"].values()))
+    for name in ("RpRs", "aRs", "b"):
+        assert f"{name}_cov68" in any_bucket
+
+
+def test_stratified_characterization_omits_dilution_when_absent():
+    from scripts.evaluate import stratified_characterization_diagnostics
+
+    rng = np.random.default_rng(1)
+    n = 300
+    theta = np.zeros((n, 5))
+    theta[:, 0] = rng.uniform(1.0, 30.0, n)
+    theta[:, 2] = rng.uniform(0.03, 0.12, n)
+    theta[:, 3] = rng.uniform(8.0, 30.0, n)
+    theta[:, 4] = rng.uniform(0.0, 0.9, n)
+    samples = theta[:, None, :] + 0.01 * rng.standard_normal((n, 40, 5))
+    sigma = np.full(n, 1e-3)
+    sim_cfg = SimpleNamespace(baseline_days=27.0, n_raw=18000)
+
+    # dilution all-NaN (simulator provided no dilution feature) -> stratum omitted
+    out = stratified_characterization_diagnostics(
+        theta, samples, sigma, sim_cfg, dilution=np.full(n, np.nan))
+    assert "dilution" not in out
+    assert "period" in out

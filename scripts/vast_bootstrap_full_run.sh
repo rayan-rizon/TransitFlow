@@ -6,6 +6,12 @@
 #   bash scripts/vast_bootstrap_full_run.sh              # full run, seed 0
 #   MODE=fastcheck bash scripts/vast_bootstrap_full_run.sh   # ~3 h rehearsal
 #   SEED=1 bash scripts/vast_bootstrap_full_run.sh       # further seeds
+#   SEED=2 bash scripts/vast_bootstrap_full_run.sh       # (reuses the seed-0 lockbox)
+#
+# Run seed 0 FIRST: it builds the frozen, seed-independent publication lockbox
+# (data/noise_publication_lockbox.npz). Seeds 1 and 2 reuse that identical
+# archive; the script refuses to run a seed>0 if the lockbox is absent, so the
+# evaluation noise domain is held fixed across the multi-seed comparison.
 #
 # Every stage is skipped when its output already exists, so the script can be
 # re-run after an interruption without repeating the expensive downloads.
@@ -23,9 +29,15 @@ RUN_NAME="${RUN_NAME:-mnras_${MODE}_seed${SEED}_$(date -u +%Y%m%d)}"
 
 DEV_TARGETS="artifacts/mnras_seed0_20260719/dev_noise_targets_152.txt"
 IDENT_REPORT="artifacts/development_v21_identifiability/identifiability_report.json"
+# The publication lockbox is seed-INDEPENDENT: the frozen FULL_TEST_RUNBOOK.md
+# requires the identical evaluation archive for every training seed, otherwise
+# training-seed variance and evaluation-noise variance are confounded and the
+# cross-seed threshold-flip frequency is ill-defined. Build it once (fixed
+# selection seed, fixed path) and reuse it across the seed loop.
 DEV_LIB="data/noise_lib_dev_152.npz"
-LOCKBOX="data/noise_lockbox_seed${SEED}.npz"
-LOCKBOX_TARGETS="data/lockbox_targets_seed${SEED}.txt"
+LOCKBOX="data/noise_publication_lockbox.npz"
+LOCKBOX_TARGETS="data/lockbox_targets.txt"
+LOCKBOX_SELECT_SEED="${LOCKBOX_SELECT_SEED:-20260900}"
 
 cd "$REPO" || { echo "FATAL: repo not found at $REPO"; exit 1; }
 [ -f /venv/main/bin/activate ] && source /venv/main/bin/activate
@@ -58,15 +70,18 @@ else
     --out "$DEV_LIB" || fail "development noise library"
 fi
 
-step "[2/4] external publication lockbox (disjoint from development)"
+step "[2/4] external publication lockbox (disjoint from development, seed-independent)"
 if [ -f "$LOCKBOX" ]; then
-  echo "present, skipping: $LOCKBOX"
+  echo "present, reusing frozen lockbox (identical for every seed): $LOCKBOX"
 else
+  if [ "$SEED" != "0" ]; then
+    fail "lockbox $LOCKBOX absent on SEED=$SEED; build it once on seed 0 and reuse it (do not rebuild per seed)"
+  fi
   # Request far more candidates than the 30-target minimum: acceptance runs
   # ~25-40% once the development targets are excluded, and a 100-candidate
   # request produced only 24 accepted targets on 2026-07-19.
   "$PY" -u scripts/select_noise_targets.py \
-    --n-targets 250 --seed $((20260900 + SEED)) \
+    --n-targets 250 --seed "$LOCKBOX_SELECT_SEED" \
     --exclude-target-file "$DEV_TARGETS" \
     --out "$LOCKBOX_TARGETS" \
     --metadata "${LOCKBOX_TARGETS%.txt}.json" || fail "lockbox target selection"
@@ -127,5 +142,20 @@ for report in "$OUT/gate_report.json" "$OUT/synthetic_gate_report.json"; do
     "$PY" -c "import json,sys; d=json.load(open('$report')); \
 print(json.dumps(d.get('status', d.get('all_declared_synthetic_gates_pass')), indent=1))"; }
 done
+# Cross-seed aggregation: after each full-run seed, roll up every sibling seed's
+# gate report into mean/SD and threshold-flip frequency. Non-fatal (it only
+# summarizes what exists) and meaningful once >=2 seeds have completed. Skipped
+# in fast-check (no gate_report) mode.
+if [ "$MODE" != "fastcheck" ]; then
+  SEED_REPORTS=(results/publishable_runs/mnras_${MODE}_seed*/gate_report.json)
+  if [ -e "${SEED_REPORTS[0]}" ]; then
+    step "[5/5] cross-seed aggregate (found ${#SEED_REPORTS[@]} gate report(s))"
+    "$PY" scripts/aggregate_seeds.py \
+      --reports "${SEED_REPORTS[@]}" \
+      --out results/seed_aggregate.json || \
+      echo "aggregate_seeds failed (non-fatal)"
+  fi
+fi
+
 echo "BOOTSTRAP_COMPLETE_EXIT:${RUN_EXIT}"
 exit "$RUN_EXIT"

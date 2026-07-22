@@ -77,10 +77,66 @@ def robust_point_to_point_ppm(flux: np.ndarray) -> float:
     return float(1e6 * sigma_diff / np.sqrt(2.0))
 
 
+def _lc_provenance(lc) -> dict:
+    """Extract MAST product provenance from a light curve's FITS metadata.
+
+    The reproducibility archive must be able to name the exact TESS data
+    products the noise library was built from (mission, sector, pipeline
+    author, cadence, and source filename), so a reader can re-download the
+    identical light curves.  Values come from the FITS header cards that
+    lightkurve exposes on ``lc.meta``; any card absent for a given product is
+    recorded as ``None`` rather than dropped, keeping the per-product records
+    positionally aligned to the downloaded products.
+    """
+    meta = getattr(lc, "meta", None) or {}
+    # FITS header cards are conventionally upper-case, but lightkurve/astropy
+    # sometimes expose them lower-cased; index case-insensitively once so any
+    # capitalization of a card resolves.
+    lower_index = {str(k).lower(): v for k, v in meta.items()}
+
+    def _get(*keys):
+        for key in keys:
+            value = lower_index.get(key.lower())
+            if value not in ("", None):
+                return value
+        return None
+
+    def _as_int(value):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _as_float(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    return {
+        "mission": _get("MISSION", "TELESCOP"),
+        "sector": _as_int(_get("SECTOR", "CAMPAIGN", "QUARTER")),
+        "author": _get("AUTHOR", "PROCVER", "ORIGIN"),
+        "exptime_s": _as_float(_get("EXPTIME", "TIMEDEL", "FRAMETIM")),
+        "ticid": str(_get("TICID", "KEPLERID", "EPIC")) if _get(
+            "TICID", "KEPLERID", "EPIC") is not None else None,
+        "product_filename": _get("FILENAME", "ORIGIN_FILE"),
+        "object": _get("OBJECT", "LABEL"),
+    }
+
+
 def segment_flux_products(
         flux_products: list[np.ndarray], n_raw: int, max_segments: int,
-        max_point_to_point_ppm: float) -> tuple[list[np.ndarray], list[dict]]:
-    """Quality-screen and segment products without crossing their boundaries."""
+        max_point_to_point_ppm: float,
+        provenances: list[dict] | None = None) \
+        -> tuple[list[np.ndarray], list[dict]]:
+    """Quality-screen and segment products without crossing their boundaries.
+
+    ``provenances`` (optional) is a per-product list of MAST provenance dicts
+    positionally aligned to ``flux_products`` (see :func:`_lc_provenance`).
+    When supplied, each product's provenance is attached to its metric record
+    so accepted segments can be traced back to their exact source product.
+    """
     segments: list[np.ndarray] = []
     product_metrics: list[dict] = []
     for product_index, raw in enumerate(flux_products):
@@ -92,6 +148,8 @@ def segment_flux_products(
             "accepted": False,
             "n_segments": 0,
         }
+        if provenances is not None and product_index < len(provenances):
+            metric["provenance"] = provenances[product_index]
         if len(flux_raw) < n_raw:
             metric["rejection"] = "too_few_cadences"
             product_metrics.append(metric)
@@ -195,18 +253,34 @@ def _collect_target_segments_once(
             np.asarray(lc.remove_nans().flux.value, dtype=np.float64)
             for lc in lc_col
         ]
+        provenances = [_lc_provenance(lc) for lc in lc_col]
         segments, product_metrics = segment_flux_products(
-            flux_products, n_raw, max_segments, max_point_to_point_ppm)
+            flux_products, n_raw, max_segments, max_point_to_point_ppm,
+            provenances=provenances)
         accepted_ppm = [
             product["point_to_point_ppm"] for product in product_metrics
             if product.get("accepted")
         ]
+        # Roll the provenance of every product that contributed a segment up to
+        # the target record: this is the traceable list a reader re-downloads.
+        accepted_products = [
+            {"product_index": product["product_index"],
+             "n_segments": product["n_segments"],
+             "point_to_point_ppm": product.get("point_to_point_ppm"),
+             **(product.get("provenance") or {})}
+            for product in product_metrics if product.get("accepted")
+        ]
+        sectors_used = sorted({
+            product["sector"] for product in accepted_products
+            if product.get("sector") is not None})
         metrics.update({
             "n_products_downloaded": len(flux_products),
             "n_cadences": int(sum(len(product) for product in flux_products)),
             "point_to_point_ppm": (
                 float(np.median(accepted_ppm)) if accepted_ppm else None),
             "products": product_metrics,
+            "accepted_products": accepted_products,
+            "sectors_used": sectors_used,
         })
         if not segments:
             logs.append(f"  skipped {tgt}: no product passed quality/length gates")

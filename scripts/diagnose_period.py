@@ -23,13 +23,22 @@ def main():
     ap.add_argument("--n", type=int, default=3000)
     ap.add_argument("--n-post", type=int, default=500)
     ap.add_argument("--out", default="results/period_diag.json")
+    ap.add_argument("--seed", type=int, default=11,
+                    help="RNG seed for the diagnostic draw (set per run for reproducibility)")
+    ap.add_argument("--noise-lib", default=None,
+                    help="optional noise library so the alias diagnostic uses the evaluation noise domain")
     args = ap.parse_args()
 
     m, mc, sc = load_checkpoint(args.ckpt)
     pr = TransitPrior(TransitPrior.default_specs(sc.regime))
-    sim = TransitSimulator(sc, prior=pr)
+    if args.noise_lib:
+        from transitflow.noise import NoiseLibrary
+        sim = TransitSimulator(sc, prior=pr,
+                               noise_library=NoiseLibrary.load(args.noise_lib))
+    else:
+        sim = TransitSimulator(sc, prior=pr)
     inf = TransitFlowInference(m, pr, sc)
-    rng = np.random.default_rng(11)
+    rng = np.random.default_rng(args.seed)
     L = args.n_post
 
     ranks = []           # P rank in std space
